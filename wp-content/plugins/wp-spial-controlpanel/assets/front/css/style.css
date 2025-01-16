@@ -1,0 +1,447 @@
+html{
+    min-height: 100%;
+    background: rgb(7,173,195);
+    background: linear-gradient(20deg, rgba(7,173,195,1) 22%, rgba(28,197,219,1) 47%, rgba(126,224,220,1) 78%, rgba(149,232,223,1) 95%, rgba(238,246,177,1) 100%);
+}
+body {
+    font-family: IRANSans !important;
+    min-height: 100%;   
+    background-color: inherit !important; 
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+div {
+    font-family: IRANSans;
+}
+
+@font-face {
+    font-family: "IRANSans";
+    font-style: normal;
+    font-weight: 900;
+    src: url("fonts/IRANSans/eot/IRANSansWeb_Black.eot");
+    src: url("fonts/IRANSans/eot/IRANSansWeb_Black.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */
+        url("fonts/IRANSans/woff2/IRANSansWeb_Black.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/
+        url("fonts/IRANSans/woff/IRANSansWeb_Black.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+        url("fonts/IRANSans/ttf/IRANSansWeb_Black.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "IRANSans";
+    font-style: normal;
+    font-weight: bold;
+    src: url("fonts/IRANSans/eot/IRANSansWeb_Bold.eot");
+    src: url("fonts/IRANSans/eot/IRANSansWeb_Bold.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */
+        url("fonts/IRANSans/woff2/IRANSansWeb_Bold.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/
+        url("fonts/IRANSans/woff/IRANSansWeb_Bold.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+        url("fonts/IRANSans/ttf/IRANSansWeb_Bold.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "IRANSans";
+    font-style: normal;
+    font-weight: 500;
+    src: url("fonts/IRANSans/eot/IRANSansWeb_Medium.eot");
+    src: url("fonts/IRANSans/eot/IRANSansWeb_Medium.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */
+        url("fonts/IRANSans/woff2/IRANSansWeb_Medium.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/
+        url("fonts/IRANSans/woff/IRANSansWeb_Medium.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+        url("fonts/IRANSans/ttf/IRANSansWeb_Medium.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "IRANSans";
+    font-style: normal;
+    font-weight: 300;
+    src: url("fonts/IRANSans/eot/IRANSansWeb_Light.eot");
+    src: url("fonts/IRANSans/eot/IRANSansWeb_Light.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */
+        url("fonts/IRANSans/woff2/IRANSansWeb_Light.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/
+        url("fonts/IRANSans/woff/IRANSansWeb_Light.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+        url("fonts/IRANSans/ttf/IRANSansWeb_Light.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "IRANSans";
+    font-style: normal;
+    font-weight: 200;
+    src: url("fonts/IRANSans/eot/IRANSansWeb_UltraLight.eot");
+    src: url("fonts/IRANSans/eot/IRANSansWeb_UltraLight.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */
+        url("fonts/IRANSans/woff2/IRANSansWeb_UltraLight.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/
+        url("fonts/IRANSans/woff/IRANSansWeb_UltraLight.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+        url("fonts/IRANSans/ttf/IRANSansWeb_UltraLight.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "IRANSans";
+    font-style: normal;
+    font-weight: normal;
+    src: url("fonts/IRANSans/eot/IRANSansWeb.eot");
+    src: url("fonts/IRANSans/eot/IRANSansWeb.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */
+        url("fonts/IRANSans/woff2/IRANSansWeb.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/
+        url("fonts/IRANSans/woff/IRANSansWeb.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+        url("fonts/IRANSans/ttf/IRANSansWeb.ttf") format("truetype");
+}
+
+a {
+    text-decoration: none !important;
+     color:inherit !important;
+}
+@media only screen and (min-width: 700px) {
+    .modal-content-detail {
+ width: calc(100% - 200px);
+ }
+   }
+  @media only screen and (min-width:1000px) {
+    .modal-content-detail {
+ width: calc(100% - 500px);
+ }
+   }
+
+.display-name-content{
+    padding-bottom: 0 !important;
+}
+.user-wellcome{
+    display: flex;
+    justify-content: space-between;
+    height: 67px;
+}
+.display-name-content{
+    background-color:white;
+    padding: 1.5rem;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    margin-bottom: 15px;
+}
+.emoji-student{
+    width: 66px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    top: -20px;
+    left: 16px;
+}
+.emoji-student img{
+    width: 100%;
+}
+
+.bottom-menu{
+    display: flex;
+    width: 100%;
+    background-color: white;
+    position: fixed;
+    bottom: 0;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    align-items: center;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    z-index: 100;
+}
+.bottom-menu div a{
+    display: flex;
+    align-items: center;
+}
+.bottom-menu div span.icon{
+    padding-right:8px;
+}
+.bottom-menu div span.name{
+    padding:0 8px;
+}
+.bottom-menu div span i{
+    font-size: x-large;
+}
+.count-exam .text-muted{
+    font-size: smaller;
+} 
+.time-exam .text-muted{
+    font-size: smaller;
+} 
+ .form-select{
+   max-width: 300px !important;
+}
+.container-buttons{
+    max-width: 150px;
+    margin: auto;
+}
+
+.div-radio-question{
+    padding: 10px ;
+    transition: all 300ms ease-in;
+}
+[type="radio"]:checked ~ label {
+    font-weight: 900;
+  }
+[type="radio"]:focus {
+    font-weight: 900;
+    background-color: rgba(97, 154, 234, 0.16);
+    border-radius: 10px;
+  }
+.div-radio-question:hover{
+    /* border: 1px solid;
+    border-color: #4062f6; */
+    background-color: rgba(97, 154, 234, 0.16);
+    border-radius: 10px;
+}
+.input-radio-question{
+    margin-left: 10px !important;
+
+}
+.label-radio-question{
+    padding: 5px !important;
+
+}
+.check-exam-code {
+    max-width: 300px !important;
+}
+.check-exam{
+    flex-direction: column;
+}
+.option-custom-exam{
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 5px 0;
+    transition: background-color 0.3s;
+    width: max-content;
+    min-width: 220px;
+  }
+  .option-custom-exam.selected {
+    background-color: #007bff;
+    color: white;
+  }
+  .chekbox-group-section label:first-of-type {
+    border-left: none !important;
+    border-top-right-radius: 5px !important;
+    border-bottom-right-radius: 5px !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+  .chekbox-group-section label:last-of-type {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius:0 !important;
+    border-top-left-radius: 5px !important;
+    border-bottom-left-radius: 5px !important;
+}
+.dply-none{
+    display: none;
+}
+.dply-show{
+    display: block;
+}
+.alert-dismissible{
+    margin-bottom: 0 !important;
+}
+#questions_number{
+    width: 100px;
+}
+#exam_name{
+    max-width: 300px !important;
+}
+#questions-number{
+    max-width: 250px;
+}
+.container-modal-show-scores{
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: #0d0c2282 !important;
+    display: none;
+}
+.modal-content-detail{
+    width: 372px;
+    position: relative;
+}
+
+.modal-center-absoult{
+    margin: 2rem !important;
+    overflow: auto; 
+}
+
+ span.colse-square{
+    position: absolute;
+    right: 26px;
+    top: -8px !important;
+    font-size: x-large;
+    color: red;
+    cursor: pointer;
+    transition: all 0.25;
+     }
+span.colse-square:hover{
+transform: scale(1.2);
+     }
+   
+     .form-edit-user-data label{
+        padding: 8px 0;
+     }
+     .header-emoji-logout{
+        position: relative;
+     }
+    .btn-logout{
+        color: red;
+    position: absolute;
+    padding: 5px;
+    border-radius: 100%;
+  
+    font-size: large;
+    top: 0;
+    left: 0;
+    margin: 10px;
+    transition: all 0.5 ease-in;
+    }
+.btn-logout:hover{
+    transform: scale(1.2);
+
+}
+div.table-responsive{
+    width: unset !important;
+}
+.analysis-section .question .option {
+    border: 1px solid #d3d3d3;
+    padding: 10px;
+    margin-top: 2px;
+    border-radius: 5px;
+    min-width: 200px;
+    width: max-content;
+}
+.analysis-section .question .question-text {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start; 
+}
+.analysis-section .your-answer{
+    float: left;
+    font-size: large;
+}
+.chekbox-group-section{
+    display: flex;
+    flex-wrap: wrap;
+}
+.card-header .question-number{
+    border: 1px solid gray;
+    border-radius: 35px;
+    padding: 0 8px;
+}
+.analysis-section  ,.default-container  {
+    margin-bottom: 100px;
+}
+
+ #active-exams{
+    overflow: auto;
+ }
+ #display-timer{ 
+    top: 10px;
+    float: left;
+   background-color:  rgb(33 37 41 / 46%) !important;
+ }
+ #test-time{
+    max-width: 250px;
+ }
+ #finishedExamCreate {
+margin:auto;
+padding: 10px;
+
+ }
+ .card-classroom{
+    padding: 20px;
+    width: 160px !important;
+    margin: 5px;
+   
+
+ }
+ .card-classroom{
+    display: flex !important;
+    flex-direction: column;
+    justify-content: space-evenly;
+    transition: all .25s ease;
+ }
+ .card-classroom:hover{
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px; 
+}
+ .add-new-classroom i{
+    transition: all .05s ease;
+ }
+ .add-new-classroom i:hover{
+    transform: scale(1.2);
+ }
+ .modal-content-detail {
+width: 100%;
+}
+
+  .active-exam-count-alert{
+    display: inline-block;
+    width: 24px;
+    text-align: center;
+    border-radius: 50% !important;
+  }
+  .shadow-class-hover:hover {
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  }
+  .alert-dismissible-count-active-exam{
+    position: fixed !important;
+    width: 253px !important;
+    bottom: 56px;
+    right: 10px;
+    opacity: 0.8;
+  }
+  .creat-exam-cart-plan{
+    transition: all 0.5s ease-in;
+    cursor: pointer;
+  }
+  .rounded-right{
+    border-radius: unset !important;
+    border-radius: 0 10px 10px 0;
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+  }
+  
+  .rounded-left{
+    border-radius: unset !important;
+    border-radius: 10px 0 0 10px !important;
+  }
+  .trash-classroom{
+    top: 5px;
+    left: 5px;
+    cursor: pointer;
+  }
+  .trash-classroom i:hover , i.remove-student-from-class:hover {
+    color: red !important;
+    font-weight: bolder !important;
+  }
+  .modal-center-absoult div.table-responsive{
+    margin-bottom: 98px;
+  }
+  .star-rating-student{
+    bottom: 44px;
+    left: 40px;
+    
+}
+.top-ten-img{
+    width: 50px;
+    left: 0;
+    top: -6px;  
+}
+
+

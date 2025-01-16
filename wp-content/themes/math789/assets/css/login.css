@@ -1,0 +1,201 @@
+html{
+	background: rgb(7,173,195);
+    background: linear-gradient(20deg, rgba(7,173,195,1) 22%, rgba(28,197,219,1) 47%, rgba(126,224,220,1) 78%, rgba(149,232,223,1) 95%);
+height: 100%;
+}
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-weight: normal;
+}
+
+body {
+
+   
+    font-family: Vazir !important;
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    font-family: Vazir;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+div {
+    font-family: Vazir;
+}
+
+@font-face {
+    font-family: "Vazir";
+    font-style: normal;
+    font-weight: 900;
+    src: url("../fonts/Vazir/eot/VazirWeb_Black.eot");
+    src: url("../fonts/Vazir/eot/VazirWeb_Black.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */ url("../fonts/Vazir/woff2/VazirWeb_Black.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/ url("../fonts/Vazir/woff/VazirWeb_Black.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("../fonts/Vazir/ttf/VazirWeb_Black.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Vazir";
+    font-style: normal;
+    font-weight: bold;
+    src: url("../fonts/Vazir/eot/VazirWeb_Bold.eot");
+    src: url("../fonts/Vazir/eot/VazirWeb_Bold.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */ url("../fonts/Vazir/woff2/VazirWeb_Bold.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/ url("../fonts/Vazir/woff/VazirWeb_Bold.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("../fonts/Vazir/ttf/VazirWeb_Bold.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Vazir";
+    font-style: normal;
+    font-weight: 500;
+    src: url("../fonts/Vazir/eot/VazirWeb_Medium.eot");
+    src: url("../fonts/Vazir/eot/VazirWeb_Medium.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */ url("../fonts/Vazir/woff2/VazirWeb_Medium.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/ url("../fonts/Vazir/woff/VazirWeb_Medium.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("../fonts/Vazir/ttf/VazirWeb_Medium.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Vazir";
+    font-style: normal;
+    font-weight: 300;
+    src: url("../fonts/Vazir/eot/VazirWeb_Light.eot");
+    src: url("../fonts/Vazir/eot/VazirWeb_Light.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */ url("../fonts/Vazir/woff2/VazirWeb_Light.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/ url("../fonts/Vazir/woff/VazirWeb_Light.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("../fonts/Vazir/ttf/VazirWeb_Light.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Vazir";
+    font-style: normal;
+    font-weight: 200;
+    src: url("../fonts/Vazir/eot/VazirWeb_UltraLight.eot");
+    src: url("../fonts/Vazir/eot/VazirWeb_UltraLight.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */ url("../fonts/Vazir/woff2/VazirWeb_UltraLight.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/ url("../fonts/Vazir/woff/VazirWeb_UltraLight.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("../fonts/Vazir/ttf/VazirWeb_UltraLight.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Vazir";
+    font-style: normal;
+    font-weight: normal;
+    src: url("../fonts/Vazir/eot/VazirWeb.eot");
+    src: url("../fonts/Vazir/eot/VazirWeb.eot?#iefix") format("embedded-opentype"),
+        /* IE6-8 */ url("../fonts/Vazir/woff2/VazirWeb.woff2") format("woff2"),
+        /* FF39+,Chrome36+, Opera24+*/ url("../fonts/Vazir/woff/VazirWeb.woff") format("woff"),
+        /* FF3.6+, IE9, Chrome6+, Saf5.1+*/ url("../fonts/Vazir/ttf/VazirWeb.ttf") format("truetype");
+}
+
+h5
+{
+	font-weight: 400;
+}
+
+.container
+{
+	border-radius: 10px;
+    margin-top: 30px;
+    max-width: 400px;
+    max-height: 700px;
+}
+
+.tabs .indicator
+{
+	background-color: #e0f2f1;
+	height: 60px;
+	opacity: 0.3;
+}
+
+.form-container
+{
+	padding: 40px;
+	padding-top: 10px;
+}
+
+.confirmation-tabs-btn
+{
+	position: absolute;
+}
+ul.tabs{
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
+.input-field label {
+	right: 0.75rem !important;
+}
+
+input[type="phone"]{
+	background-color: transparent;
+    border: none;
+    border-bottom: 1px solid #9e9e9e;
+    border-radius: 0;
+    outline: none;
+    height: 3rem;
+    width: 100%;
+    font-size: 1rem;
+    margin: 0 0 15px 0;
+    padding: 0;
+    box-shadow: none;
+    box-sizing: content-box;
+    transition: all .3s;
+}
+input[type=phone]:focus:not([readonly]){
+	border-bottom: 1px solid #26a69a;
+    box-shadow: 0 1px 0 0 #26a69a;
+}
+#registrationform{
+    display: none; 
+}
+#verify-code{
+    display: none;
+}
+[type="checkbox"]:not(:checked), [type="checkbox"]:checked {
+    position: unset !important;
+    visibility: visible !important;
+} 
+.login-alert {
+    background: red;
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+    font-size: large;
+}
+.register-select, .gender{
+    display: block !important;
+}
+.education-base-select,.lesson-select{display: none;}
+input.gender{
+    position: unset !important;
+    visibility: visible !important;
+    display: inline !important;
+    padding: 20px !important;
+}
+.gender-radio-btn-container label{
+    color: black !important;
+    padding: 20px;
+    margin: 10px;
+
+}
+.gender-radio-btn-container h6{
+    margin-bottom: 8px;
+}
