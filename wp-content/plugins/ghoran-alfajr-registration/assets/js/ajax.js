@@ -102,7 +102,7 @@ jQuery(document).ready(function ($) {
             },
             complete: function () {
                 // Optionally, reset the form or redirect the user
-                // $('#yourFormId').trigger("reset"); // Reset the form if needed
+                 $('#contact_form').trigger("reset"); // Reset the form if needed
             }
         });
     });
