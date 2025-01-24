@@ -6,6 +6,7 @@ function fajr_callback()
     <html lang="fa" dir="rtl">
 
     <head>
+        <link href="<?php echo get_template_directory_uri() ?>/assets/images/PS.png" rel="shortcut icon" />
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title><?php wp_title(); ?></title>
