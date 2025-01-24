@@ -59,7 +59,7 @@ function fajr_callback()
                                 <div class="col-md-6 inputGroupContainer">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
-                                        <input id="national_num" name="national_num" placeholder="شماره ملی" oninput="validateInput(this)" class="form-control show-form" type="text" required />
+                                        <input id="national_num" name="national_num" placeholder="شماره ملی" class="form-control show-form" type="text" required />
                                     </div>
                                 </div>
                             </div>
@@ -69,7 +69,7 @@ function fajr_callback()
                                 <div class="col-md-6 inputGroupContainer">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                        <input id="phone" name="phone" placeholder="0917000000" class="form-control show-form" oninput="validateInput(this)" type="text" required />
+                                        <input id="phone" name="phone" placeholder="0917000000" class="form-control show-form" type="text" required />
                                     </div>
                                 </div>
                             </div>
@@ -77,62 +77,38 @@ function fajr_callback()
                             <div class="form-group m-2">
                                 <label class="col-sm-6 control-label p-2">جنسیت:</label>
                                 <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input id="female" class="form-check-input radio" type="radio" name="gender" value="زن" required />
-                                        <label class="form-check-label" for="female">زن</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input id="male" class="form-check-input radio" type="radio" name="gender" value="مرد" required />
-                                        <label class="form-check-label" for="male">مرد</label>
-                                    </div>
+                                    <select id="gender" class="form-select" name="gender" onchange="formUpdate()" required>
+                                        <option value="" disabled selected>-- انتخاب کنید --</option>
+                                        <option value="female">زن</option>
+                                        <option value="male">مرد</option>
+                                    </select>
                                 </div>
                             </div>
-                            <!-- Date of Birth -->
-                            <div class="form-group m-2">
-                                <label class="col-sm-6 control-label p-2">تاریخ تولد</label>
-                                <div class="col-md-6 inputGroupContainer">
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                                        <input type="text" name="quantity" id="date" class="form-control" placeholder="روز/ماه/سال" data-jdp required>
-                                    </div>
-                                </div>
-                            </div>
-                            <script type="text/javascript">
-                                jalaliDatepicker.startWatch();
-                            </script>
+
                             <!-- Age Group Selection -->
                             <div class="form-group m-2">
                                 <label class="col-sm-6 control-label p-2">گروه سنی</label>
                                 <div class="col-md-6 selectContainer">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                                        <select name="age" id="age" class="form-control selectpicker show-form" disabled required>
+                                        <select name="age" id="age" class="form-control selectpicker show-form" onchange="formUpdate()" required>
                                             <option value="">گروه سنی خود را انتخاب کنید</option>
-                                            <option value="infant">نونهال</option>
-                                            <option value="teen">نوجوان</option>
-                                            <option value="adult">بزرگسال</option>
+                                            <option value="children">نونهال</option>
+                                            <option value="teenagers">نوجوان</option>
+                                            <option value="adults">بزرگسال</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
                             <!-- City Selection -->
                             <div class="form-group m-2">
-                                <label class="col-sm-6 control-label p-2">شهرستان</label>
+                                <label class="col-sm-6 control-label p-2"> شهرستان محل سکونت</label>
                                 <div class="col-md-6 selectContainer">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                        <select name="shahr" id="shahr" class="form-control selectpicker show-form" required>
-                                            <option value="">شهرستان محل سکونت خود را انتخاب کنید</option>
-                                            <option class="shar" value="بوشهر">بوشهر</option>
-                                            <option class="shar" value="تنگستان">تنگستان</option>
-                                            <option class="shar" value="دشتستان">دشتستان</option>
-                                            <option class="shar" value="دشتی">دشتی</option>
-                                            <option class="shar shahrFemale child dayyer-city" value="دیر">دیر</option>
-                                            <option class="shar" value="دیلم">دیلم</option>
-                                            <option class="shar shahrFemale" value="کنگان">کنگان</option>
-                                            <option class="shar shahrFemale" value="عسلویه">عسلویه</option>
-                                            <option class="shar shahrFemale" value="جم">جم</option>
-                                            <option class="shar" value="گناوه">گناوه</option>
+                                        <select name="city" id="city" class="form-control selectpicker show-form" disabled required>
+                                            <option value="">شهر را انتخاب کنید...</option>
+
                                         </select>
                                     </div>
                                 </div>
@@ -144,90 +120,28 @@ function fajr_callback()
                                 <div class="col-md-6 selectContainer">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-trophy"></i></span>
-                                        <select name="fieldMatch" id="field" class="form-control selectpicker show-form" disabled require>
-                                            <option id="option-selected" value="">رشته مسابقه را انتخاب کنید...</option>
-                                            <div disabled>
-                                                <!-- children male -->
-
-                                                <option class="childrenM" value="حفظ 10 جزء" hidden>حفظ 10 جزء</option>
-                                                <option class="childrenM" value="حفظ 5 جزء" hidden>حفظ 5 جزء</option>
-                                                <option class="childrenM" value="حفظ 3 جزء" hidden>حفظ 3 جزء</option>
-                                                <option class="childrenM" value="حفظ 1 جزء" hidden>حفظ 1 جزء</option>
-                                                <option class="childrenM" value="اذان" hidden>اذان</option>
-                                                <option class="childrenM" value="قرائت تقلیدی " hidden>
-
-                                                    قرائت تقلیدی
-                                                </option>
-                                                <option class="childrenM" value="قرائت تدویر " hidden>
-                                                    قرائت تدویر(ترتیل)
-                                                </option>
-                                            </div>
-                                            <!-- children female -->
-
-                                            <option class="childrenF" value="حفظ 10 جزء" hidden>حفظ 10 جزء</option>
-                                            <option class="childrenF" value="حفظ 5 جزء" hidden>حفظ 5 جزء</option>
-                                            <option class="childrenF" value="حفظ 3 جزء" hidden>حفظ 3 جزء</option>
-                                            <option class="childrenF" value="حفظ 1 جزء" hidden>حفظ 1 جزء</option>
-                                            <option class="childrenF" value="قرائت تدویر " hidden>
-                                                قرائت تدویر(ترتیل)
-                                            </option>
-
-                                    </div>
-                                    <!-- adule-male -->
-                                    <option class="adulte-male" value="حفظ کل" hidden>حفظ کل</option>
-                                    <option class="adulte-male" value="حفظ 20 جزء" hidden>
-                                        حفظ 20 جزء
-                                    </option>
-                                    <option class="adulte-male" value="حفظ 10 جزء" hidden>
-                                        حفظ 10 جزء
-                                    </option>
-                                    <option class="adulte-male" value="قرائت تحقیق" hidden>
-                                        قرائت تحقیق
-                                    </option>
-                                    <option class="adulte-male" value="قرائت تدویر(ترتیل)" hidden>
-                                        قرائت تدویر(ترتیل)
-                                    </option>
-                                    <option class="adulte-male" value="مفاهیم" hidden>
-                                        مفاهیم </option>
-                                    <!-- adulte-female -->
-
-                                    <option class="adulte-female" value="حفظ کل" hidden>حفظ کل</option>
-                                    <option class="adulte-female" value="حفظ 20 جزء" hidden>
-                                        حفظ 20 جزء
-                                    </option>
-                                    <option class="adulte-female" value="حفظ 10 جزء" hidden>
-                                        حفظ 10 جزء
-                                    </option>
-                                    <option class="adulte-female" value="حفظ 5 جزء" hidden>
-                                        حفظ 5 جزء
-                                    </option>
-
-                                    <option class="adulte-female" value="قرائت تدویر(ترتیل)
-              " hidden>
-                                        قرائت تدویر(ترتیل)
-                                    </option>
-                                    <option class="adulte-female" value="مفاهیم" hidden>
-                                        مفاهیم </option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Address Input -->
-                            <div class="form-group m-2">
-                                <label class="col-sm-6 control-label p-2">آدرس</label>
-                                <div class="col-md-6 inputGroupContainer">
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-house"></i></span>
-                                        <input id="address" name="address" placeholder="آدرس محل سکونت" class="form-control show-form" type="text" required />
+                                        <select name="fieldMatch" id="categories" class="form-control selectpicker show-form" disabled require>
+                                            <option value="">رشته مسابقه را انتخاب کنید...</option>
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
-                            <!-- Success message -->
-                            <div class="alert alert-success" role="alert" id="success_message" style="display: none;">
-                                Success <i class="bi bi-check-circle"></i> Thanks for contacting us, we will get back to you shortly.
-                            </div>
-                            <!-- Table for displaying submitted data -->
-                            <!-- <div id="myDiv table-responsive">
+
+                                <!-- Address Input -->
+                                <div class="form-group m-2">
+                                    <label class="col-sm-6 control-label p-2">آدرس</label>
+                                    <div class="col-md-6 inputGroupContainer">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-house"></i></span>
+                                            <input id="address" name="address" placeholder="آدرس محل سکونت" class="form-control show-form" type="text" required />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Success message -->
+                                <div class="alert alert-success" role="alert" id="success_message" style="display: none;">
+                                    Success <i class="bi bi-check-circle"></i> Thanks for contacting us, we will get back to you shortly.
+                                </div>
+                                <!-- Table for displaying submitted data -->
+                                <!-- <div id="myDiv table-responsive">
                                 <table class="rounded mt-3 table table-striped table-hover table-borderless table-primary align-middle">
                                     <thead class="table-success rounded">
                                         <tr>
@@ -251,20 +165,20 @@ function fajr_callback()
                                     </tbody>
                                 </table>
                             </div> -->
-                            <!-- Submit Button -->
-                            <div class="form-group m-2 mb-5">
-                                <label class="col-sm-6 control-label p-2"></label>
-                                <div class="col-md-6">
-                                    <button type="submit" class="btn btn-primary" id="submit-btn">
-                                        ارسال <span class="bi bi-send"></span>
-                                    </button>
-                                    <input type="hidden" name="ajax-url" value="<?php echo admin_url('admin-ajax.php') ?>">
-                                    <input type="hidden" name="nonce" value="<?php echo wp_create_nonce() ?>">
+                                <!-- Submit Button -->
+                                <div class="form-group m-2 mb-5">
+                                    <label class="col-sm-6 control-label p-2"></label>
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-primary" id="submit-btn">
+                                            ارسال <span class="bi bi-send"></span>
+                                        </button>
+                                        <input type="hidden" name="ajax-url" value="<?php echo admin_url('admin-ajax.php') ?>">
+                                        <input type="hidden" name="nonce" value="<?php echo wp_create_nonce() ?>">
+                                    </div>
                                 </div>
-                            </div>
 
+                            </div>
                         </div>
-                    </div>
                 </fieldset>
             </form>
         </div>

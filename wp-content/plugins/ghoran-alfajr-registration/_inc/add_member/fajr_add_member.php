@@ -25,10 +25,10 @@ function fajr_add_member()
     $age = sanitize_text_field($_POST['age']);
     $address = sanitize_text_field($_POST['address']);
     $city = sanitize_text_field($_POST['city']);
-    $date = sanitize_text_field($_POST['date']);
+
 
     // Check for empty fields
-    $validation_result = validate_member_fields($name, $family, $phone, $address, $gender, $date, $national_num, $city, $age, $field);
+    $validation_result = validate_member_fields($name, $family, $phone, $address, $gender, $national_num, $city, $age, $field);
     if ($validation_result) {
         wp_send_json($validation_result, 400);
     }
@@ -54,7 +54,7 @@ function fajr_add_member()
         'age' => $age,
         'address' => $address,
         'city' => $city,
-        'date' => $date
+
     ];
 
     // Define the format for each field
@@ -77,7 +77,7 @@ function fajr_add_member()
     }
 }
 
-function validate_member_fields($name, $family, $phone, $address, $gender, $date, $national_num, $city, $age, $field)
+function validate_member_fields($name, $family, $phone, $address, $gender, $national_num, $city, $age, $field)
 {
     if (empty($name)) {
         return [
@@ -120,12 +120,6 @@ function validate_member_fields($name, $family, $phone, $address, $gender, $date
         ];
     }
 
-    if (empty($date)) {
-        return [
-            'error' => true,
-            'msg' => 'تاریخ الزامی است' // "Date is required"
-        ];
-    }
 
     if (empty($national_num)) {
         return [

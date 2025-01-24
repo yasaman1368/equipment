@@ -1,52 +1,43 @@
 jQuery(document).ready(function ($) {
-    const $name = $('#name');
-    const $family = $('#family');
-    const $address = $('#address');
-    const $city = $('#shahr');
-    const $date = $('#date');
-    const $age = $('#age');
-    const $field = $('#field');
-    const $nationalNumInput = $('#national_num');
-    const $phoneInput = $('#phone');
-    const ajaxUrl = $('input[name=ajax-url]').val();
-    const nonce = $('input[name=nonce]').val();
+    const $name = $('#name'),
+          $family = $('#family'),
+          $address = $('#address'),
+          $gender = $('#gender'),
+          $city = $('#city'),
+          $age = $('#age'),
+          $field = $('#categories'),
+          $nationalNumInput = $('#national_num'),
+          $phoneInput = $('#phone'),
+          ajaxUrl = $('input[name=ajax-url]').val(),
+          nonce = $('input[name=nonce]').val();
 
     // Add phone input event listener once
     $phoneInput.on('input', () => {
-        const phoneNumber = $phoneInput.val().trim();
-        $phoneInput.val(convertNumberToEnglish(phoneNumber));
+        $phoneInput.val(convertNumberToEnglish($phoneInput.val().trim()));
     });
+
     $nationalNumInput.on('input', () => {
-        const nationalNum = $nationalNumInput.val().trim();
-        $nationalNumInput.val(convertNumberToEnglish(nationalNum ));
+        $nationalNumInput.val(convertNumberToEnglish($nationalNumInput.val().trim()));
     });
 
     function convertNumberToEnglish(number) {
-        const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-        const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-        let convertedNumber = number;
-
-        for (let i = 0; i < persianNumbers.length; i++) {
-            convertedNumber = convertedNumber.split(persianNumbers[i]).join(englishNumbers[i]);
-        }
-        return convertedNumber;
+        return number.replace(/[۰-۹]/g, (match) => {
+            return String.fromCharCode(match.charCodeAt(0) - 1728);
+        });
     }
 
     $('#submit-btn').on('click', function (e) {
         e.preventDefault();
-        
         // Collect form data
-        const name = $name.val();
-        const family = $family.val();
-        const address = $address.val();
-        const city = $city.val();
-        const date = $date.val();
-        const age = $age.val();
-        const field = $field.val();
-        const gender = document.querySelector("input[name='gender']:checked") ? 
-            document.querySelector("input[name='gender']:checked").value : '';
-        const national_num = $nationalNumInput.val();
-        const phone = $phoneInput.val(); // Corrected variable scope
+        const name = $name.val(),
+              family = $family.val(),
+              address = $address.val(),
+              city = $city.val(),
+              age = $age.val(),
+              gender = $gender.val(),
+              field = $field.val(),
+              national_num = $nationalNumInput.val(),
+              phone = $phoneInput.val();
 
         // AJAX request
         $.ajax({
@@ -61,21 +52,19 @@ jQuery(document).ready(function ($) {
                 phone: phone,
                 address: address,
                 city: city,
-                date: date,
                 gender: gender,
                 age: age,
                 field: field
             },
-            before: function () {
+        beforeSend: function () {
                 // Optionally show a loading spinner or disable the button
             },
             success: function (response) {
-                let responsedata = response; // No need to parse as we expect JSON
-                if (!responsedata.success) {
+            if (!response.success) {
                     Swal.fire({
                         icon: 'error',
                         title: 'خطا!',
-                        text: responsedata.msg || 'مشکلی پیش آمد، لطفا دوباره تلاش کنید.',
+                    text: response.msg || 'مشکلی پیش آمد، لطفا دوباره تلاش کنید.',
                     });
                     return false;
                 }
@@ -86,24 +75,17 @@ jQuery(document).ready(function ($) {
                 });
             },
             error: function (error) {
-                if (error.responseJSON && error.responseJSON.error) {
+            const errorMsg = error.responseJSON && error.responseJSON.msg ? error.responseJSON.msg : 'مشکلی پیش آمد، لطفا دوباره تلاش کنید.';
                     Swal.fire({
                         icon: "error",
                         title: "ثبت نام شما ناموفق بود",
-                        text: error.responseJSON.msg || 'مشکلی پیش آمد، لطفا دوباره تلاش کنید.',
+                text: errorMsg,
                     });
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "خطا",
-                        text: 'مشکلی پیش آمد، لطفا دوباره تلاش کنید.',
-                    });
-                }
             },
             complete: function () {
                 // Optionally, reset the form or redirect the user
                 // $('#contact_form').trigger("reset"); // Reset the form if needed
             }
         });
+        });
     });
-});
