@@ -37,6 +37,7 @@ function show_members()
                                 <th>کد ملی</th>
                                 <th>شماره موبایل</th>
                                 <th>جنسیت</th>
+                                <th>تاریخ تولد</th>
                                 <th>گروه سنی</th>
                                 <th>رشته مسابقه</th>
                                 <th>شهر</th>
@@ -59,6 +60,7 @@ function show_members()
                                     <td><?= htmlspecialchars($member->national_num) ?></td>
                                     <td><?= htmlspecialchars($member->phone) ?></td>
                                     <td><?= htmlspecialchars($member->gender === 'male' ? 'مرد' : 'زن') ?></td>
+                                    <td><?= htmlspecialchars($member->date ?? '--') ?></td>
                                     <td><?= htmlspecialchars($age_group) ?></td>
                                     <td><?= htmlspecialchars($member->field) ?></td>
                                     <td><?= htmlspecialchars($member->city) ?></td>

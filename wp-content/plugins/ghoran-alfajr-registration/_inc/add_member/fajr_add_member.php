@@ -25,7 +25,7 @@ function fajr_add_member()
     $age = sanitize_text_field($_POST['age']);
     $address = sanitize_text_field($_POST['address']);
     $city = sanitize_text_field($_POST['city']);
-
+    $date = sanitize_text_field($_POST['date']);
 
     // Check for empty fields
     $validation_result = validate_member_fields($name, $family, $phone, $address, $gender, $national_num, $city, $age, $field);
@@ -54,11 +54,12 @@ function fajr_add_member()
         'age' => $age,
         'address' => $address,
         'city' => $city,
+        'date' => $date
 
     ];
 
     // Define the format for each field
-    $format = ['%s', '%s', '%d', '%s', '%s', '%s', '%s', '%s']; // Use %d for integer fields
+    $format = ['%s', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s']; // Use %d for integer fields
 
     // Insert the data into the database
     $stmt = $wpdb->insert($table, $data, $format);

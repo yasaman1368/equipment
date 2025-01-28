@@ -85,7 +85,19 @@ function fajr_callback()
                                     </select>
                                 </div>
                             </div>
-
+                            <!-- Date of Birth -->
+                            <div class="form-group m-2">
+                                <label class="col-sm-6 control-label p-2">تاریخ تولد</label>
+                                <div class="col-md-6 inputGroupContainer">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                        <input type="text" name="quantity" id="date" class="form-control" placeholder="روز/ماه/سال" data-jdp required>
+                                    </div>
+                                </div>
+                            </div>
+                            <script type="text/javascript">
+                                jalaliDatepicker.startWatch();
+                            </script>
                             <!-- Age Group Selection -->
                             <div class="form-group m-2">
                                 <label class="col-sm-6 control-label p-2">گروه سنی</label>
@@ -141,31 +153,8 @@ function fajr_callback()
                                 <div class="alert alert-success" role="alert" id="success_message" style="display: none;">
                                     Success <i class="bi bi-check-circle"></i> Thanks for contacting us, we will get back to you shortly.
                                 </div>
-                                <!-- Table for displaying submitted data -->
-                                <!-- <div id="myDiv table-responsive">
-                                <table class="rounded mt-3 table table-striped table-hover table-borderless table-primary align-middle">
-                                    <thead class="table-success rounded">
-                                        <tr>
-                                            <th scope="col">نام و نام خانوادگی</th>
-                                            <th scope="col">شماره ملی</th>
-                                            <th scope="col">موبایل</th>
-                                            <th scope="col">آدرس</th>
-                                            <th scope="col">جنسیت</th>
-                                            <th scope="col">رشته مسابقه</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="table-group-divider">
-                                        <tr>
-                                            <td id="item1"></td>
-                                            <td id="item2"></td>
-                                            <td id="item3"></td>
-                                            <td id="item4"></td>
-                                            <td id="item5"></td>
-                                            <td id="item6"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div> -->
+
+
                                 <!-- Submit Button -->
                                 <div class="form-group m-2 mb-5">
                                     <label class="col-sm-6 control-label p-2"></label>

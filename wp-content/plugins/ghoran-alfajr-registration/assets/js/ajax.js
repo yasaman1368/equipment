@@ -5,6 +5,7 @@ jQuery(document).ready(function ($) {
           $gender = $('#gender'),
           $city = $('#city'),
           $age = $('#age'),
+           $date = $('#date'),
           $field = $('#categories'),
           $nationalNumInput = $('#national_num'),
           $phoneInput = $('#phone'),
@@ -36,8 +37,10 @@ jQuery(document).ready(function ($) {
               age = $age.val(),
               gender = $gender.val(),
               field = $field.val(),
+               date = $date.val(),
               national_num = $nationalNumInput.val(),
               phone = $phoneInput.val();
+             
 
         // AJAX request
         $.ajax({
@@ -53,6 +56,7 @@ jQuery(document).ready(function ($) {
                 address: address,
                 city: city,
                 gender: gender,
+                date:date,
                 age: age,
                 field: field
             },
