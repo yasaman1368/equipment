@@ -1,7 +1,0 @@
-1- we have a page and include shortcode for view in front
-2-in shortcode render html form for get data of user
-3- we have an schedule in db to save data
---------------------------------
-add new page and insert Q-alfajr.php file in root them;
-page template seem as what in Q-alfajr.php file;
-for show reults $get in show_members.php file;
