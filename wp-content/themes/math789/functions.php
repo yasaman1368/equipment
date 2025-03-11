@@ -37,42 +37,90 @@ include_once '_inc/comment-theme/comment-theme.php';
 include_once '_inc/students-writer/students-writer.php';
 include_once '_inc/utilities/thumbnail-image-defualt.php';
 include_once '_inc/pagination/porsnegar_pagination.php';
+include_once '_inc/fetch-student-report/fetch-student-report.php';
 add_action('after_setup_theme', 'theme_setup_f');
 function theme_setup_f()
 {
     add_theme_support('post-thumbnails');
     add_image_size('mysize', 200, 200, ['center', 'center']);
 }
-// global $wpdb;
+// function handle_db_students_grades()
+// {
+//     global $wpdb;
+//     // Prepare the SQL statement to prevent SQL injection
+//     $class_name = 'نهم 2';
+//     $query = $wpdb->prepare("SELECT * FROM `numbers_of_students_db` WHERE class_name = %s", $class_name);
 
-// // Fetch user IDs from the database
-// $ids = $wpdb->get_results($wpdb->prepare("SELECT user_id FROM exam_users_data_result"), ARRAY_A);
-
-// // Initialize an array to hold all exam user IDs
-// $all_exam_users_id = [];
-
-// // Populate the array with user IDs
-// foreach ($ids as $id) {
-//     $all_exam_users_id[] = $id['user_id'];
-// }
-
-
-
-// // Count the occurrences of each user ID
-// $all_exam_users_id_count_values = array_count_values($all_exam_users_id);
-
-// // Initialize an array to hold IDs of cheating users
-// $cheating_user_id = [];
-
-// // Identify users who have taken more than 2 exams
-// foreach ($all_exam_users_id_count_values as $id => $num) {
-//     if ($num > 2) {
-//         $cheating_user_id[] = $id;
+//     // Execute the query and handle errors
+//     $all_results = $wpdb->get_results($query);
+//     if ($all_results === null) {
+//         error_log('Database query failed: ' . $wpdb->last_error);
+//         echo 'An error occurred while retrieving data. Please try again later.';
+//         return; // Exit the function early on error
 //     }
+//     // Array to hold student averages and ratings
+//     $students_data = [];
+//     // Loop through each student and calculate the average score
+//     foreach ($all_results as $student) {
+//         // Collect grades
+//         $grades = [
+//             $student->{'قرآن'},
+//             $student->{'پیام های آسمان'}, // Fixed: Accessing property with space
+//             $student->{'فارسی'},
+//             $student->{'املای فارسی'},
+//             $student->{'نگارش'},
+//             $student->{'عربی'},
+//             $student->{'زبان خارجه'},
+//             $student->{'علوم تجربی'},
+//             $student->{'ریاضی'},
+//             $student->{'تربیت بدنی'},
+//             $student->{'مطالعات اجتماعی'},
+//             $student->{'فرهنگ و هنر'},
+//             $student->{'کار و فناوری'},
+//             $student->{'تفکر و سبک زندگی'},
+//             $student->{'آمادگی دفاعی'},
+//             $student->{'انضباط'}
+//         ];
+//         // Check if any grade is 'غ'
+//         if (in_array('غ', $grades)) {
+//             continue; // Skip this student if any grade is 'غ'
+//         }
+//         // Filter out non-numeric values
+//         $valid_grades = array_filter($grades, function ($grade) {
+//             return is_numeric($grade);
+//         });
+//         // Calculate average score
+//         if (count($valid_grades) > 0) {
+//             $average_score = array_sum($valid_grades) / count($valid_grades);
+//         } else {
+//             $average_score = 0; // No valid grades
+//         }
+//         // Store student data
+//         $students_data[] = [
+//             'id' => $student->{'id'},
+//             'average_score' => $average_score,
+//             'first_name' => $student->{'first_name'},
+//             'last_name' => $student->{'last_nam'}
+//         ];
+//     }
+//     // Sort students by average score in descending order
+//     usort($students_data, function ($a, $b) {
+//         return $b['average_score'] <=> $a['average_score'];
+//     });
+//     // Assign rates based on ranking
+//     foreach ($students_data as $index => &$student) {
+//         $student['rate'] = $index + 1; // Rate starts from 1 for the highest average
+//         // Update the database with the average score and rate
+//         $wpdb->update(
+//             'numbers_of_students_db',
+//             [
+//                 'avrage_score' => $student['average_score'],
+//                 'rate' => $student['rate']
+//             ],
+//             ['id' => $student['id']]
+//         );
+//     }
+//     // Output the results (optional)
+//     echo '<pre>' . print_r($students_data, true) . '</pre>';
 // }
-
-// // Optionally, you can update another option with the cheating user IDs
-// update_option('_cheating_user_ids', $cheating_user_id);
-// foreach ($cheating_user_id as $id) {
-//     update_user_meta($id, '_score_points', 0);
-// }
+// handle_db_students_grades();
