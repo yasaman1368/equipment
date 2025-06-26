@@ -26,7 +26,8 @@
     <a class=" navbar-brand fs-6" href="javascript:viod(0)">
         <?php
         $current_user = wp_get_current_user();
-        echo $current_user->display_name;
+        $user_id = $current_user->ID;
+        echo $current_user->display_name . '( ' . $role = eqiupment_get_user_role($user_id) . ' )';
         ?>
     </a>
     <button

@@ -32,16 +32,7 @@ function search_users_callback()
         echo '<tbody>';
 
         foreach ($users as $index => $user) {
-            $get_role = get_user_meta($user->ID, '_role', true);
-            if ($get_role === 'manager') {
-                $role = 'مدیر';
-            } else if ($get_role === 'helper') {
-                $role = 'معاون';
-            } else if ($get_role === 'user') {
-                $role = 'کاربر';
-            } else {
-                $role = 'مدیر ارشد';
-            }
+            $role = eqiupment_get_user_role($user->ID);
             echo '<tr>';
             echo '<td  class="text-center">' . ($offset + $index + 1) . '</td>'; // Calculate and display the user number
             echo '<td>' . esc_html($user->user_login) . '</td>';
