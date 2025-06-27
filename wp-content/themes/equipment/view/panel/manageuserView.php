@@ -1,3 +1,10 @@
+<?php
+$user_id = get_current_user_id();
+$role = eqiupment_get_user_role($user_id);
+
+?>
+
+
 <!-- Nav tabs -->
 <ul class="nav nav-tabs " id="myTab" role="tablist">
 
@@ -27,6 +34,21 @@
             نمایش کاربران
         </button>
     </li>
+    <?php if ($role === 'مدیر'): ?>
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link"
+                id="locations-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#locations"
+                type="button"
+                role="tab"
+                aria-controls="locations"
+                aria-selected="true">
+                موقعیت
+            </button>
+        </li>
+    <?php endif; ?>
     <li class="nav-item" role="presentation">
         <button
             class="nav-link "
@@ -48,6 +70,10 @@
     <?php get_template_part('partials/manage-users/account-setting') ?>
     <!-- manage users -->
     <?php get_template_part('partials/manage-users/manage-users') ?>
+    <?php if ($role === 'مدیر'): ?>
+        <!-- locations -->
+        <?php get_template_part('partials/manage-users/locations') ?>
+    <?php endif; ?>
     <!-- display users -->
     <?php get_template_part('partials/manage-users/display-users') ?>
 

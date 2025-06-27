@@ -398,4 +398,144 @@ const updateUserForm=document.getElementById('update-user');
         
             });
     }
+
+
+    // handle location section in user by manager role;
+
+    const locationForm = document.getElementById('locations-form');
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "bottom-start",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+    
+    locationForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        let formData = new FormData(locationForm)
+        fetch('/wp-admin/admin-ajax.php?action=add_location', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.success) {
+                    Toast.fire({
+                        icon: "success",
+                        title: data.data.message
+                    });
+                    locationForm.reset();
+                    fetchLocations();
+                } else {
+
+                    Toast.fire({
+                        icon: "error",
+                        title: data.data.message
+                    });
+
+                }
+            })
+            .catch(error => {
+
+                Toast.fire({
+                    icon: "error",
+                    title: 'خطا در افزودن موقعیت'
+                });
+            });
+    })
+
+    // Handle click events for removing locations (event delegation)
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-location')) {
+            e.preventDefault();
+            const index = e.target.getAttribute('data-index');
+            const location = e.target.getAttribute('data-location');
+
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: `آیا می‌خواهید موقعیت "${location}" را حذف کنید؟`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، حذف شود',
+                cancelButtonText: 'انصراف'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    removeLocation(index);
+                }
+            });
+        }
+    });
+
+    // Function to remove a location
+    function removeLocation(index) {
+        const formData = new FormData();
+        const nonceSecurity=document.querySelector('input[name=add-location-nonce]').value;
+
+        formData.append('action', 'remove_location');
+        formData.append('index', index);
+        formData.append('add-location-nonce', nonceSecurity);
+
+        fetch('/wp-admin/admin-ajax.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Toast.fire({
+                        icon: "success",
+                        title: data.data.message
+                    });
+                    // Remove the row from the table
+                    document.querySelector(`tr[data-index="${index}"]`).remove();
+                } else {
+                    Toast.fire({
+                        icon: "error",
+                        title: data.data.message
+                    });
+                }
+            })
+            .catch(error => {
+                Toast.fire({
+                    icon: "error",
+                    title: 'خطا در حذف موقعیت'
+                });
+            });
+    }
+
+    // Function to fetch and update locations list
+    function fetchLocations() {
+        fetch('/wp-admin/admin-ajax.php?action=get_locations')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const locationsList = document.getElementById('locations-list');
+                    locationsList.innerHTML = '';
+
+                    data.data.locations.forEach((location, index) => {
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-index', index);
+                        row.innerHTML = `
+                        <td>${location}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm remove-location" 
+                                    data-index="${index}"
+                                    data-location="${location}">
+                                حذف
+                            </button>
+                        </td>
+                    `;
+                        locationsList.appendChild(row);
+                    });
+                }
+            });
+    }
+
+
 });
