@@ -24,6 +24,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'export_equipments') {
     <!-- sweet alert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Select2 CSS -->
+    <link rel="stylesheet" href='https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css' />
+
+
 </head>
 
 <body class="bg-secondary-subtle">
@@ -41,6 +45,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'export_equipments') {
 <!-- Bootstrap JS (latest version) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo get_template_directory_uri() . '/assets/js/app.js' ?>"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <!-- Custom Script -->
 <?php if (strpos($_SERVER['REQUEST_URI'], 'formmaker')): ?>
     <script src="<?php echo get_template_directory_uri() ?>/assets/js/manage-form.js"></script>

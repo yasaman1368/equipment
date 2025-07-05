@@ -240,3 +240,75 @@ button.active{
   position: relative;
   top: -2px;
 }
+
+/* Fix Select2 z-index in modal */
+.select2-container {
+    z-index: 999999 !important;
+}
+
+/* Adjust dropdown position */
+.select2-dropdown {
+    z-index: 999999 !important;
+}
+
+/* Modal styling */
+.modal {
+    z-index: 99999;
+}
+
+  .location-tag {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            background-color: #0dcaf0;
+            color: #000;
+            border-radius: 15px;
+            padding: 4px 12px;
+            margin: 4px;
+            font-size: 0.9rem;
+        }
+
+        .close-circle {
+            cursor: pointer;
+            margin-left: 8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .close-circle:hover {
+            background: rgb(164, 3, 3);
+            
+            scale: 1.07;
+            box-shadow: 0 4px 10px rgba(72, 71, 71, 0.3);
+        }
+
+        #user-locations {
+            display: flex;
+            flex-wrap: wrap;
+            min-height: 40px;
+            padding: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .empty-locations {
+            color: #6c757d;
+            font-style: italic;
+            width: 100%;
+            text-align: center;
+            padding: 5px;
+        }
+
+        button.select2-selection__clear {
+            display: none;
+        }
