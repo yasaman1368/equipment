@@ -222,12 +222,14 @@ const UserManager = {
   },
 
   populateModal: (user) => {
+    
     // Populate user details
     document.getElementById('username-modal').value = user.user_login;
     document.getElementById('display-name-modal').value = user.display_name;
     document.getElementById('email-modal').placeholder = user.user_email || '';
-    document.querySelector('input[name=user-id]').value = user.user_id;
+    document.getElementById('user-id-holder').value = user.user_id;
     document.getElementById('role-selector').innerHTML = user.html_selector;
+    
     
     // Update display names
     document.querySelectorAll('.display-name-modal').forEach(element => {
@@ -307,7 +309,7 @@ const UserManager = {
       }
     } catch (error) {
       console.error('Error updating user:', error);
-      Notification.show('error', 'Failed to update user');
+      Notification.show('error', 'حذف کاربر ناموفق بود');
     } finally {
       ModalUtils.hide('userManagementModal');
     }

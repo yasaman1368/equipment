@@ -13,6 +13,8 @@ function update_user()
     // }
 
     // Get the user ID (you can pass this via POST or retrieve it dynamically)
+
+
     $user_id = isset($_POST['user-id']) ? intval($_POST['user-id']) : 0;
     if (!$user_id) {
         wp_send_json_error('شناسه کاربری نامعتبر است');
