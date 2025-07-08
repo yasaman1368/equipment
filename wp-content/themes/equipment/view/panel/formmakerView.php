@@ -50,32 +50,56 @@ if (isset($_GET['newform']) && $_GET['newform'] === 'on') {
 
 <div class="container p-2 bg-light rounded d-none" id="main-container-form">
     <div id="form-container-builder" class="row" data-custom-form-id="10">
-        <div class="col-sm-12 border-bottom">
+        <div class="col-sm-12 ">
             <div
-                class="card text-white bg-secondary">
+                class="card text-dark bg-warning mb-2">
 
                 <div class="card-body">
+                    <p class="card-text">نام فرم:</p>
                     <h4 class="card-title" id="placeholder-form-name"></h4>
-                    <p class="card-text">فرم جدید خود را بسازید</p>
+                </div>
+
+                <div class="col-sm-12  p-2  ">
+                    <span class="mb-3 multi-location-flex">
+                        <label for="select-location" class="form-label mt-3">
+                            <i class="bi bi-geo-alt-fill text-danger"></i> موقعیت های مکانی
+                        </label>
+
+                        <?php $locations = get_option('_locations');
+
+                        foreach ($locations as $location) {
+                            $value = esc_attr($location);
+                            $label = esc_html($location);
+                            echo "
+                     <p class='p-2 mb-1 d-inline-block'>
+                         <input class='form-check-input' type='checkbox' name='locations[]' value='{$value}' id='location-{$value}'>
+                         <label class='form-check-label' for='location-{$value}'>{$label}</label>
+                      </p> ";
+                        } ?>
+
+                    </span>
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 border-bottom">
-            <div class="mb-3">
-                <label for="" class="form-label">سریال تجهیز</label>
-                <input
-                    type="text"
-                    name="equipment-id"
-                    class="form-control"
-                    id="equipment-id"
-                    aria-describedby="helpId"
-                    placeholder="" />
+    </div>
+    <div class="col-sm-6 ">
+        <div class="mb-3">
+            <label for="" class="form-label">سریال تجهیز</label>
+            <input
+                type="text"
+                name="equipment-id"
+                class="form-control"
+                id="equipment-id"
+                aria-describedby="helpId"
+                placeholder="" />
 
-            </div>
         </div>
     </div>
+
+
+
     <div class="row">
-        <div class="d-grid gap-2">
+        <div class="d-grid gap-2 w-auto m-3">
             <button
                 type="button"
                 name=""
@@ -156,7 +180,7 @@ if (isset($_GET['newform']) && $_GET['newform'] === 'on') {
             </div>
 
             <div class="modal-body">
-                <div class="containe border-bottomr-fluid">
+                <div class="containe r-fluid">
                     <div class="mb-3">
                         <form action="" id="modal-form">
                             <label for="new-feature-name" class="form-label">
@@ -246,7 +270,7 @@ if (isset($_GET['newform']) && $_GET['newform'] === 'on') {
             </div>
 
             <div class="modal-body">
-                <div class="containe border-bottomr-fluid">
+                <div class="containe r-fluid">
                     <div class="mb-3">
                         <form action="" id="modal-form-name">
 

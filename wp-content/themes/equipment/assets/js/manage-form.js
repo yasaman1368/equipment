@@ -375,8 +375,11 @@ class FormManager {
             });
         });
 
+        const locationsInput= document.querySelectorAll('input[name="locations[]"]:checked');
+        const locations = Array.from(locationsInput).map(input => input.value);1       
         const formData = {
             form_name: formName,
+            locations: locations,
             fields: fields
         };
 

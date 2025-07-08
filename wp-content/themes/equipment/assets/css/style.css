@@ -312,3 +312,12 @@ button.active{
         button.select2-selection__clear {
             display: none;
         }
+
+  .multi-location-flex{
+        display: flex !important;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: baseline;
+}
+  
