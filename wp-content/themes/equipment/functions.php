@@ -1,6 +1,7 @@
 
 <?php
 include_once '_inc/register-assets/register-assets.php';
+include_once '_inc/utility/locations.php';
 include_once '_inc/autoLoader/AutoLoader.php';
 include_once '_inc/form-equipment/save-form-data.php';
 include_once '_inc/form-equipment/show-edite-equiment-forms.php';
