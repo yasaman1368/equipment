@@ -5,42 +5,54 @@
  *
  * @return void Sends JSON response
  */
-function get_saved_forms(){
+function get_saved_forms()
+{
     global $wpdb;
-    
-    $table_name_forms = $wpdb->prefix . 'equipment_forms';
 
-    $current_user_id = get_current_user_id();
-    $current_user_locations = get_user_locations($current_user_id);
 
-    $forms_rows = $wpdb->get_results("SELECT id, form_name,locations FROM $table_name_forms", ARRAY_A);
-    $forms = [];
 
-    foreach ($forms_rows as $row) {
 
-        $locations = json_decode($row['locations']);
+    try {
 
-        if (is_array($locations)) {
+        $table_name = $wpdb->prefix . 'equipment_forms';
 
-            foreach ($current_user_locations as $location) {
+        $user_id = get_current_user_id();
+        $user_locations = get_user_locations($user_id);
 
-                if (array_search($location, $locations) !== false) {
-                    array_push($forms, $row);
-                } else {
-                    continue;
-                }
-            }
+        $forms = $wpdb->get_results(
+            "SELECT id, form_name, locations FROM {$table_name}",
+            ARRAY_A
+        );
+
+        if ($forms === null) {
+            throw new RuntimeException('Database query failed');
         }
+
+        $user_role = eqiupment_get_user_role($user_id);
+
+        if ($user_role !== 'مدیر') {
+
+            $accessible_forms = array_filter($forms, function ($form) use ($user_locations) {
+
+                $form_locations = json_decode($form['locations'], true) ?: [];
+                return !empty(array_intersect($user_locations, $form_locations));
+            });
+        }
+
+        $accessible_forms = $forms;
+
+        $response = [
+            'forms' => array_values($accessible_forms),
+            'status' => empty($accessible_forms) ? 'empty' : 'hasform'
+        ];
+
+        wp_send_json_success($response);
+    } catch (Exception $e) {
+        wp_send_json_error([
+            'message' => 'درخواست از دیتا بیس ناموفق بود.',
+            'debug' => $e->getMessage()
+        ]);
     }
-
-
-
-    $status = empty($forms) ? 'empty' : 'hasform';
-
-    if ($forms === null) {
-        wp_send_json_error(['message' => 'درخواست از دیتا بیس ناموفق بود.']);
-        return;
-    }
-    wp_send_json_success(['forms' => $forms, 'status' => $status]);
 }
+
 add_action('wp_ajax_get_saved_forms', 'get_saved_forms');
