@@ -141,7 +141,9 @@ if (isset($_GET['newform']) && $_GET['newform'] === 'on') {
                 <div class="body">
                     <h6 class="text-dark">نام فرم</h6>
                     <h4 class="card-title" id="show-form-name-check"></h4>
+                    <div id="locations-display" class="mt-3">
 
+                    </div>
                 </div>
             </div>
 

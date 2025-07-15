@@ -256,9 +256,36 @@ class FormManager {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                const locationDiv = document.getElementById('locations-display');
+                locationDiv.innerHTML='';
+                
+              
+                if(data.data.form_locations && data.data.form_locations instanceof Array && data.data.form_locations.length>0 ){
+                
+                    if(locationDiv){
+                        
+                    
+                           const locationLabel=document.createElement('h6');
+                            locationLabel.classList.add('text-dark','my-2');
+                            locationLabel.innerText='لیست محل‌های فرم:';
+                            locationDiv.appendChild(locationLabel);
+
+                    data.data.form_locations.forEach(location => {
+                         let locationsSpan=document.createElement('span');
+                         locationsSpan.classList.add('p-1','text-dark','rounded','shadow','bg-light','mx-1');
+                         locationsSpan.innerText=` ${location} `;       
+                         locationDiv.appendChild(locationsSpan)
+                        })
+
+                    } else{
+                        throw new Error('Location div not found.')
+                    }
+                    }
+                
+
                 const formContainer = document.getElementById('display-form');
                 formContainer.innerHTML = '';
-                data.data.forEach(field => {
+                data.data.fields.forEach(field => {
                     const fieldDiv = document.createElement('div');
                     const options = JSON.parse(field.options);
                     fieldDiv.classList.add('col-sm-6', 'border-bottom');

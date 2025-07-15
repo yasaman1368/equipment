@@ -229,8 +229,8 @@ class EquipmentFormHandler {
             .then(data => {
                 if (data.success) {
                     if(data.data.status==='empty'){
-                        this.formSelector.classList.add('text-danger');
-                        this.formSelector.innerHTML = '<option  value="">هیچ فرمی ساخته نشده است</option>';
+                        this.formSelector.classList.add('text-danger','fw-bold');
+                        this.formSelector.innerHTML = '<option  value=""> برای شما هیچ فرمی ساخته نشده است </option>';
                         this.formSelector.style.display = 'block';
                         return;
                     }
@@ -261,7 +261,8 @@ class EquipmentFormHandler {
             .then(data => {
                 if (data.success) {
                     this.formContainer.innerHTML = '';
-                    data.data.forEach(field => {
+                    console.log(data.data);
+                    data.data.fields.forEach(field => {
                         const fieldDiv = document.createElement('div');
                         fieldDiv.classList.add('col-sm-6', 'border-bottom', 'p-2');
                         const label = document.createElement('label');
