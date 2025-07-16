@@ -1,8 +1,7 @@
 <?php
 
-// Add this to handle the AJAX request for fetching the user list
+
 add_action('wp_ajax_get_users_list', 'get_users_list');
-add_action('wp_ajax_nopriv_get_users_list', 'get_users_list'); // If you want non-logged-in users to access it
 
 function get_users_list()
 {
