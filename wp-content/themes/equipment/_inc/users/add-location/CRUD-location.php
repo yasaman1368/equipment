@@ -80,17 +80,3 @@ function handle_get_locations()
     $locations = get_option('_locations', []);
     wp_send_json_success(['locations' => $locations], 200);
 }
-
-
-function user_is_manager(): bool
-{
-    $user_id = get_current_user_id();
-    $role = eqiupment_get_user_role($user_id);
-
-    if ($role !== 'مدیر') {
-        wp_send_json_error(['message' => 'شما دسترسی لازم برای انجام این عملیات را ندارید.'], 403);
-        return false;
-    }
-
-    return true;
-}
