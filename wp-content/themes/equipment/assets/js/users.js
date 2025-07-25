@@ -292,7 +292,8 @@ const UserManager = {
       }
     } catch (error) {
       console.error('Error adding user:', error);
-      Notification.show('error', 'Failed to add user');
+      const message= error?.response?.data?.message || 'افزودن کاربر با خطا مواجه شد';
+      Notification.show('error', message);
     }
   },
 

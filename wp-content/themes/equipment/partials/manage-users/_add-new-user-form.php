@@ -28,7 +28,7 @@
         <select class="form-select" name="role" id="roleSelector" required>
             <option value="" selected>انتخاب نقش...</option>
             <option value="manager">مدیر</option>
-            <option value="helper">معاون</option>
+            <option value="supervisor">معاون</option>
             <option value="user">کاربر</option>
         </select>
     </div>
