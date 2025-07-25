@@ -65,7 +65,13 @@ if (isset($_GET['newform']) && $_GET['newform'] === 'on') {
                             <i class="bi bi-geo-alt-fill text-danger"></i> موقعیت های مکانی
                         </label>
 
-                        <?php $locations = get_option('_locations');
+                        <?php
+                        global $wpdb;
+                        $tabel_name = 'location_supervisors_users';
+
+                        $locations = $wpdb->get_col($wpdb->prepare("SELECT location_name FROM {$tabel_name}", ARRAY_A));
+
+
 
                         foreach ($locations as $location) {
                             $value = esc_attr($location);

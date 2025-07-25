@@ -25,24 +25,7 @@
                         </tr>
                     </thead>
                     <tbody id="locations-list">
-                        <?php
-                        $locations = get_option('_locations', []);
-                        foreach ($locations as $index => $location) {
-                        ?>
-                            <tr
-                                data-index="<?php echo esc_attr($index) ?>">
-                                <td><?php echo esc_html($location) ?></td>
-                                <td>
-                                    <button class="btn btn-danger btn-sm remove-location"
-                                        data-index="<?php echo esc_attr($index); ?>"
-                                        data-location="<?php echo esc_attr($location); ?>">
-                                        حذف
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php
-                        }
-                        ?>
+
                     </tbody>
                 </table>
             </div>

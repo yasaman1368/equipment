@@ -83,7 +83,13 @@
             <div class="modal-body my-2">
                 <h6 class="mb-2">لیست موقعیت ها</h6>
                 <!-- Location Selector -->
-                <?php $locations = get_option('_locations', []) ?>
+                <?php
+                global $wpdb;
+                $tabel_name = 'location_supervisors_users';
+                $locations = $wpdb->get_col($wpdb->prepare("SELECT location_name FROM {$tabel_name}", ARRAY_A));
+
+
+                ?>
                 <div class="input-group mb-3 ">
                     <select name="selected_location" id="locationSelector" class="location-select">
                         <option value="">موقعیت را انتخاب کنید...</option>

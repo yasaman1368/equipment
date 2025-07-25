@@ -83,9 +83,12 @@ const ApiService = {
     }
 
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Request failed with status ${response.status}: ${text}`);
-    }
+        const errorBody = await response.json();
+        const error = new Error(`Request failed with status ${response.status}`);
+        error.status = response.status;
+        error.response = errorBody;
+        throw error;
+    } 
 
     return await response.json();
   },
@@ -386,6 +389,8 @@ const LocationManager={
   },
 
    fetchLocations: async () => {
+     const locationsList = document.getElementById('locations-list');
+
     try {
       const data = await ApiService.get('get_locations');
       
@@ -393,7 +398,6 @@ const LocationManager={
         throw new Error('Failed to fetch locations');
       }
 
-      const locationsList = document.getElementById('locations-list');
       locationsList.innerHTML = '';
 
       data.data.locations.forEach((location, index) => {
@@ -413,7 +417,15 @@ const LocationManager={
       });
     } catch (error) {
       console.error('Error fetching locations:', error);
-      Notification.show('error', 'دریافت موقعیت ها ناموفق است');
+
+      messageDiv=document.createElement('div');
+      messageDiv.classList.add(
+        'bg-danger' ,'fw-bold' ,'p-2', 'm-2' ,'rounded', 'text-light','w-100' ,'text-center'
+      );
+      messageDiv.innerHTML=
+      error?.response?.data?.message || 'خطایی در دریافت موقعیت ها رخ داده است';
+      locationsList.appendChild(messageDiv);
+
     }
   },
 
@@ -423,17 +435,16 @@ const LocationManager={
 
     try {
       const data = await ApiService.post('add_location', formData);
-      
       if (data.success) {
         Notification.show('success', data.data.message);
         e.target.reset();
         LocationManager.fetchLocations();
-      } else {
-        Notification.show('error', data.data.message);
-      }
+      } 
+
     } catch (error) {
       console.error('Error adding location:', error);
-      Notification.show('error', 'موقعیت اضافه نشده است');
+      const message=error?.response?.data?.message || 'خطایی در افزودن موقعیت رخ داده است';
+      Notification.show('error', message);
     }
   },
 
@@ -452,18 +463,17 @@ const LocationManager={
       const nonce = document.querySelector('input[name=add-location-nonce]').value;
       const data = await ApiService.post('remove_location', {
         'add-location-nonce': nonce,
-        index: index
+        location: location
       });
 
       if (data.success) {
         Notification.show('success', data.data.message);
         document.querySelector(`tr[data-index="${index}"]`).remove();
-      } else {
-        Notification.show('error', data.data.message);
-      }
+      } 
     } catch (error) {
-      console.error('Error removing location:', error);
-      Notification.show('error', 'حذف موقعیت انجام نشد');
+      console.error('Error adding location:', error);
+      const message=error?.response?.data?.message || 'خطایی در حذف موقعیت رخ داده است';
+      Notification.show('error', message);
     }
   },
 

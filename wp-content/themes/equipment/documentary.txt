@@ -1,0 +1,34 @@
+data base map:
+1- pn_equipments =
+
+۱. برای هر تجهیز، زمانی که فرم آن توسط کاربر پر و ذخیره می‌شود، اطلاعات کلی در یک ردیف ذخیره می‌شود.
+
+۲. هنگامی که یک فرم ایجاد می‌شود، گزینه‌هایی که برای آن فرم در نظر گرفته‌ایم به ون‌های این جدول اضافه می‌شوند.
+
+۳. به عنوان مثال، اگر ستونی مربوط به سایز یک تجهیز باشد و در این جدول ذخیره نشده باشد، ستون‌های این جدول اضافه می‌شوند.
+
+۴. به این ترتیب، زمانی که اطلاعات تجهیزی با این فرم ثبت می‌شود، در آن ستون ذخیره خواهد شد.
+
+2- pn_equipment_forms =
+id,form_name,locations of forms
+
+3- pn_equipment_form_fields =
+
+for each forms fiels save:
+id fiels,form_id,field_name,field_type,options
+
+
+4- pn_equipment_data =
+
+for each equipment save:
+id,form_id,equipment_id,field_id,value,
+
+5-locations_supervisors_users:
+id, location_name, supervisors_id(arryed by id), users_id(arryed by id-normal users_id), creat_at(date/time)
+
+---------------------------
+#locations
+
+Add new location:
+- Add a row in locations_supervisors_users with location_name(uniqe):
+
