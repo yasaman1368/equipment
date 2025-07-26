@@ -347,7 +347,7 @@ const LocationManager={
 
  bindEvents: () => {
 
-    document.getElementById('locations-form').addEventListener('submit', LocationManager.handleAddLocation);
+    document.getElementById('locations-form')?.addEventListener('submit', LocationManager.handleAddLocation);
 
     
     document.addEventListener('click', (e) => {
@@ -436,7 +436,7 @@ const LocationManager={
       );
       messageDiv.innerHTML=
       error?.response?.data?.message || 'خطایی در دریافت موقعیت ها رخ داده است';
-      locationsList.appendChild(messageDiv);
+      locationsList?.appendChild(messageDiv);
 
     }
   },
