@@ -320,4 +320,7 @@ button.active{
     justify-content: flex-start;
     align-items: baseline;
 }
+.swal2-container {
+  z-index: 2000000 !important;
+}
   

@@ -64,6 +64,7 @@ function update_location_users($user_ids, $role, $location)
   if ($result === false) {
     wp_send_json_error('خطایی در ثبت مخاطب رخ داده است.');
   }
+  return $result;
 }
 
 function add_user_to_locations($user_id, array $locations, $role)

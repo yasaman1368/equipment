@@ -1,15 +1,25 @@
 // ======================
 // MODAL UTILITIES
 // ======================
-const ModalUtils={
-    show:(modalId)=>{
-        const modal=new bootstrap.Modal(document.getElementById(modalId));
+const ModalUtils = {
+    show: (modalId) => {
+        const modalEl = document.getElementById(modalId);
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
         modal.show();
     },
-    hide:(modalId)=>{
-        const modalEl=document.getElementById(modalId);
-        const modalInstance=modalEl.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        modalInstance.hide();
+    
+    hide: (modalId) => {
+        const modalEl = document.getElementById(modalId);
+        if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            } else {
+                // If no instance exists but we need to hide, create and immediately hide
+                const newModal = new bootstrap.Modal(modalEl);
+                newModal.hide();
+            }
+        }
     },
 };
 
@@ -248,6 +258,7 @@ const UserManager = {
   handleRemoveUser: async function() {
     const userId = this.getAttribute('data-user-id');
     
+   
     try {
       const result = await Notification.confirm({
         title: 'ایا مطمئنید ?',
