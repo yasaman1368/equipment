@@ -38,7 +38,7 @@
         aria-controls="collapsibleNavId"
         aria-expanded="false"
         aria-label="Toggle navigation"><i class="bi bi-list"></i></button>
-    <div class="collapse navbar-collapse bg-dark z-3" style="height: 56px;" id="collapsibleNavId">
+    <div class="collapse navbar-collapse bg-dark z-3" style="height: inherit;" id="collapsibleNavId">
         <ul class="navbar-nav me-auto mt-2 mt-lg-0 p-3" dir="rtl">
             <li class="nav-item">
                 <a class="nav-link active href=" <?php echo home_url('panel/equipmenttracker') ?>" aria-current="page"> <span class="visually-hidden">(current)</span></a>
@@ -74,16 +74,14 @@
                 </div>
 
             </li>
+          <li class="nav-item">
+                <a class="nav-link " href="<?php echo home_url('panel/workflow') ?>">گردش کار</a>
+            </li>
+           <li class="nav-item">
+                <a class="nav-link " href="<?php echo home_url('panel/processdate') ?>">تاریخچه فرآیند</a>
+            </li>
         </ul>
-        <!-- <form class=" d-flex my-2 my-lg-0">
-                    <input
-                        class="form-control me-sm-2"
-                        type="text"
-                        placeholder="Search" />
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
-                        Search
-                    </button>
-                    </form> -->
+        
     </div>
 
 </nav>
