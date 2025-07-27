@@ -1,4 +1,5 @@
 <?php
+add_action('wp_ajax_save_equipment_data', 'save_equipment_data');
 function save_equipment_data()
 {
     if (!empty($_FILES)) {
@@ -31,7 +32,7 @@ function save_equipment_data()
     }
 
     $form_id = intval($_POST['form_id']);
-    $equipment_id = intval($_POST['serial_number']);
+    $equipment_id = sanitize_text_field($_POST['serial_number']);
 
     global $wpdb;
     $table_name_equipment_data = $wpdb->prefix . 'equipment_data';
@@ -108,7 +109,8 @@ function save_equipment_data()
             }
         }
     }
-
+    
+    handle_workflow($equipment_id);
     wp_send_json_success(array('message' => 'داده‌ها با موفقیت ذخیره شدند'));
 }
 
@@ -135,4 +137,3 @@ function handle_file_uploads()
     return $uploaded_files;
 }
 
-add_action('wp_ajax_save_equipment_data', 'save_equipment_data');

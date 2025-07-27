@@ -13,7 +13,6 @@ function get_form_locations($form_id)
 
 function get_user_locations($user_id)
 {
-
     $user_locations = get_user_meta($user_id, '_locations', true) ?: [];
     return $user_locations;
 }

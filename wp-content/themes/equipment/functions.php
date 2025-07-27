@@ -23,6 +23,7 @@ include_once '_inc/users/user-login/handle-user-login.php';
 include_once '_inc/fetch-student-report/fetch-student-report.php';
 include_once '_inc/users/add-location/CRUD-location.php';
 include_once '_inc/utility/get-user-role.php';
+include_once '_inc/workflow/workflow.php';
 include_once 'panel/router.php';
 
 define('COMPOSER_ROOT', get_template_directory() . '/composer');
