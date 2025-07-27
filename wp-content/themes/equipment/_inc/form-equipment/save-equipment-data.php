@@ -110,7 +110,7 @@ function save_equipment_data()
         }
     }
     
-    handle_workflow($equipment_id);
+    // handle_workflow($equipment_id);
     wp_send_json_success(array('message' => 'داده‌ها با موفقیت ذخیره شدند'));
 }
 
