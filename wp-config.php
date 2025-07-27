@@ -86,7 +86,7 @@ $table_prefix = 'PN_';
  *
  * @link https://developer.wordpress.org/advanced-administration/debug/debug-wordpress/
  */
-define('WP_DEBUG', false);              // Turn on debugging
+define('WP_DEBUG', true);              // Turn on debugging
 define('WP_DEBUG_LOG', true);          // Save errors to wp-content/debug.log
 define('WP_DEBUG_DISPLAY', false);     // Hide errors from frontend
 @ini_set('display_errors', 0);         // Prevent PHP from showing errors
