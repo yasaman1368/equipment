@@ -323,4 +323,20 @@ button.active{
 .swal2-container {
   z-index: 2000000 !important;
 }
+
+
+    .dropdown-toggle::before {
+        display: inline-block !important;
+        margin-right: .255em !important;
+        vertical-align: .255em !important;
+        content: "" !important;
+        border-top: .3em solid !important;
+        border-left: .3em solid transparent !important;
+        border-bottom: 0 !important;
+        border-right: .3em solid transparent !important;
+    }
+
+    .dropdown-toggle::after {
+        display: none !important;
+    }
   
