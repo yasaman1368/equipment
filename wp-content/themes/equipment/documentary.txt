@@ -32,3 +32,19 @@ id, location_name, supervisors_id(arryed by id), users_id(arryed by id-normal us
 Add new location:
 - Add a row in locations_supervisors_users with location_name(uniqe):
 
+w-user{
+  location:test 01,loc5
+  pass:1
+}
+w-user01{
+  location:loc3
+  pass:1
+}
+w-suopervisor{
+  location:test 01,loc5
+  pass:1
+}
+w-suopervisor01{
+  location:loc3
+  pass:1
+}
