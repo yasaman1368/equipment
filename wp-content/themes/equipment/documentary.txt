@@ -40,6 +40,10 @@ w-user01{
   location:loc3
   pass:1
 }
+w-user02{
+  location:loc3,loc5,test 01
+  pass:1
+}
 w-suopervisor{
   location:test 01,loc5
   pass:1

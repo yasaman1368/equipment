@@ -6,7 +6,7 @@ add_action('wp_ajax_get_users_list', 'get_users_list');
 function get_users_list()
 {
     $paged = isset($_POST['paged']) ? intval($_POST['paged']) : 1;
-    $users_per_page = 5; // Number of users per page
+    $users_per_page = 10; // Number of users per page
     $offset = ($paged - 1) * $users_per_page; // Calculate the offset for user numbers
 
     $args = array(
@@ -15,7 +15,6 @@ function get_users_list()
         'paged' => $paged,
     );
     $users = get_users($args);
-
 
     ob_start(); // Start output buffering
 

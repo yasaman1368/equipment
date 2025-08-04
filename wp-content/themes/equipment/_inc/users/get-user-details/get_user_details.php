@@ -26,13 +26,14 @@ function get_user_details()
       $html_selector .= "<option value=\"$value\" $selected>$label</option>";
     }
 
+    $locations = get_user_meta($user_id, "_locations", ARRAY_A);
     wp_send_json_success(array(
       'user_login' => $user->user_login,
       'user_email' => $user->user_email,
       'display_name' => $user->display_name,
       'user_id' => $user->ID,
       'html_selector' => $html_selector,
-
+      'locations' => $locations,
     ));
   } else {
     wp_send_json_error('Invalid user ID');

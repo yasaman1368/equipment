@@ -21,12 +21,22 @@ include_once '_inc/users/get-user-details/get_user_details.php';
 include_once '_inc/users/update-user/update-user.php';
 include_once '_inc/users/user-login/handle-user-login.php';
 include_once '_inc/fetch-student-report/fetch-student-report.php';
-include_once '_inc/users/add-location/CRUD-location.php';
+include_once '_inc/users/location/CRUD-location.php';
+include_once '_inc/users/location/add-new-user-to-location.php';
+include_once '_inc/users/location/update-user-location.php';
 include_once '_inc/utility/get-user-role.php';
 include_once '_inc/workflow/workflow.php';
 include_once '_inc/utility/get_users_relative_by_supervisor.php';
+include_once '_inc/utility/get_supervisors_relative_by_user.php';
+include_once '_inc/notification/notification.php';
 include_once 'panel/router.php';
 
 define('COMPOSER_ROOT', get_template_directory() . '/composer');
 include_once COMPOSER_ROOT . '/vendor/autoload.php';
 include_once '_inc/create-excel-file/create-excel-file.php';
+
+// require_once(ABSPATH . 'wp-admin/includes/user.php');
+
+// for( $i= 36; $i< 70; $i++ ){
+//   wp_delete_user($i);
+// }
