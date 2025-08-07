@@ -49,6 +49,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'export_equipments') {
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <!-- Custom Script -->
+ <script src="<?php echo get_template_directory_uri().'/assets/js/workflow.js' ?>"></script>
 <?php if (strpos($_SERVER['REQUEST_URI'], 'formmaker')): ?>
     <script src="<?php echo get_template_directory_uri() ?>/assets/js/manage-form.js"></script>
 <?php elseif (strpos($_SERVER['REQUEST_URI'], 'equipmenttracker')): ?>
