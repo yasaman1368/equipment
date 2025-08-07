@@ -100,8 +100,6 @@ $workflow = $wpdb->get_results($query, ARRAY_A);
               }
             }
           </script>
-
-
         <?php } ?>
       </tbody>
       <tfoot>
