@@ -340,7 +340,7 @@ button.active{
         display: none !important;
     }
 
- nav.notificationCount {
+ .notificationCount {
           position: absolute;
           border-radius: 50%;
           width: 30px;
@@ -352,14 +352,17 @@ button.active{
           line-height: 12px;
           animation: notificationCount 1.5s infinite alternate-reverse ;
           text-decoration: none;
+          transition:all 1 ease-in-out ;
         }
+      
         @keyframes notificationCount {
           0% {opacity: 0.5;
           transform: scale(0.8);
           }
           100% {
             opacity: 1;
-            transform: scale(1);
+            transform: scale(0.9);
+        
           }
           
         }

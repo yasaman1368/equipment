@@ -8,8 +8,14 @@ const Workflow = {
   },
   //show notifitions for user's
   notificationCount() {
-    counterElement = document.querySelector("input[name=notificationCount]");
+    counterElement =
+      document.querySelector("input[name=notificationCount]") || "";
     holderNotificationsCount = document.querySelector("#notificationCount");
+
+    if (!counterElement) {
+      holderNotificationsCount.classList.add("d-none");
+      return;
+    }
     numberNotification = counterElement.value;
     holderNotificationsCount.textContent = numberNotification;
   },
