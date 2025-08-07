@@ -52,3 +52,7 @@ w-suopervisor01{
   location:loc3
   pass:1
 }
+w-suopervisor02{
+  location:loc3
+  pass:1
+}
