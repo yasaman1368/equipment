@@ -339,4 +339,28 @@ button.active{
     .dropdown-toggle::after {
         display: none !important;
     }
+
+ nav.notificationCount {
+          position: absolute;
+          border-radius: 50%;
+          width: 30px;
+          display: block;
+          top: 34px;
+          right: 0;
+          text-align: center;
+          height: 30px;
+          line-height: 12px;
+          animation: notificationCount 1.5s infinite alternate-reverse ;
+          text-decoration: none;
+        }
+        @keyframes notificationCount {
+          0% {opacity: 0.5;
+          transform: scale(0.8);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          
+        }
   

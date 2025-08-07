@@ -28,6 +28,9 @@
         <a class="nav-link active href=" <?php echo home_url('panel/equipmenttracker') ?>" aria-current="page"> <span class="visually-hidden">(current)</span></a>
       </li>
       <li class="nav-item">
+        <div class="position-relative">
+          <a href="<?php echo home_url('panel/notification') ?>" id="notificationCount" class="p-2 bg-danger shadow p-2 text-white notificationCount"></a>
+        </div>
         <a class="nav-link " href="<?php echo home_url('panel/notification') ?>">تجهیزات نیازمند بررسی</a>
       </li>
       <li class="nav-item">
