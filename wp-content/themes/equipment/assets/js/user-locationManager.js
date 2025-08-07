@@ -2,24 +2,35 @@
 // MODAL UTILITIES
 // ======================
 const ModalUtils = {
-  show: (modalId) => {
+  /**
+   * Shows a Bootstrap modal
+   * @param {string} modalId - ID of the modal element
+   */
+  show(modalId) {
     const modalEl = document.getElementById(modalId);
-    const modal =
-      bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    if (!modalEl) {
+      console.error(`Modal element with ID ${modalId} not found`);
+      return;
+    }
+    
+    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
     modal.show();
   },
 
-  hide: (modalId) => {
+  /**
+   * Hides a Bootstrap modal
+   * @param {string} modalId - ID of the modal element
+   */
+  hide(modalId) {
     const modalEl = document.getElementById(modalId);
-    if (modalEl) {
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) {
-        modal.hide();
-      } else {
-        // If no instance exists but we need to hide, create and immediately hide
-        const newModal = new bootstrap.Modal(modalEl);
-        newModal.hide();
-      }
+    if (!modalEl) return;
+
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) {
+      modal.hide();
+    } else {
+      // If no instance exists but we need to hide, create and immediately hide
+      new bootstrap.Modal(modalEl).hide();
     }
   },
 };
@@ -40,14 +51,24 @@ const Notification = {
     },
   }),
 
-  show: (type, message) => {
-    Notification.toast.fire({
+  /**
+   * Shows a toast notification
+   * @param {string} type - Notification type (success, error, etc.)
+   * @param {string} message - Notification message
+   */
+  show(type, message) {
+    this.toast.fire({
       icon: type,
       title: message,
     });
   },
 
-  confirm: (options) => {
+  /**
+   * Shows a confirmation dialog
+   * @param {Object} options - Configuration options
+   * @returns {Promise} - Promise that resolves with the user's choice
+   */
+  confirm(options = {}) {
     return Swal.fire({
       title: options.title || "Are you sure?",
       text: options.text || "",
@@ -63,7 +84,14 @@ const Notification = {
 // API SERVICE
 // ======================
 const ApiService = {
-  request: async (method, action, { params = {}, data } = {}) => {
+  /**
+   * Makes an API request
+   * @param {string} method - HTTP method (GET, POST, etc.)
+   * @param {string} action - API action
+   * @param {Object} options - Request options
+   * @returns {Promise} - Promise that resolves with the response data
+   */
+  async request(method, action, { params = {}, data } = {}) {
     const url = new URL("/wp-admin/admin-ajax.php", window.location.origin);
     url.searchParams.append("action", action);
 
@@ -73,36 +101,37 @@ const ApiService = {
       });
     }
 
-    let response;
+    const headers = {
+      Accept: "application/json",
+      ...(method === "POST" && !(data instanceof FormData)
+        ? { "Content-Type": "application/x-www-form-urlencoded" }
+        : {}),
+    };
+
+    const requestOptions = {
+      method,
+      headers,
+      ...(method === "POST" && {
+        body: data instanceof FormData ? data : new URLSearchParams(data),
+      }),
+    };
+
     try {
-      response = await fetch(url, {
-        method,
-        headers: {
-          Accept: "application/json",
-          ...(method === "POST" && !(data instanceof FormData)
-            ? { "Content-Type": "application/x-www-form-urlencoded" }
-            : {}),
-        },
-        ...(method === "POST"
-          ? {
-              body: data instanceof FormData ? data : new URLSearchParams(data),
-            }
-          : {}),
-      });
+      const response = await fetch(url, requestOptions);
+
+      if (!response.ok) {
+        const errorBody = await response.json();
+        const error = new Error(`Request failed with status ${response.status}`);
+        error.status = response.status;
+        error.response = errorBody;
+        throw error;
+      }
+
+      return await response.json();
     } catch (error) {
       console.error(`Error in ${method} ${action}:`, error);
       throw error;
     }
-
-    if (!response.ok) {
-      const errorBody = await response.json();
-      const error = new Error(`Request failed with status ${response.status}`);
-      error.status = response.status;
-      error.response = errorBody;
-      throw error;
-    }
-
-    return await response.json();
   },
 
   get(action, params = {}) {
@@ -118,38 +147,40 @@ const ApiService = {
 // USER MANAGEMENT
 // ======================
 const UserManager = {
-  init: () => {
-    UserManager.bindEvents();
-    UserManager.getUsersList();
+  currentPage: 1,
+  searchTerm: "",
+
+  init() {
+    this.bindEvents();
+    this.getUsersList();
     LocationManager.init();
   },
 
-  bindEvents: () => {
+  bindEvents() {
     // Search functionality
-    document
-      .getElementById("searchUserButton")
-      .addEventListener("click", () => {
-        const searchTerm = document.getElementById("searchUser").value;
-        UserManager.fetchUsers(searchTerm);
-      });
+    document.getElementById("searchUserButton").addEventListener("click", () => {
+      this.searchTerm = document.getElementById("searchUser").value;
+      this.fetchUsers(this.searchTerm);
+    });
 
     // Add user form
-    document
-      .getElementById("addUserForm")
-      .addEventListener("submit", UserManager.handleAddUser);
+    document.getElementById("addUserForm").addEventListener("submit", (e) => 
+      this.handleAddUser(e)
+    );
 
     // Update user form
-    document
-      .getElementById("update-user")
-      .addEventListener("submit", UserManager.handleUpdateUser);
+    document.getElementById("update-user").addEventListener("submit", (e) => 
+      this.handleUpdateUser(e)
+    );
 
     // Account settings form
-    document
-      .getElementById("account-setting-form")
-      .addEventListener("submit", UserManager.handleUpdateUser);
+    document.getElementById("account-setting-form").addEventListener("submit", (e) => 
+      this.handleUpdateUser(e)
+    );
   },
 
-  getUsersList: async (page = 1) => {
+  async getUsersList(page = 1) {
+    this.currentPage = page;
     try {
       const data = await ApiService.post("get_users_list", { paged: page });
 
@@ -158,15 +189,18 @@ const UserManager = {
       }
 
       document.getElementById("usersList").innerHTML = data.data;
-      UserManager.bindPaginationEvents();
-      UserManager.bindGearIconEvents();
+      this.bindPaginationEvents();
+      this.bindGearIconEvents();
     } catch (error) {
       console.error("Error getting user list:", error);
       Notification.show("error", "Failed to load user list");
     }
   },
 
-  fetchUsers: async (searchTerm = "", page = 1) => {
+  async fetchUsers(searchTerm = "", page = 1) {
+    this.searchTerm = searchTerm;
+    this.currentPage = page;
+    
     try {
       const data = await ApiService.post("search_users", {
         term: searchTerm,
@@ -178,68 +212,64 @@ const UserManager = {
       }
 
       document.getElementById("usersList").innerHTML = data.data;
-      UserManager.bindPaginationEvents(searchTerm);
+      this.bindPaginationEvents(searchTerm);
     } catch (error) {
       console.error("Error fetching users:", error);
       Notification.show("error", "Failed to search users");
     }
   },
 
-  bindPaginationEvents: (searchTerm = "") => {
-    const paginationLinks = document.querySelectorAll(".page-link, .page-item");
-
-    paginationLinks.forEach((link) => {
+  bindPaginationEvents(searchTerm = "") {
+    document.querySelectorAll(".page-link, .page-item").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
-        const page =
-          link.getAttribute("data-pagination") ||
-          link.parentElement.getAttribute("data-pagination");
-
+        const page = link.dataset.pagination || link.parentElement.dataset.pagination;
+        
         if (searchTerm) {
-          UserManager.fetchUsers(searchTerm, page);
+          this.fetchUsers(searchTerm, page);
         } else {
-          UserManager.getUsersList(page);
+          this.getUsersList(page);
         }
       });
     });
   },
 
-  bindGearIconEvents: () => {
+  bindGearIconEvents() {
     document.querySelectorAll(".bi-gear").forEach((icon) => {
       icon.addEventListener("click", () => {
-        const userId = icon.getAttribute("data-user-id");
-        UserManager.prepareUserModal(userId);
+        const userId = icon.dataset.userId;
+        this.prepareUserModal(userId);
       });
     });
   },
 
-  prepareUserModal: (userId) => {
+  prepareUserModal(userId) {
     const modalDiv = document.getElementById("userManagementModalDiv");
+    if (!modalDiv) return;
+
     const navLinks = modalDiv.querySelectorAll("button.nav-link");
     const tabPanes = modalDiv.querySelectorAll("div.tab-pane.fade");
     const deleteUserTab = document.getElementById("delete-user-tab");
     const deleteUser = document.getElementById("delete-user");
 
-    navLinks.forEach((element) => element.classList.remove("active"));
-    tabPanes.forEach((element) => element.classList.remove("show", "active"));
+    navLinks.forEach((el) => el.classList.remove("active"));
+    tabPanes.forEach((el) => el.classList.remove("show", "active"));
 
-    deleteUserTab.classList.add("active");
-    deleteUser.classList.add("active", "show");
+    deleteUserTab?.classList.add("active");
+    deleteUser?.classList.add("active", "show");
 
-    UserManager.fetchUserDetails(userId);
+    this.fetchUserDetails(userId);
   },
 
-  fetchUserDetails: async (userId) => {
+  async fetchUserDetails(userId) {
     try {
-      const data = await ApiService.get("get_user_details", {
-        user_id: userId,
-      });
+      const data = await ApiService.get("get_user_details", { user_id: userId });
 
       if (!data.success) {
         throw new Error("Failed to fetch user details");
       }
 
-      UserManager.populateModal(data.data);
+      this.populateModal(data.data);
       ModalUtils.show("userManagementModal");
     } catch (error) {
       console.error("Error fetching user details:", error);
@@ -247,51 +277,50 @@ const UserManager = {
     }
   },
 
-  populateModal: (user) => {
+  populateModal(user) {
     LocationManager.renderLocations();
-    // Populate user details
+    
+    // Set basic user info
     document.getElementById("username-modal").value = user.user_login;
     document.getElementById("display-name-modal").value = user.display_name;
     document.getElementById("email-modal").placeholder = user.user_email || "";
     document.getElementById("user-id-holder").value = user.user_id;
     document.getElementById("role-selector").innerHTML = user.html_selector;
-    document
-      .getElementById("updateLocationsBtn")
-      .setAttribute("data-user-id", user.user_id);
+    
+    // Set locations
     const currentUserLocations = document.getElementById("currentLocations");
-
     currentUserLocations.innerHTML = "";
-    const locationsArray = user.locations;
-
-    if (locationsArray instanceof Array && locationsArray.length > 0) {
-      LocationManager.editingUserlocationArray = locationsArray;
-
-      locationsArray.forEach((location) => {
-        const locationHtml = `<div class="location-tag">
-              <span class="close-circle ml-2" data-section='editing'  onclick="LocationManager.removeSelectedLocation(event,'${location}')">×</span>
-              <span>${location}</span>
-            </div>`;
-        currentUserLocations.innerHTML += locationHtml;
+    
+    if (Array.isArray(user.locations) && user.locations.length > 0) {
+      LocationManager.editingUserlocations = [...user.locations];
+      user.locations.forEach((location) => {
+        currentUserLocations.innerHTML += `
+          <div class="location-tag">
+            <span class="close-circle ml-2" data-section='editing' onclick="LocationManager.removeSelectedLocation(event,'${location}')">×</span>
+            <span>${location}</span>
+          </div>`;
       });
     } else {
-      currentUserLocations.innerHTML =
-        '<span class="bg-danger shadow  rounded text-white p-2" >موقعیتی ثبت نشده است</span>';
+      currentUserLocations.innerHTML = `
+        <span class="bg-danger shadow rounded text-white p-2">
+          موقعیتی ثبت نشده است
+        </span>`;
     }
 
     // Update display names
-    document.querySelectorAll(".display-name-modal").forEach((element) => {
-      element.textContent = user.display_name;
+    document.querySelectorAll(".display-name-modal").forEach((el) => {
+      el.textContent = user.display_name;
     });
 
     // Set up remove button
     const removeUserBtn = document.getElementById("remove-user-modal");
-    removeUserBtn.setAttribute("data-user-id", user.user_id);
-    removeUserBtn.onclick = UserManager.handleRemoveUser;
+    if (removeUserBtn) {
+      removeUserBtn.dataset.userId = user.user_id;
+      removeUserBtn.onclick = () => this.handleRemoveUser(user.user_id);
+    }
   },
 
-  handleRemoveUser: async function () {
-    const userId = this.getAttribute("data-user-id");
-
+  async handleRemoveUser(userId) {
     try {
       const result = await Notification.confirm({
         title: "ایا مطمئنید ?",
@@ -307,7 +336,7 @@ const UserManager = {
 
       if (data.success) {
         Notification.show("success", data.data.message);
-        UserManager.getUsersList();
+        this.getUsersList(this.currentPage);
       } else {
         Notification.show("error", data.data.message);
       }
@@ -319,7 +348,7 @@ const UserManager = {
     }
   },
 
-  handleAddUser: async (e) => {
+  async handleAddUser(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
 
@@ -330,19 +359,18 @@ const UserManager = {
         Notification.show("success", data.data);
         e.target.reset();
         LocationManager.resetLocations();
-        UserManager.getUsersList();
+        this.getUsersList(this.currentPage);
       } else {
         Notification.show("error", data.data);
       }
     } catch (error) {
       console.error("Error adding user:", error);
-      const message =
-        error?.response?.data?.message || "افزودن کاربر با خطا مواجه شد";
+      const message = error?.response?.data?.message || "افزودن کاربر با خطا مواجه شد";
       Notification.show("error", message);
     }
   },
 
-  handleUpdateUser: async (e) => {
+  async handleUpdateUser(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
 
@@ -351,7 +379,7 @@ const UserManager = {
 
       if (data.success) {
         Notification.show("success", data.data);
-        UserManager.getUsersList();
+        this.getUsersList(this.currentPage);
         e.target.reset();
       } else {
         Notification.show("error", data.data);
@@ -368,48 +396,46 @@ const UserManager = {
 // ======================
 // LOCATION MANAGEMENT
 // ======================
-
 const LocationManager = {
-  editingUserId: "",
   locations: [],
-  editingUserlocationArray: [],
+  editingUserlocations: [],
   select2Initialized: false,
 
-  init: () => {
-    LocationManager.bindEvents();
-    LocationManager.fetchLocations();
-    LocationManager.initSelect2();
-    LocationManager.prepareEdingUserLocationsSelector();
+  init() {
+    this.bindEvents();
+    this.fetchAvailableLocations();
+    this.initSelect2();
+    this.prepareEdingUserLocationsSelector();
   },
 
-  bindEvents: () => {
-    document
-      .getElementById("locations-form")
-      ?.addEventListener("submit", LocationManager.handleAddLocation);
+  bindEvents() {
+    document.getElementById("locations-form")?.addEventListener("submit", (e) => 
+      this.handleAddLocation(e)
+    );
 
-    document
-      .getElementById("updateLocationsBtn")
-      ?.addEventListener("click", LocationManager.updateEdidetLocations);
+    document.getElementById("updateLocationsBtn")?.addEventListener("click", () => 
+      this.updateEdidetLocations()
+    );
 
     document.addEventListener("click", (e) => {
       if (e.target.classList.contains("remove-location")) {
         e.preventDefault();
-        LocationManager.handleRemoveLocation(e);
+        this.handleRemoveLocation(e);
       }
 
       if (e.target.classList.contains("addLocationButton")) {
-        const selectorId = e.target.getAttribute("data-selector-id");
-
-        LocationManager.addLocation(selectorId);
+        const selectorId = e.target.dataset.selectorId;
+        this.addLocation(selectorId);
       }
     });
   },
 
-  initSelect2: () => {
+  initSelect2() {
     const modal = document.getElementById("add-location");
+    if (!modal) return;
 
     modal.addEventListener("shown.bs.modal", () => {
-      if (LocationManager.select2Initialized) return;
+      if (this.select2Initialized) return;
 
       jQuery("#locationSelector").select2({
         placeholder: "یک موقعیت را انتخاب کنید",
@@ -422,8 +448,7 @@ const LocationManager = {
         },
         matcher: (params, data) => {
           if (jQuery.trim(params.term) === "") return data;
-          if (data.text.toUpperCase().includes(params.term.toUpperCase()))
-            return data;
+          if (data.text.toUpperCase().includes(params.term.toUpperCase())) return data;
           return null;
         },
       });
@@ -434,17 +459,18 @@ const LocationManager = {
         }, 0);
       });
 
-      LocationManager.select2Initialized = true;
+      this.select2Initialized = true;
     });
 
     modal.addEventListener("hide.bs.modal", () => {
       jQuery("#locationSelector").select2("destroy");
-      LocationManager.select2Initialized = false;
+      this.select2Initialized = false;
     });
   },
 
-  fetchLocations: async () => {
+  async fetchAvailableLocations() {
     const locationsList = document.getElementById("locations-list");
+    if (!locationsList) return;
 
     try {
       const data = await ApiService.get("get_locations");
@@ -453,12 +479,8 @@ const LocationManager = {
         throw new Error("Failed to fetch locations");
       }
 
-      locationsList.innerHTML = "";
-
-      data.data.locations.forEach((location, index) => {
-        const row = document.createElement("tr");
-        row.setAttribute("data-index", index);
-        row.innerHTML = `
+      locationsList.innerHTML = data.data.locations.map((location, index) => `
+        <tr data-index="${index}">
           <td>${location}</td>
           <td>
             <button class="btn btn-danger btn-sm remove-location" 
@@ -467,31 +489,20 @@ const LocationManager = {
               Remove
             </button>
           </td>
-        `;
-        locationsList.appendChild(row);
-      });
+        </tr>
+      `).join("");
     } catch (error) {
       console.error("Error fetching locations:", error);
-
-      messageDiv = document.createElement("div");
-      messageDiv.classList.add(
-        "bg-danger",
-        "fw-bold",
-        "p-2",
-        "m-2",
-        "rounded",
-        "text-light",
-        "w-100",
-        "text-center"
-      );
-      messageDiv.innerHTML =
-        error?.response?.data?.message ||
+      
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "bg-danger fw-bold p-2 m-2 rounded text-light w-100 text-center";
+      messageDiv.textContent = error?.response?.data?.message || 
         "خطایی در دریافت موقعیت ها رخ داده است";
-      locationsList?.appendChild(messageDiv);
+      locationsList.appendChild(messageDiv);
     }
   },
 
-  handleAddLocation: async (e) => {
+  async handleAddLocation(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
 
@@ -500,19 +511,18 @@ const LocationManager = {
       if (data.success) {
         Notification.show("success", data.data.message);
         e.target.reset();
-        LocationManager.fetchLocations();
+        this.fetchAvailableLocations();
       }
     } catch (error) {
       console.error("Error adding location:", error);
-      const message =
-        error?.response?.data?.message || "خطایی در افزودن موقعیت رخ داده است";
+      const message = error?.response?.data?.message || "خطایی در افزودن موقعیت رخ داده است";
       Notification.show("error", message);
     }
   },
 
-  handleRemoveLocation: async (e) => {
-    const index = e.target.getAttribute("data-index");
-    const location = e.target.getAttribute("data-location");
+  async handleRemoveLocation(e) {
+    const index = e.target.dataset.index;
+    const location = e.target.dataset.location;
 
     try {
       const result = await Notification.confirm({
@@ -522,9 +532,7 @@ const LocationManager = {
 
       if (!result.isConfirmed) return;
 
-      const nonce = document.querySelector(
-        "input[name=add-location-nonce]"
-      ).value;
+      const nonce = document.querySelector("input[name=add-location-nonce]").value;
       const data = await ApiService.post("remove_location", {
         "add-location-nonce": nonce,
         location: location,
@@ -532,92 +540,62 @@ const LocationManager = {
 
       if (data.success) {
         Notification.show("success", data.data.message);
-        document.querySelector(`tr[data-index="${index}"]`).remove();
+        document.querySelector(`tr[data-index="${index}"]`)?.remove();
       }
     } catch (error) {
-      console.error("Error adding location:", error);
-      const message =
-        error?.response?.data?.message || "خطایی در حذف موقعیت رخ داده است";
+      console.error("Error removing location:", error);
+      const message = error?.response?.data?.message || "خطایی در حذف موقعیت رخ داده است";
       Notification.show("error", message);
     }
   },
 
-  //below function use for add new user section
-  renderLocations: (selectorId = "editingLocationsSelector") => {
-    let container;
-    let section;
-    let displayPreparedLocations = [];
+  renderLocations(selectorId = "editingLocationsSelector") {
+    const isCreatingMode = selectorId === "locationSelector";
+    const containerId = isCreatingMode ? "user-locations" : "currentLocations";
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-    if (selectorId === "locationSelector") {
-      container = document.getElementById("user-locations");
-      container.innerHTML = "";
-      section = "creating";
+    const locations = isCreatingMode ? this.locations : this.editingUserlocations;
 
-      if (LocationManager.locations.length === 0) {
-        container.innerHTML =
-          '<div class="empty-locations">هنوز موقعیتی انتخاب نشده است</div>';
-        return;
-      }
-
-      displayPreparedLocations = LocationManager.locations;
-    } else if (selectorId === "editingLocationsSelector") {
-      container = document.getElementById("currentLocations");
-      container.innerHTML = "";
-      section = "editing";
-
-      if (LocationManager.editingUserlocationArray.length === 0) {
-        container.innerHTML =
-          '<div class="empty-locations">هنوز موقعیتی انتخاب نشده است</div>';
-        return;
-      }
-
-      displayPreparedLocations = LocationManager.editingUserlocationArray;
+    if (locations.length === 0) {
+      container.innerHTML = `
+        <div class="empty-locations">
+          ${isCreatingMode ? "هنوز موقعیتی انتخاب نشده است" : "موقعیتی ثبت نشده است"}
+        </div>`;
+      return;
     }
 
-    displayPreparedLocations.forEach((location) => {
-      const tag = document.createElement("div");
-      tag.className = "location-tag";
-      tag.innerHTML = `
-        <span class="close-circle ml-2" data-section="${section}"  onclick="LocationManager.removeSelectedLocation(event,'${location}')">×</span>
+    container.innerHTML = locations.map(location => `
+      <div class="location-tag">
+        <span class="close-circle ml-2" data-section="${isCreatingMode ? 'creating' : 'editing'}" 
+              onclick="LocationManager.removeSelectedLocation(event,'${location}')">×</span>
         <span>${location}</span>
-      `;
-      container.appendChild(tag);
-    });
+      </div>
+    `).join("");
   },
 
-  removeSelectedLocation: (event, location) => {
-    const section = event.target.getAttribute("data-section");
-    let selectorId = "";
+  removeSelectedLocation(event, location) {
+    const section = event.target.dataset.section;
+    const isCreatingMode = section === "creating";
+    const targetArray = isCreatingMode ? this.locations : this.editingUserlocations;
 
-    if (section === "creating") {
-      selectorId = "locationSelector";
-      const index = LocationManager.locations.indexOf(location);
-      if (index !== -1) {
-        LocationManager.locations.splice(index, 1);
-      }
-
-      console.log(LocationManager.locations);
-      document.querySelector("input[name=locations]").value = JSON.stringify(
-        LocationManager.locations
-      );
-    } else if (section === "editing") {
-      selectorId = "editingLocationsSelector";
-      let index = LocationManager.editingUserlocationArray.indexOf(location);
-      if (index !== -1) {
-        LocationManager.editingUserlocationArray.splice(index, 1);
-      }
+    this.removeFromArray(targetArray, location);
+    
+    if (isCreatingMode) {
+      document.querySelector("input[name=locations]").value = JSON.stringify(this.locations);
     }
-    LocationManager.renderLocations(selectorId);
+    
+    this.renderLocations(isCreatingMode ? "locationSelector" : "editingLocationsSelector");
   },
 
-  resetLocations: () => {
-    LocationManager.locations = [];
-    LocationManager.editingUserlocationArray = [];
+  resetLocations() {
+    this.locations = [];
+    this.editingUserlocations = [];
     document.querySelector("input[name=locations]").value = "";
-    LocationManager.renderLocations();
+    this.renderLocations();
   },
 
-  addLocation: (selectorId) => {
+  addLocation(selectorId) {
     const selector = document.getElementById(selectorId);
     if (!selector) return;
 
@@ -628,30 +606,33 @@ const LocationManager = {
     }
 
     const isCreatingMode = selectorId === "locationSelector";
-    const targetArray = isCreatingMode
-      ? LocationManager.locations
-      : LocationManager.editingUserlocationArray;
+    const targetArray = isCreatingMode ? this.locations : this.editingUserlocations;
 
     if (targetArray.includes(location)) {
       Notification.show("error", "این موقعیت قبلا اضافه شده است");
       return;
     }
+
     targetArray.push(location);
 
     if (isCreatingMode) {
-      document.querySelector("input[name=locations]").value = JSON.stringify(
-        LocationManager.locations
-      );
+      document.querySelector("input[name=locations]").value = JSON.stringify(this.locations);
       ModalUtils.hide("add-location");
     }
 
-    LocationManager.renderLocations(selectorId);
+    this.renderLocations(selectorId);
     selector.value = "";
   },
 
-  //  I want to manage edit user's location section
-  prepareEdingUserLocationsSelector: async () => {
+  removeFromArray(array, item) {
+    const index = array.indexOf(item);
+    if (index !== -1) array.splice(index, 1);
+  },
+
+  async prepareEdingUserLocationsSelector() {
     const selector = document.getElementById("editingLocationsSelector");
+    if (!selector) return;
+
     try {
       const data = await ApiService.get("get_locations");
 
@@ -659,17 +640,10 @@ const LocationManager = {
         throw new Error("Failed to fetch locations editing user section");
       }
 
-      selector.innerHTML = "";
-      data.data.locations.forEach((location, index) => {
-        const option = document.createElement("option");
-        option.setAttribute("data-index", index);
-        option.textContent = location;
-        option.value = location;
-        selector.appendChild(option);
-      });
-    } catch (error) {
-      console.error("Error fetching locations:", error);
-    } finally {
+      selector.innerHTML = data.data.locations.map((location, index) => `
+        <option data-index="${index}" value="${location}">${location}</option>
+      `).join("");
+
       jQuery("#editingLocationsSelector").select2({
         placeholder: "یک موقعیت را انتخاب کنید",
         allowClear: true,
@@ -681,8 +655,7 @@ const LocationManager = {
         },
         matcher: (params, data) => {
           if (jQuery.trim(params.term) === "") return data;
-          if (data.text.toUpperCase().includes(params.term.toUpperCase()))
-            return data;
+          if (data.text.toUpperCase().includes(params.term.toUpperCase())) return data;
           return null;
         },
       });
@@ -692,33 +665,31 @@ const LocationManager = {
           document.querySelector(".select2-search__field").focus();
         }, 0);
       });
+    } catch (error) {
+      console.error("Error fetching locations:", error);
     }
   },
 
-  updateEdidetLocations: async () => {
-    const userId = document
-      .getElementById("updateLocationsBtn")
-      .getAttribute("data-user-id");
+  async updateEdidetLocations() {
+    const btn = document.getElementById("updateLocationsBtn");
+    if (!btn) return;
+
+    const userId = btn.dataset.userId;
     try {
       const data = await ApiService.post("update_user_locations", {
-        locations: JSON.stringify(LocationManager.editingUserlocationArray),
+        locations: JSON.stringify(this.editingUserlocations),
         userId: userId,
       });
-      console.log(data.success);
+
       if (data.success) {
         Notification.show("success", data.data.message);
-      }
-      if (data.success) {
-        Notification.show("success", data.data.message);
+        this.resetLocations();
+        ModalUtils.hide("userManagementModal");
       }
     } catch (error) {
-      console.error("Error adding location:", error);
-      const message =
-        error?.response?.data?.message || "خطایی در افزودن موقعیت رخ داده است";
+      console.error("Error updating locations:", error);
+      const message = error?.response?.data?.message || "خطایی در افزودن موقعیت رخ داده است";
       Notification.show("error", message);
-    } finally {
-      LocationManager.resetLocations();
-      ModalUtils.hide("userManagementModal");
     }
   },
 };
@@ -729,4 +700,3 @@ const LocationManager = {
 document.addEventListener("DOMContentLoaded", () => {
   UserManager.init();
 });
-

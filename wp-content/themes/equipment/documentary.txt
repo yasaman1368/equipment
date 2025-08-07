@@ -27,7 +27,8 @@ id,form_id,equipment_id,field_id,value,
 id, location_name, supervisors_id(arryed by id), users_id(arryed by id-normal users_id), creat_at(date/time)
 
 ---------------------------
-#locations
+#users table
+id,username,password,role,location_id,created_at
 
 Add new location:
 - Add a row in locations_supervisors_users with location_name(uniqe):
@@ -56,3 +57,116 @@ w-suopervisor02{
   location:loc3
   pass:1
 }
+---------------------------------
+proccess History
+#sql
+sql-columns:
+proccess_History_id,equipment_id,data,
+
+data:
+
+ {
+  "equipment_id": "EQ-123",
+  "workflow": [
+    {
+      "step": 1,
+      "role": "user",
+      "user_id": 101,
+      "status": "pending",
+      "date": "2025-08-07T10:00:00Z",
+      "note": "Initial submission"
+    },
+    {
+      "step": 2,
+      "role": "supervisor",
+      "user_id": 201,
+      "status": "supervisorReject",
+      "date": "2025-08-07T11:00:00Z",
+      "action": {
+        "comment": "Incorrect valve value",
+        "changes": [
+          {
+            "field_name": "valve",
+            "initial_value": "23",
+            "changed_to": "24"
+          }
+        ]
+      }
+    },
+    {
+      "step": 3,
+      "role": "user",
+      "user_id": 101,
+      "status": "pending",
+      "date": "2025-08-07T12:00:00Z",
+      "note": "Corrected valve value"
+    },
+    {
+      "step": 4,
+      "role": "supervisor",
+      "user_id": 201,
+      "status": "supervisorApproved",
+      "date": "2025-08-07T13:00:00Z"
+    },
+    {
+      "step": 5,
+      "role": "manager",
+      "user_id": 301,
+      "status": "managerReject",
+      "date": "2025-08-07T14:00:00Z",
+      "action": {
+        "comment": "Pressure value not valid",
+        "changes": [
+          {
+            "field_name": "pressure",
+            "initial_value": "10",
+            "changed_to": "15"
+          }
+        ]
+      }
+    },
+    {
+      "step": 6,
+      "role": "supervisor",
+      "user_id": 201,
+      "status": "reopenedByManager",
+      "date": "2025-08-07T15:00:00Z",
+      "action": {
+        "comment": "Forwarded back to user for correction"
+      }
+    },
+    {
+      "step": 7,
+      "role": "user",
+      "user_id": 101,
+      "status": "pending",
+      "date": "2025-08-07T16:00:00Z",
+      "note": "Fixed pressure issue"
+    },
+    {
+      "step": 8,
+      "role": "supervisor",
+      "user_id": 201,
+      "status": "supervisorApproved",
+      "date": "2025-08-07T17:00:00Z"
+    },
+    {
+      "step": 9,
+      "role": "manager",
+      "user_id": 301,
+      "status": "managerApproved",
+      "date": "2025-08-07T18:00:00Z"
+    }
+  ]
+}
+
+$action = [
+    'comment' => 'Incorrect pressure value',
+    'changes' => [
+        ['field_name' => 'pressure', 'initial_value' => '12', 'changed_to' => '14'],
+        ['field_name' => 'valve', 'initial_value' => '23', 'changed_to' => '25']
+    ]
+];
+
+addWorkflowStep($pdo, 1, 2, 'supervisor', 201, 'supervisorReject', null, $action);
+

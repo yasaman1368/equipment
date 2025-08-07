@@ -115,7 +115,7 @@ function save_equipment_data()
   if (is_wp_error($workflow)) {
     wp_send_json_error(['message' => $workflow->get_error_message], 400);
   }
-
+ 
   wp_send_json_success(array(
     'message' => 'داده‌ها با موفقیت ذخیره شدند',
     'workflow' => $workflow
