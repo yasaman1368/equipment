@@ -30,6 +30,8 @@ function get_saved_forms()
         $form_locations = json_decode($form['locations'], true) ?: [];
         return !empty(array_intersect($user_locations, $form_locations));
       });
+    }else{
+      $accessible_forms = $forms;
     }
 
     $response = [
