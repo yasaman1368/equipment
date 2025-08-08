@@ -32,31 +32,31 @@ id,username,password,role,location_id,created_at
 
 Add new location:
 - Add a row in locations_supervisors_users with location_name(uniqe):
-
+{
 w-user{
-  location:test 01,loc5
-  pass:1
-}
+location:test 01,loc5
+pass:1
+},
 w-user01{
-  location:loc3
-  pass:1
-}
+location:loc3
+pass:1
+},
 w-user02{
-  location:loc3,loc5,test 01
-  pass:1
-}
+location:loc3,loc5,test 01
+pass:1
+},
 w-suopervisor{
-  location:test 01,loc5
-  pass:1
-}
+location:test 01,loc5
+pass:1
+},
 w-suopervisor01{
-  location:loc3
-  pass:1
-}
+location:loc3
+pass:1
+},
 w-suopervisor02{
-  location:loc3
-  pass:1
-}
+location:loc3
+pass:1
+}}
 ---------------------------------
 proccess History
 #sql
@@ -170,3 +170,5 @@ $action = [
 
 addWorkflowStep($pdo, 1, 2, 'supervisor', 201, 'supervisorReject', null, $action);
 
+# To do list:\
+1-when a user  save equipment data in db if save in equipments schedules table and have error for save workflow send error for workflow but dont say equipment saved

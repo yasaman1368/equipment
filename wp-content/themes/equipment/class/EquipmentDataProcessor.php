@@ -21,8 +21,10 @@ class EquipmentDataProcessor
 
     EquipmentFormSaver::save($form_id, $equipment_id, $form_data);
 
-    $workflow = handle_workflow($equipment_id);
-    if (is_wp_error($workflow)) return $workflow;
+    global $wpdb;
+    $workflow = new WorkflowManager($wpdb);
+    $workflow_result = $workflow->handle($equipment_id, 'approved');
+    if (is_wp_error($workflow_result)) return ['message' => $workflow_result->get_error_message()];
 
     return [
       'message' => 'داده‌ها با موفقیت ذخیره شدند',
