@@ -19,8 +19,8 @@ class EquipmentFormHandler {
     }
 
     handleSearch() {
-        const serialNumber = this.serialInput.value.trim();
-        if (!serialNumber) {
+        const equipmentId = this.serialInput.value.trim();
+        if (!equipmentId) {
             Swal.fire({
                 title: 'خطا!',
                 text: 'سریال را بدرستی وارد کنید',
@@ -34,7 +34,7 @@ class EquipmentFormHandler {
         this.formSelector.style.display = 'none';
         this.saveDataBtn.style.display = 'none';
 
-        this.fetchData('/wp-admin/admin-ajax.php?action=get_equipment_data', { serial_number: serialNumber })
+        this.fetchData('/wp-admin/admin-ajax.php?action=get_equipment_data', { equipment_id: equipmentId })
             .then(data => {
                 if (data.success) {
                     if (data.data.status) {
@@ -299,12 +299,12 @@ class EquipmentFormHandler {
     }
 
     handleSaveData() {
-        const serialNumber = this.serialInput.value;
+        const equipmentId = this.serialInput.value;
         const formId = this.formSelector.value; // Ensure form_id is included
         const formData = new FormData();
     
         // Append serial number and form ID
-        formData.append('serial_number', serialNumber);
+        formData.append('equipment_id', equipmentId);
         formData.append('form_id', formId); // Include form_id in the request
     
         // Append form data as JSON
@@ -443,8 +443,8 @@ class EquipmentFormHandler {
         }
     }
     handleRemoveEquipment() {
-        const serialNumber = this.serialInput.value.trim();
-        if (!serialNumber) {
+        const equipmentId = this.serialInput.value.trim();
+        if (!equipmentId) {
             Swal.fire({
                 title: 'خطا!',
                 text: 'سریال را بدرستی وارد کنید',
@@ -464,7 +464,7 @@ class EquipmentFormHandler {
             cancelButtonText: 'لغو'
         }).then((result) => {
             if (result.isConfirmed) {
-                this.fetchData('/wp-admin/admin-ajax.php?action=remove_equipment_data', { serial_number: serialNumber })
+                this.fetchData('/wp-admin/admin-ajax.php?action=remove_equipment_data', { equipment_id: equipmentId })
                     .then(data => {
                         if (data.success) {
                             Swal.fire({

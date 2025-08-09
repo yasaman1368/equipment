@@ -243,7 +243,7 @@ const UserManager = {
       ModalUtils.show("userManagementModal");
     } catch (error) {
       console.error("Error fetching user details:", error);
-      Notification.show("error", "Failed to load user details");
+      Notification.show("error", "دریافت اطلاعات اشخاص با خطا مواجه شده است");
     }
   },
 
