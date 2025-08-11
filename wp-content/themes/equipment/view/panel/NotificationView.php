@@ -46,7 +46,7 @@ class Workflow_Notifications
     $user_ids = implode(',', array_map('intval', $users_relative_by_supervisor));
     $workflows = $this->get_workflows(
       "current_status IN (%s, %s) AND user_id IN ($user_ids)",
-      ['Pending', 'Reject']
+      ['Pending', 'Reject']//Reject-> ManagerReject
     );
 
     $this->render_workflows_table($workflows);

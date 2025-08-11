@@ -18,7 +18,7 @@ class WorkflowManager
     if (!$current_status || $this->current_user_role === 'user') {
       return $this->db->saveWorkflow($equipment_id, 'Pending', 'user', $this->current_user_id)
         ? true
-        : new WP_Error('db_error', 'Failed to create initial workflow');
+        : new WP_Error('db_error', 'بروز رسانی گردش کار با خطا مواجه شد');
     }
 
     $next_status = WorkflowStatus::getNextStatus($current_status, $action);

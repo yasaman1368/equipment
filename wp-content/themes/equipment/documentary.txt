@@ -1,13 +1,4 @@
 data base map:
-1- pn_equipments =
-
-۱. برای هر تجهیز، زمانی که فرم آن توسط کاربر پر و ذخیره می‌شود، اطلاعات کلی در یک ردیف ذخیره می‌شود.
-
-۲. هنگامی که یک فرم ایجاد می‌شود، گزینه‌هایی که برای آن فرم در نظر گرفته‌ایم به ون‌های این جدول اضافه می‌شوند.
-
-۳. به عنوان مثال، اگر ستونی مربوط به سایز یک تجهیز باشد و در این جدول ذخیره نشده باشد، ستون‌های این جدول اضافه می‌شوند.
-
-۴. به این ترتیب، زمانی که اطلاعات تجهیزی با این فرم ثبت می‌شود، در آن ستون ذخیره خواهد شد.
 
 2- pn_equipment_forms =
 id,form_name,locations of forms
@@ -170,4 +161,42 @@ $action = [
 
 addWorkflowStep($pdo, 1, 2, 'supervisor', 201, 'supervisorReject', null, $action);
 
-#Workflow manager
+#save_equipment_data:
+request->post:
+equipment_id: 9
+form_id: 20
+form_data:{"207":"9","208":"ch03","209":"2009-09-09","210":"9"} =>field_id:value
+
+#get_equipment_data:
+response:
+equipment_id: 9
+data:[
+    {
+        "id": "207",
+        "field_name": "w-text",
+        "field_type": "text",
+        "options": "[]",
+        "value": "6"
+    },
+    {
+        "id": "208",
+        "field_name": "w-checkBox",
+        "field_type": "checkbox",
+        "options": "[\"ch01\",\"ch02\",\"ch03\"]",
+        "value": "ch02,ch03"
+    },
+    {
+        "id": "209",
+        "field_name": "w-date",
+        "field_type": "date",
+        "options": "[]",
+        "value": "2025-08-26"
+    },
+    {
+        "id": "210",
+        "field_name": "w-number",
+        "field_type": "number",
+        "options": "[]",
+        "value": "6"
+    }
+]

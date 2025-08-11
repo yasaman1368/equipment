@@ -118,6 +118,8 @@ const ApiService = {
 // WORKFLOW
 // ======================
 const Workflow = {
+  equipmentData: [],
+
   formContainer: document.getElementById("form-container"),
   init() {
     this.bindEvent();
@@ -153,6 +155,9 @@ const Workflow = {
       if (!response.success) throw new Error("Error fetching equipment data");
 
       this.displayEquipmentData(response.data);
+
+      this.equipmentData = response.data;
+
       // Attach event listener for geo-location button
       this.captureGeoBtn = document.getElementById("capture-geo-btn");
       if (this.captureGeoBtn) {
@@ -256,7 +261,8 @@ const Workflow = {
     editButton.classList.add(...btnClasses, "btn-primary");
     editButton.type = "button";
     editButton.setAttribute("data-name", "editButton");
-    editButton.addEventListener("click", (e) => this.enableEditMode(e));
+    this.editButtonClickHandler = (e) => this.enableEditMode(e);
+    editButton.addEventListener("click", this.editButtonClickHandler);
     divGroupBtns.appendChild(editButton);
 
     // Add a "reject" button
@@ -410,17 +416,17 @@ const Workflow = {
     const approveButton = this.formContainer.querySelector(
       "button[data-name=approveButton]"
     );
-
-    rejectButton.remove();
-    approveButton.remove();
-    console.log(rejectButton);
+    rejectButton?.remove();
+    approveButton?.remove();
 
     // Change the "Edit" button to a "Save" button
-    const editButton = this.formContainer.querySelector("button");
+    const editButton = this.formContainer.querySelector(
+      "button[data-name=editButton]"
+    );
     editButton.textContent = "ذخیره";
     editButton.classList.remove("btn-primary");
     editButton.classList.add("btn-success");
-    editButton.removeEventListener("click", this.enableEditMode);
+    editButton.removeEventListener("click", this.editButtonClickHandler);
     editButton.addEventListener("click", (e) => {
       e.preventDefault();
       this.handleSaveData();
@@ -428,18 +434,21 @@ const Workflow = {
   },
 
   handleSaveData() {
-    const equipmentId = this.serialInput.value;
-    const formId = this.formSelector.value; // Ensure form_id is included
+    const equipmentId = document.querySelector("input[data-equipment-id]")
+      .dataset.equipmentId;
+
+    // const formId = this.formSelector.value; // Ensure form_id is included
     const formData = new FormData();
 
     // Append serial number and form ID
     formData.append("equipment_id", equipmentId);
-    formData.append("form_id", formId); // Include form_id in the request
+    // formData.append("form_id", formId); // Include form_id in the request
 
     // Append form data as JSON
     const formFields = {};
     this.formContainer.querySelectorAll("input, select").forEach((input) => {
       const fieldId = input.name.replace("field_", ""); // Extract field_id from the name attribute
+      if (!fieldId) return;
       if (input.type === "file") {
         if (input.files.length > 0) {
           formData.append(`field_${fieldId}`, input.files[0]);
@@ -477,10 +486,29 @@ const Workflow = {
       }
     }
 
-    // Append form fields as JSON
-    formData.append("form_data", JSON.stringify(formFields));
+    removeExtraData = ({ id, field_name, value }) => ({
+      id,
+      field_name,
+      value,
+    });
 
-    // Send the form data
+    hasChanged = (x) => x.value !== formFields[x.id];
+
+    createAction = ({ id, field_name, value }) => ({
+      field_name,
+      initial_value: value,
+      changed_value: formFields[id],
+    });
+
+    const prepareFormData = this.equipmentData.data
+      .map(removeExtraData)
+      .filter(hasChanged)
+      .map(createAction);
+  
+    // Append form fields as JSON
+    formData.append("form_data", JSON.stringify(prepareFormData));
+
+  
     // this.fetchData(
     //   "/wp-admin/admin-ajax.php?action=save_equipment_data",
     //   formData
@@ -510,7 +538,7 @@ const Workflow = {
   async handleApproveEquipmentData(e) {
     e.preventDefault();
 
-    const equipmentId = document.querySelector("input[data-equipment-id")
+    const equipmentId = document.querySelector("input[data-equipment-id]")
       .dataset.equipmentId;
 
     try {
