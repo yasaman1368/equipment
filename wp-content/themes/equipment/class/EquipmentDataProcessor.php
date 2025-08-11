@@ -14,7 +14,7 @@ class EquipmentDataProcessor
     }
 
     $form_id = intval($post['form_id']);
-    $equipment_id = sanitize_text_field($post['serial_number']);
+    $equipment_id = sanitize_text_field($post['equipment_id']);
 
     $status = EquipmentSaver::save($equipment_id, $form_data);
     if (is_wp_error($status)) return $status;
@@ -24,7 +24,7 @@ class EquipmentDataProcessor
     global $wpdb;
     $workflow = new WorkflowManager($wpdb);
     $workflow_result = $workflow->handle($equipment_id, 'approved');
-    if (is_wp_error($workflow_result)) return ['message' => $workflow_result->get_error_message()];
+    if (is_wp_error($workflow_result)) return $workflow_result;
 
     return [
       'message' => 'داده‌ها با موفقیت ذخیره شدند',

@@ -26,7 +26,7 @@ function get_equipment_data()
   }
 
   if (!empty($equipment_data)) {
-    wp_send_json_success(array('message' => 'اطلاعات تجهیز موجود است.', 'data' => $data, 'status' => true));
+    wp_send_json_success(array('message' => 'اطلاعات تجهیز موجود است.', 'data' => $data, 'equipment_id' => $equipment_id, 'status' => true));
   } else {
     wp_send_json_success(array('message' => 'اطلاعات تجهیز موجود نیست.', 'status' => false));
   }

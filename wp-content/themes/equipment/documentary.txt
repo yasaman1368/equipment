@@ -170,5 +170,4 @@ $action = [
 
 addWorkflowStep($pdo, 1, 2, 'supervisor', 201, 'supervisorReject', null, $action);
 
-# To do list:\
-1-when a user  save equipment data in db if save in equipments schedules table and have error for save workflow send error for workflow but dont say equipment saved
+#Workflow manager

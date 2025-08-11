@@ -10,7 +10,7 @@ class WorkflowManager
     $this->current_user_id = get_current_user_id();
     $this->current_user_role = get_user_meta($this->current_user_id, '_role', true);
   }
-  
+
   public function handle($equipment_id, $action = 'approved')
   {
     $current_status = $this->db->getCurrentStatus($equipment_id);
@@ -26,7 +26,7 @@ class WorkflowManager
       return new WP_Error('invalid_transition', 'Invalid status transition');
     }
 
-    $next_role = WorkflowRole::getNextRole($next_status);
+    $next_role = WorkflowRole::getNextRole($current_status);
 
     return $this->db->saveWorkflow($equipment_id, $next_status, $next_role, $this->current_user_id)
       ? true

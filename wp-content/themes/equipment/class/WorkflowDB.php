@@ -14,6 +14,7 @@ class WorkflowDB
       $this->wpdb->prepare("SELECT current_status FROM $this->table WHERE equipment_id = %s", $equipment_id)
     );
   }
+
   public function getProccessHistory($equipment_id)
   {
     $proccess_history = $this->wpdb->get_var(
@@ -22,9 +23,8 @@ class WorkflowDB
 
     if (!$proccess_history) return null;
 
-    return json_decode($proccess_history);
+    return json_decode($proccess_history, true);
   }
-
 
   public function saveWorkflow($equipment_id, $status, $role, $user_id)
   {
@@ -35,18 +35,15 @@ class WorkflowDB
       $role . '_id' => $user_id
     ];
 
-
-
     $exists = $this->wpdb->get_var(
       $this->wpdb->prepare("SELECT COUNT(*) FROM $this->table WHERE equipment_id = %s", $equipment_id)
     );
 
     if ($exists) {
-
       $proccess_history = $this->getProccessHistory($equipment_id);
+
       $proccess_history[] = $data;
       $data['proccess_history'] = json_encode($proccess_history);
-
       return $this->wpdb->update($this->table, $data, ['equipment_id' => $equipment_id]) !== false;
     } else {
       $proccess_history = json_encode($data);
@@ -56,4 +53,3 @@ class WorkflowDB
     }
   }
 }
-

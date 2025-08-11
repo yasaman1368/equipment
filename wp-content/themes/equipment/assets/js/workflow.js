@@ -219,36 +219,58 @@ const Workflow = {
         fieldDiv.appendChild(geoLocationDisplay);
       } else {
         // For other field types, create the appropriate input element
-        const inputElement = this.createInputElement(item);
+        const inputElement = this.createInputDiabeldElement(item);
         fieldDiv.appendChild(inputElement);
       }
 
       this.formContainer.appendChild(fieldDiv);
     });
 
+    const input = document.createElement("input");
+    input.setAttribute("type", "hidden");
+    input.setAttribute("data-equipment-id", data.equipment_id);
+    this.formContainer.appendChild(input);
+
     //button group
     const divGroupBtns = document.createElement("div");
-    divGroupBtns.classList.add("btn-group");
+    divGroupBtns.classList.add("d-flex", "w-100"); // Changed from btn-group to flex
     divGroupBtns.setAttribute("role", "group");
-    divGroupBtns.setAttribute("aria-label", "Two button group");
+    divGroupBtns.setAttribute("aria-label", "Three button group");
+
+    // Common button classes
+    const btnClasses = ["btn", "mt-3", "flex-fill", "mx-1"]; // flex-fill makes equal width
+
+    // Add an "Approve" button
+    const approveButton = document.createElement("button");
+    approveButton.setAttribute("data-name", "approveButton");
+    approveButton.textContent = "تایید";
+    approveButton.classList.add(...btnClasses, "btn-success");
+    approveButton.addEventListener("click", (e) =>
+      this.handleApproveEquipmentData(e)
+    );
+    divGroupBtns.appendChild(approveButton);
 
     // Add an "Edit" button
     const editButton = document.createElement("button");
     editButton.textContent = "ویرایش";
-    editButton.classList.add("btn", "btn-primary", "mt-3");
-    editButton.addEventListener("click", () => this.enableEditMode());
+    editButton.classList.add(...btnClasses, "btn-primary");
+    editButton.type = "button";
+    editButton.setAttribute("data-name", "editButton");
+    editButton.addEventListener("click", (e) => this.enableEditMode(e));
     divGroupBtns.appendChild(editButton);
 
-    // Add a "Remove" button
-    const removeButton = document.createElement("button");
-    removeButton.textContent = "حذف";
-    removeButton.classList.add("btn", "btn-danger", "mt-3", "ml-2");
-    removeButton.addEventListener("click", () => this.handleRemoveEquipment());
-    divGroupBtns.appendChild(removeButton);
+    // Add a "reject" button
+    const rejectButton = document.createElement("button");
+    rejectButton.textContent = "رد";
+    rejectButton.setAttribute("data-name", "rejectButton");
+    rejectButton.classList.add(...btnClasses, "btn-danger");
+    rejectButton.addEventListener("click", () => this.handleRemoveEquipment());
+    divGroupBtns.appendChild(rejectButton);
+
     this.formContainer.appendChild(divGroupBtns);
   },
 
-  createInputElement(item) {
+  createInputDiabeldElement(item) {
     let inputElement;
     let options;
     switch (item.field_type) {
@@ -261,7 +283,7 @@ const Workflow = {
         inputElement.classList.add("form-control");
         inputElement.value = item.value ?? "";
         inputElement.name = `field_${item.id}`; // Ensure the name is set correctly
-        inputElement.disabled = item.field_name === "equipment_serial";
+        inputElement.disabled = true;
         break;
       case "select":
         inputElement = document.createElement("select");
@@ -275,6 +297,7 @@ const Workflow = {
           if (option === item.value) {
             optionElement.selected = true;
           }
+          inputElement.disabled = true;
           inputElement.appendChild(optionElement);
         });
         break;
@@ -290,6 +313,7 @@ const Workflow = {
           input.type = item.field_type;
           input.name = `field_${item.id}`; // Ensure the name is set correctly
           input.value = option;
+          input.disabled = true;
           input.classList.add("form-check-input");
           if (values.includes(option)) {
             input.checked = true;
@@ -309,6 +333,7 @@ const Workflow = {
         inputElement.classList.add("form-control");
         inputElement.accept = "image/*";
         inputElement.name = `field_${item.id}`; // Ensure the name is set correctly
+        inputElement.disabled = true;
         break;
       case "button":
         // Button for geo-location
@@ -317,6 +342,7 @@ const Workflow = {
         inputElement.type = "button";
         inputElement.classList.add("form-control", "bg-warning");
         inputElement.textContent = "موقعیت جغرافیایی";
+        inputElement.disabled = true;
         break;
       default:
         inputElement = document.createElement("input");
@@ -324,6 +350,7 @@ const Workflow = {
         inputElement.classList.add("form-control");
         inputElement.value = item.value;
         inputElement.name = `field_${item.id}`; // Ensure the name is set correctly
+        inputElement.disabled = true;
         break;
     }
     return inputElement;
@@ -366,6 +393,140 @@ const Workflow = {
         icon: "error",
       });
     }
+  },
+
+  enableEditMode(e) {
+    e.preventDefault();
+    // Enable all input fields
+    this.formContainer
+      .querySelectorAll("input, select, textarea")
+      .forEach((input) => {
+        input.disabled = false;
+      });
+
+    const rejectButton = this.formContainer.querySelector(
+      "button[data-name=rejectButton]"
+    );
+    const approveButton = this.formContainer.querySelector(
+      "button[data-name=approveButton]"
+    );
+
+    rejectButton.remove();
+    approveButton.remove();
+    console.log(rejectButton);
+
+    // Change the "Edit" button to a "Save" button
+    const editButton = this.formContainer.querySelector("button");
+    editButton.textContent = "ذخیره";
+    editButton.classList.remove("btn-primary");
+    editButton.classList.add("btn-success");
+    editButton.removeEventListener("click", this.enableEditMode);
+    editButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.handleSaveData();
+    });
+  },
+
+  handleSaveData() {
+    const equipmentId = this.serialInput.value;
+    const formId = this.formSelector.value; // Ensure form_id is included
+    const formData = new FormData();
+
+    // Append serial number and form ID
+    formData.append("equipment_id", equipmentId);
+    formData.append("form_id", formId); // Include form_id in the request
+
+    // Append form data as JSON
+    const formFields = {};
+    this.formContainer.querySelectorAll("input, select").forEach((input) => {
+      const fieldId = input.name.replace("field_", ""); // Extract field_id from the name attribute
+      if (input.type === "file") {
+        if (input.files.length > 0) {
+          formData.append(`field_${fieldId}`, input.files[0]);
+        }
+      } else if (input.type === "checkbox") {
+        // Handle checkboxes
+        if (input.checked) {
+          if (!formFields[fieldId]) {
+            formFields[fieldId] = []; // Initialize as an array if not already
+          }
+          formFields[fieldId].push(input.value); // Push the value into the array
+        }
+      } else if (input.type === "radio") {
+        // Handle radio buttons (only one can be selected)
+        if (input.checked) {
+          formFields[fieldId] = input.value;
+        }
+      } else {
+        // Handle other input types
+        formFields[fieldId] = input.value;
+      }
+    });
+
+    // Append geo-location data if available
+    const geoLocationInput = this.formContainer.querySelector(
+      'input[name="geo_location"]'
+    );
+    if (geoLocationInput) {
+      formFields["geo_location"] = geoLocationInput.value;
+    }
+    // Convert arrays to comma-separated strings for checkboxes and radio buttons
+    for (const key in formFields) {
+      if (Array.isArray(formFields[key])) {
+        formFields[key] = formFields[key].join(",");
+      }
+    }
+
+    // Append form fields as JSON
+    formData.append("form_data", JSON.stringify(formFields));
+
+    // Send the form data
+    // this.fetchData(
+    //   "/wp-admin/admin-ajax.php?action=save_equipment_data",
+    //   formData
+    // )
+    //   .then((data) => {
+    //     if (data.success) {
+    //       Swal.fire({
+    //         title: "Success!",
+    //         text: data.data.message,
+    //         icon: "success",
+    //       }).then(() => {
+    //         window.location.href =
+    //           window.location.origin + "/panel/equipmenttracker";
+    //       });
+    //     } else {
+    //       Swal.fire({
+    //         title: "خطا!",
+    //         text: "خطا در ذخیره‌سازی داده‌ها.",
+    //         icon: "error",
+    //       });
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //   });
+  },
+  async handleApproveEquipmentData(e) {
+    e.preventDefault();
+
+    const equipmentId = document.querySelector("input[data-equipment-id")
+      .dataset.equipmentId;
+
+    try {
+      const response = await ApiService.post("approve_equipment_data", {
+        equipment_id: equipmentId,
+      });
+
+      if (response.success) {
+        const trElement = document.querySelector(
+          'tr[data-equipment-id="' + equipmentId + '"]'
+        );
+        if (trElement) trElement.remove();
+        ModalUtils.hide("modalIddisplayEquipment");
+        Notification.show("success", response.data.message);
+      }
+    } catch (error) {}
   },
 
   // approve equpment data
