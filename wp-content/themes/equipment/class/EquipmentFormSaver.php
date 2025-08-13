@@ -1,6 +1,8 @@
 <?php
-class EquipmentFormSaver {
-  public static function save($form_id, $equipment_id, $form_data) {
+class EquipmentFormSaver
+{
+  public static function save($form_id, $equipment_id, $form_data)
+  {
     global $wpdb;
     $table_name = $wpdb->prefix . 'equipment_data';
     $existing = $wpdb->get_results($wpdb->prepare(
@@ -10,7 +12,7 @@ class EquipmentFormSaver {
 
     $current_time = current_time('mysql');
 
-    if (!empty($existing)) {
+    if (!empty($existing) && !$form_id) {
       foreach ($form_data as $field_id => $value) {
         $existing_value = $wpdb->get_var($wpdb->prepare(
           "SELECT value FROM $table_name WHERE equipment_id = %d AND field_id = %d",

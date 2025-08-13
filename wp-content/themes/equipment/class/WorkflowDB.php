@@ -3,6 +3,7 @@ class WorkflowDB
 {
   private $wpdb;
   private $table = "workflow";
+  public  $action_data = null;
   public function __construct($wpdb)
   {
     $this->wpdb = $wpdb;
@@ -28,7 +29,7 @@ class WorkflowDB
 
   public function saveWorkflow($equipment_id, $status, $role, $user_id)
   {
-    $data = [
+    $current_data = [
       'equipment_id' => $equipment_id,
       'current_status' => $status,
       'active_role' => $role,
@@ -40,14 +41,18 @@ class WorkflowDB
     );
 
     if ($exists) {
-      $proccess_history = $this->getProccessHistory($equipment_id);
 
-      $proccess_history[] = $data;
-      $data['proccess_history'] = json_encode($proccess_history);
+      $prev_proccess_history = $this->getProccessHistory($equipment_id);
+      $action = $this->action_data ?? null;
+      $new_data = $current_data;
+      $new_data["action"] = $action;
+      $prev_proccess_history[] = $new_data;
+
+      $data = [...$current_data, 'proccess_history' => json_encode($prev_proccess_history)];
       return $this->wpdb->update($this->table, $data, ['equipment_id' => $equipment_id]) !== false;
     } else {
-      $proccess_history = json_encode($data);
-      $data = [...$data, 'proccess_history' => $proccess_history];
+      $proccess_history = $current_data;
+      $data = [...$current_data, 'proccess_history' => json_encode($proccess_history)];
 
       return $this->wpdb->insert($this->table, $data) !== false;
     }

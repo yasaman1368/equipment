@@ -500,40 +500,25 @@ const Workflow = {
       changed_value: formFields[id],
     });
 
-    const prepareFormData = this.equipmentData.data
-      .map(removeExtraData)
-      .filter(hasChanged)
-      .map(createAction);
-  
-    // Append form fields as JSON
-    formData.append("form_data", JSON.stringify(prepareFormData));
+    let editedFromData = {};
+    createFormData = (x) => {
+      const id = x.id;
+      const value = formFields[x.id];
 
-  
-    // this.fetchData(
-    //   "/wp-admin/admin-ajax.php?action=save_equipment_data",
-    //   formData
-    // )
-    //   .then((data) => {
-    //     if (data.success) {
-    //       Swal.fire({
-    //         title: "Success!",
-    //         text: data.data.message,
-    //         icon: "success",
-    //       }).then(() => {
-    //         window.location.href =
-    //           window.location.origin + "/panel/equipmenttracker";
-    //       });
-    //     } else {
-    //       Swal.fire({
-    //         title: "خطا!",
-    //         text: "خطا در ذخیره‌سازی داده‌ها.",
-    //         icon: "error",
-    //       });
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //   });
+      return (editedFromData[id] = value);
+    };
+    const changes = this.equipmentData.data
+      .map(removeExtraData)
+      .filter(hasChanged);
+
+    const editedWorkflowData = changes.map(createAction);
+    //prepar formData
+    changes.map(createFormData);
+
+    // Append form fields as JSON
+    formData.append("action_workflow", JSON.stringify(editedWorkflowData));
+    formData.append("form_data", JSON.stringify(editedFromData));
+    this.handleEditedEquipmentData(formData);
   },
   async handleApproveEquipmentData(e) {
     e.preventDefault();
@@ -554,6 +539,11 @@ const Workflow = {
         ModalUtils.hide("modalIddisplayEquipment");
         Notification.show("success", response.data.message);
       }
+    } catch (error) {}
+  },
+  async handleEditedEquipmentData(formData) {
+    try {
+      const response = await ApiService.post("save_equipment_data", formData);
     } catch (error) {}
   },
 

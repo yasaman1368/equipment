@@ -1,4 +1,9 @@
 <?php
+
+use PhpOffice\PhpSpreadsheet\Calculation\Logical\Boolean;
+
+use function PHPSTORM_META\type;
+
 add_action('wp_ajax_save_equipment_data', 'save_equipment_data');
 function save_equipment_data()
 {
