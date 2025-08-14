@@ -4,7 +4,7 @@ function approve_equipment_data()
 {
   $equipment_id = intval($_POST['equipment_id']);
   global $wpdb;
-  $workflow = new WorkflowManager($wpdb);
+  $workflow = new WorkflowManager($wpdb, null);
   $workflow_result = $workflow->handle($equipment_id, 'approved');
 
   if (is_wp_error($workflow_result)) {

@@ -518,7 +518,7 @@ const Workflow = {
     // Append form fields as JSON
     formData.append("action_workflow", JSON.stringify(editedWorkflowData));
     formData.append("form_data", JSON.stringify(editedFromData));
-    this.handleEditedEquipmentData(formData);
+    this.handleEditedEquipmentData(formData,equipmentId);
   },
   async handleApproveEquipmentData(e) {
     e.preventDefault();
@@ -539,12 +539,32 @@ const Workflow = {
         ModalUtils.hide("modalIddisplayEquipment");
         Notification.show("success", response.data.message);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error adding equipment data:", error);
+      const message =
+        error?.response?.data?.message ||
+        "خطایی در افزودن اطلاعات مورد نظر رخ داده است";
+      Notification.show("error", message);
+    }
   },
-  async handleEditedEquipmentData(formData) {
+  async handleEditedEquipmentData(formData,equipmentId) {
     try {
       const response = await ApiService.post("save_equipment_data", formData);
-    } catch (error) {}
+      if (response.success) {
+         const trElement = document.querySelector(
+          'tr[data-equipment-id="' + equipmentId + '"]'
+        );
+        if (trElement) trElement.remove();
+        ModalUtils.hide("modalIddisplayEquipment");
+        Notification.show("success", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error adding equipment data:", error);
+      const message =
+        error?.response?.data?.message ||
+        "خطایی در افزودن اطلاعات مورد نظر رخ داده است";
+      Notification.show("error", message);
+    }
   },
 
   // approve equpment data

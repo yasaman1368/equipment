@@ -14,7 +14,7 @@ class EquipmentDataProcessor
       $form_data = self::merge_uploaded_files($form_data, $uploaded_files);
     }
 
-    $form_id = intval($post['form_id'] ?? 0) !== 0;
+    $form_id = intval($post['form_id'] ?? 0);
     $equipment_id = sanitize_text_field($post['equipment_id']);
 
     $status = EquipmentSaver::save($equipment_id, $form_data);
@@ -23,7 +23,7 @@ class EquipmentDataProcessor
     EquipmentFormSaver::save($form_id, $equipment_id, $form_data);
 
     global $wpdb;
-    $action = $post['action_workflow'] ?? '';
+    $action = $post['action_workflow'] ?? null;
     $workflow = new WorkflowManager($wpdb, $action);
     $workflow_result = $workflow->handle($equipment_id, 'approved');
     if (is_wp_error($workflow_result)) return $workflow_result;

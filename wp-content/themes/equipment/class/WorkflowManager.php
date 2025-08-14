@@ -9,7 +9,7 @@ class WorkflowManager
     $this->db = new WorkflowDB($wpdb);
     $this->current_user_id = get_current_user_id();
     $this->current_user_role = get_user_meta($this->current_user_id, '_role', true);
-    if ($action_data !== '') {
+    if ($action_data) {
       $this->db->action_data = json_decode(stripslashes($action_data), true);
     }
   }

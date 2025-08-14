@@ -43,15 +43,15 @@ class WorkflowDB
     if ($exists) {
 
       $prev_proccess_history = $this->getProccessHistory($equipment_id);
-      $action = $this->action_data ?? null;
+      $action = $this->action_data;
       $new_data = $current_data;
-      $new_data["action"] = $action;
+      if ($action) $new_data["action"] = $action;
       $prev_proccess_history[] = $new_data;
 
       $data = [...$current_data, 'proccess_history' => json_encode($prev_proccess_history)];
       return $this->wpdb->update($this->table, $data, ['equipment_id' => $equipment_id]) !== false;
     } else {
-      $proccess_history = $current_data;
+      $proccess_history = [$current_data];
       $data = [...$current_data, 'proccess_history' => json_encode($proccess_history)];
 
       return $this->wpdb->insert($this->table, $data) !== false;

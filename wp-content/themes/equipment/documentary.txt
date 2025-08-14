@@ -16,7 +16,7 @@ id,form_id,equipment_id,field_id,value,
 
 5-locations_supervisors_users:
 id, location_name, supervisors_id(arryed by id), users_id(arryed by id-normal users_id), creat_at(date/time)
-
+**** key equipment_id in workflow and pn_equipment_data is foreign key rfrence to equipment_id in pn_equipments table
 ---------------------------
 #users table
 id,username,password,role,location_id,created_at

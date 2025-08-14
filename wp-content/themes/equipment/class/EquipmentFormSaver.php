@@ -12,7 +12,7 @@ class EquipmentFormSaver
 
     $current_time = current_time('mysql');
 
-    if (!empty($existing) && !$form_id) {
+    if (!empty($existing)) {
       foreach ($form_data as $field_id => $value) {
         $existing_value = $wpdb->get_var($wpdb->prepare(
           "SELECT value FROM $table_name WHERE equipment_id = %d AND field_id = %d",
