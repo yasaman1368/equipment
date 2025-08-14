@@ -236,16 +236,39 @@ const Workflow = {
     input.setAttribute("data-equipment-id", data.equipment_id);
     this.formContainer.appendChild(input);
 
+    //comment
+
+    const divTextareaComment = document.createElement("div");
+    divTextareaComment.classList.add(
+      "col-12",
+      "mb-3",
+      "p-2",
+      "d-none",
+      "divTextareaComment"
+    );
+
+    const labelComment = document.createElement("label");
+    labelComment.setAttribute("for", "comment");
+    labelComment.textContent = "نظر";
+    divTextareaComment.appendChild(labelComment);
+
+    const textareaComment = document.createElement("textarea");
+    textareaComment.classList.add("form-control", "w-100");
+    textareaComment.setAttribute("name", "comment");
+    textareaComment.setAttribute("id", "comment");
+    textareaComment.setAttribute("rows", "3");
+
+    divTextareaComment.appendChild(textareaComment);
+    this.formContainer.appendChild(divTextareaComment);
+
     //button group
     const divGroupBtns = document.createElement("div");
     divGroupBtns.classList.add("d-flex", "w-100"); // Changed from btn-group to flex
     divGroupBtns.setAttribute("role", "group");
     divGroupBtns.setAttribute("aria-label", "Three button group");
 
-    // Common button classes
-    const btnClasses = ["btn", "mt-3", "flex-fill", "mx-1"]; // flex-fill makes equal width
+    const btnClasses = ["btn", "mt-3", "flex-fill", "mx-1"];
 
-    // Add an "Approve" button
     const approveButton = document.createElement("button");
     approveButton.setAttribute("data-name", "approveButton");
     approveButton.textContent = "تایید";
@@ -255,7 +278,6 @@ const Workflow = {
     );
     divGroupBtns.appendChild(approveButton);
 
-    // Add an "Edit" button
     const editButton = document.createElement("button");
     editButton.textContent = "ویرایش";
     editButton.classList.add(...btnClasses, "btn-primary");
@@ -265,7 +287,6 @@ const Workflow = {
     editButton.addEventListener("click", this.editButtonClickHandler);
     divGroupBtns.appendChild(editButton);
 
-    // Add a "reject" button
     const rejectButton = document.createElement("button");
     rejectButton.textContent = "رد";
     rejectButton.setAttribute("data-name", "rejectButton");
@@ -416,8 +437,11 @@ const Workflow = {
     const approveButton = this.formContainer.querySelector(
       "button[data-name=approveButton]"
     );
+
     rejectButton?.remove();
     approveButton?.remove();
+    const divTextareaComment = document.querySelector(".divTextareaComment");
+    divTextareaComment.classList.remove("d-none");
 
     // Change the "Edit" button to a "Save" button
     const editButton = this.formContainer.querySelector(
@@ -515,10 +539,15 @@ const Workflow = {
     //prepar formData
     changes.map(createFormData);
 
+    //get comment for editing
+    const commentElement = document.getElementById("comment");
+    const comment = commentElement.value;
     // Append form fields as JSON
+    if (comment) editedWorkflowData.push({ comment: comment });
+
     formData.append("action_workflow", JSON.stringify(editedWorkflowData));
     formData.append("form_data", JSON.stringify(editedFromData));
-    this.handleEditedEquipmentData(formData,equipmentId);
+    this.handleEditedEquipmentData(formData, equipmentId);
   },
   async handleApproveEquipmentData(e) {
     e.preventDefault();
@@ -547,11 +576,11 @@ const Workflow = {
       Notification.show("error", message);
     }
   },
-  async handleEditedEquipmentData(formData,equipmentId) {
+  async handleEditedEquipmentData(formData, equipmentId) {
     try {
       const response = await ApiService.post("save_equipment_data", formData);
       if (response.success) {
-         const trElement = document.querySelector(
+        const trElement = document.querySelector(
           'tr[data-equipment-id="' + equipmentId + '"]'
         );
         if (trElement) trElement.remove();
