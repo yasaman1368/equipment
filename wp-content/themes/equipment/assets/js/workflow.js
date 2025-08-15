@@ -291,7 +291,8 @@ const Workflow = {
     rejectButton.textContent = "رد";
     rejectButton.setAttribute("data-name", "rejectButton");
     rejectButton.classList.add(...btnClasses, "btn-danger");
-    rejectButton.addEventListener("click", () => this.handleRemoveEquipment());
+    this.rejectButtonClickHandler = (e) => this.enableRejectMode(e);
+    rejectButton.addEventListener("click", this.rejectButtonClickHandler);
     divGroupBtns.appendChild(rejectButton);
 
     this.formContainer.appendChild(divGroupBtns);
@@ -440,6 +441,7 @@ const Workflow = {
 
     rejectButton?.remove();
     approveButton?.remove();
+
     const divTextareaComment = document.querySelector(".divTextareaComment");
     divTextareaComment.classList.remove("d-none");
 
@@ -579,6 +581,64 @@ const Workflow = {
   async handleEditedEquipmentData(formData, equipmentId) {
     try {
       const response = await ApiService.post("save_equipment_data", formData);
+      if (response.success) {
+        const trElement = document.querySelector(
+          'tr[data-equipment-id="' + equipmentId + '"]'
+        );
+        if (trElement) trElement.remove();
+        ModalUtils.hide("modalIddisplayEquipment");
+        Notification.show("success", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error adding equipment data:", error);
+      const message =
+        error?.response?.data?.message ||
+        "خطایی در افزودن اطلاعات مورد نظر رخ داده است";
+      Notification.show("error", message);
+    }
+  },
+  enableRejectMode(e) {
+    e.preventDefault();
+
+    const editButton = this.formContainer.querySelector(
+      "button[data-name=editButton]"
+    );
+    const approveButton = this.formContainer.querySelector(
+      "button[data-name=approveButton]"
+    );
+
+    editButton?.remove();
+    approveButton?.remove();
+
+    const divTextareaComment = document.querySelector(".divTextareaComment");
+    divTextareaComment.classList.remove("d-none");
+
+    const textareaComment = divTextareaComment.querySelector(
+      "textarea[name=comment]"
+    );
+
+    textareaComment.focus();
+    textareaComment.placeholder = "دلیل رد اطلاعات مورد نظر را وارد کنید...";
+
+    e.target.removeEventListener("click", this.rejectButtonClickHandler);
+    e.target.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.handleRejectEquipment();
+    });
+  },
+  async handleRejectEquipment() {
+    const textareaComment = document.querySelector("textarea[name=comment]");
+    const equipmentId = document.querySelector("input[data-equipment-id]")
+      .dataset.equipmentId;
+
+    try {
+      const response = await ApiService.post("approve_equipment_data", {
+        equipment_id: equipmentId,
+        action_workflow: JSON.stringify({
+          comment: textareaComment.value,
+        }),
+      });
+
       if (response.success) {
         const trElement = document.querySelector(
           'tr[data-equipment-id="' + equipmentId + '"]'
