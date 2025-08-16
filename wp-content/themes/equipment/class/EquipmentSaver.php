@@ -26,6 +26,7 @@ class EquipmentSaver
     ));
 
     if ($existing) {
+      if (empty($equipment_data)) return true;
       $wpdb->update($table_name, $equipment_data, ['equipment_id' => $equipment_id]);
     } else {
       $wpdb->insert($table_name, array_merge(['equipment_id' => $equipment_id], $equipment_data));
