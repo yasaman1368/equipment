@@ -14,7 +14,7 @@ class WorkflowManager
     }
   }
 
-  public function handle($equipment_id, $action = 'approved')
+  public function handle($equipment_id, $action)
   {
     $current_status = $this->db->getCurrentStatus($equipment_id);
 

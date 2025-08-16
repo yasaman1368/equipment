@@ -29,6 +29,8 @@ class Workflow_Notifications
       $this->render_supervisor_view();
     } elseif ($this->current_user_role === 'manager' || current_user_can('administrator')) {
       $this->render_manager_view();
+    } elseif ($this->current_user_role === 'user') {
+      $this->render_user_view();
     }
 
     $this->render_modal();
@@ -46,7 +48,7 @@ class Workflow_Notifications
     $user_ids = implode(',', array_map('intval', $users_relative_by_supervisor));
     $workflows = $this->get_workflows(
       "current_status IN (%s, %s) AND user_id IN ($user_ids)",
-      ['Pending', 'Reject']//Reject-> ManagerReject
+      ['Pending', 'ManagerReject'] //Reject-> ManagerReject
     );
 
     $this->render_workflows_table($workflows);
@@ -57,6 +59,16 @@ class Workflow_Notifications
     $workflows = $this->get_workflows(
       "current_status = %s",
       ['SupervisorApproved']
+    );
+
+    $this->render_workflows_table($workflows);
+  }
+
+  private function render_user_view()
+  {
+    $workflows = $this->get_workflows(
+      "current_status= %s AND user_id=%d",
+      ['SupervisorReject', $this->current_user_id]
     );
 
     $this->render_workflows_table($workflows);
@@ -82,6 +94,8 @@ class Workflow_Notifications
     }
 
     $this->render_notification_count(count($workflows));
+
+   
 ?>
     <div class="table-responsive text-center">
       <table class="table table-striped table-hover table-borderless table-primary align-middle">
@@ -99,6 +113,14 @@ class Workflow_Notifications
         <tbody class="table-group-divider">
           <?php foreach ($workflows as $i => $workflow): ?>
             <tr class="table-primary" data-equipment-id="<?php echo esc_attr($workflow['equipment_id']) ?>">
+
+              <?php if ($workflow['current_status'] === 'SupervisorReject'):
+                $latest_comment = $this->get_latest_comment($workflow);
+              ?>
+                <input type="hidden" name="workflow_latest_comment" data-user-modal="true"
+                  <?php echo 'data-comment-' . $workflow['equipment_id'] . ' ="' . esc_attr($latest_comment) . '"' ?>>
+              <?php endif ?>
+
               <td scope="row"><?php echo esc_html($i + 1) ?></td>
               <td><?php echo esc_html($workflow['equipment_id']) ?></td>
               <td><?php echo esc_html(get_user_meta($workflow['user_id'], 'nickname', true)) ?></td>
@@ -170,6 +192,19 @@ class Workflow_Notifications
       </div>
     </div>
 <?php
+  }
+  private function get_latest_comment($workflow)
+  {
+    $process_history = json_decode($workflow['proccess_history'] ?? '', true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($process_history) || empty($process_history)) {
+      return 'خطا در پردازش اطلاعات';
+    }
+    $latest_action = end($process_history);
+    if (isset($latest_action['action']['comment'])) {
+      return $latest_action['action']['comment'];
+    }
+    return 'بدون نظر';
   }
 }
 

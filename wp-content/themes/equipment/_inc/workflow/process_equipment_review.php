@@ -1,10 +1,12 @@
-<?php add_action('wp_ajax_approve_equipment_data', 'approve_equipment_data');
+<?php add_action('wp_ajax_process_equipment_review', 'process_equipment_review');
 
-function approve_equipment_data()
+function process_equipment_review()
 {
   $equipment_id = sanitize_text_field($_POST['equipment_id']);
   $action_workflow = $_POST['action_workflow'] ?? null;
-  $message='داده‌ها با موفقیت ذخیره شدند';
+  $message = 'داده‌ها با موفقیت ذخیره شدند';
+
+  $action_status = 'approved';
   if ($action_workflow) {
     $action_status = 'rejected';
     $message = 'داده‌ها رد شدند';

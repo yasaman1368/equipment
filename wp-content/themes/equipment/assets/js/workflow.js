@@ -235,8 +235,7 @@ const Workflow = {
     input.setAttribute("type", "hidden");
     input.setAttribute("data-equipment-id", data.equipment_id);
     this.formContainer.appendChild(input);
-
-    //comment
+    //------------------------------
 
     const divTextareaComment = document.createElement("div");
     divTextareaComment.classList.add(
@@ -250,50 +249,54 @@ const Workflow = {
     const labelComment = document.createElement("label");
     labelComment.setAttribute("for", "comment");
     labelComment.textContent = "نظر";
-    divTextareaComment.appendChild(labelComment);
 
     const textareaComment = document.createElement("textarea");
     textareaComment.classList.add("form-control", "w-100");
-    textareaComment.setAttribute("name", "comment");
-    textareaComment.setAttribute("id", "comment");
-    textareaComment.setAttribute("rows", "3");
+    textareaComment.name = "comment";
+    textareaComment.id = "comment";
+    textareaComment.rows = 3;
 
-    divTextareaComment.appendChild(textareaComment);
+    divTextareaComment.append(labelComment, textareaComment);
     this.formContainer.appendChild(divTextareaComment);
 
-    //button group
     const divGroupBtns = document.createElement("div");
     divGroupBtns.classList.add("d-flex", "w-100"); // Changed from btn-group to flex
     divGroupBtns.setAttribute("role", "group");
     divGroupBtns.setAttribute("aria-label", "Three button group");
 
-    const btnClasses = ["btn", "mt-3", "flex-fill", "mx-1"];
-
-    const approveButton = document.createElement("button");
-    approveButton.setAttribute("data-name", "approveButton");
-    approveButton.textContent = "تایید";
-    approveButton.classList.add(...btnClasses, "btn-success");
-    approveButton.addEventListener("click", (e) =>
-      this.handleApproveEquipmentData(e)
+    const rejectCommentElement = document.querySelector(
+      `input[data-comment-${data.equipment_id}]`
     );
-    divGroupBtns.appendChild(approveButton);
+    const isUserModal = rejectCommentElement?.dataset.userModal === "true";
 
-    const editButton = document.createElement("button");
-    editButton.textContent = "ویرایش";
-    editButton.classList.add(...btnClasses, "btn-primary");
-    editButton.type = "button";
-    editButton.setAttribute("data-name", "editButton");
-    this.editButtonClickHandler = (e) => this.enableEditMode(e);
-    editButton.addEventListener("click", this.editButtonClickHandler);
-    divGroupBtns.appendChild(editButton);
+    if (isUserModal) {
+      const comment = rejectCommentElement.getAttribute(
+        `data-comment-${data.equipment_id}`
+      );
+      labelComment.textContent = "دلیل رد اطلاعات ارسالی";
+      divTextareaComment.classList.remove("d-none");
+      textareaComment.readOnly = true;
+      textareaComment.value = comment;
+      textareaComment.disabled = true;
 
-    const rejectButton = document.createElement("button");
-    rejectButton.textContent = "رد";
-    rejectButton.setAttribute("data-name", "rejectButton");
-    rejectButton.classList.add(...btnClasses, "btn-danger");
-    this.rejectButtonClickHandler = (e) => this.enableRejectMode(e);
-    rejectButton.addEventListener("click", this.rejectButtonClickHandler);
-    divGroupBtns.appendChild(rejectButton);
+      divGroupBtns.appendChild(
+        Utils.createButton("ویرایش", ["btn-primary"], "editButton", (e) =>
+          this.enableEditMode(e)
+        )
+      );
+    } else {
+      divGroupBtns.append(
+        Utils.createButton("تایید", ["btn-success"], "approveButton", (e) =>
+          this.handleApproveEquipmentData(e)
+        ),
+        Utils.createButton("ویرایش", ["btn-primary"], "editButton", (e) =>
+          this.enableEditMode(e)
+        ),
+        Utils.createButton("رد", ["btn-danger"], "rejectButton", (e) =>
+          this.enableRejectMode(e)
+        )
+      );
+    }
 
     this.formContainer.appendChild(divGroupBtns);
   },
@@ -425,7 +428,7 @@ const Workflow = {
 
   enableEditMode(e) {
     e.preventDefault();
-    // Enable all input fields
+
     this.formContainer
       .querySelectorAll("input, select, textarea")
       .forEach((input) => {
@@ -442,8 +445,17 @@ const Workflow = {
     rejectButton?.remove();
     approveButton?.remove();
 
+    const isUserModal =
+      document.querySelector("input[data-user-modal]")?.dataset.userModal ===
+      "true";
+
     const divTextareaComment = document.querySelector(".divTextareaComment");
     divTextareaComment.classList.remove("d-none");
+
+    if (isUserModal) {
+      const textareaComment = document.querySelector("textarea[name=comment]");
+      textareaComment.disabled = true;
+    }
 
     // Change the "Edit" button to a "Save" button
     const editButton = this.formContainer.querySelector(
@@ -558,7 +570,7 @@ const Workflow = {
       .dataset.equipmentId;
 
     try {
-      const response = await ApiService.post("approve_equipment_data", {
+      const response = await ApiService.post("process_equipment_review", {
         equipment_id: equipmentId,
       });
 
@@ -632,7 +644,7 @@ const Workflow = {
       .dataset.equipmentId;
 
     try {
-      const response = await ApiService.post("approve_equipment_data", {
+      const response = await ApiService.post("process_equipment_review", {
         equipment_id: equipmentId,
         action_workflow: JSON.stringify({
           comment: textareaComment.value,
@@ -660,6 +672,21 @@ const Workflow = {
   // reject equipment data
 };
 
+// ======================
+// UTILITIES
+// ======================
+const Utils = {
+  btnClasses: ["btn", "mt-3", "flex-fill", "mx-1"],
+  createButton(text, classes, name, onClick) {
+    const btn = document.createElement("button");
+    btn.textContent = text;
+    btn.classList.add(...this.btnClasses, ...classes);
+    btn.type = "button";
+    btn.dataset.name = name;
+    btn.addEventListener("click", onClick);
+    return btn;
+  },
+};
 // ======================
 // INITIALIZATION
 // ======================

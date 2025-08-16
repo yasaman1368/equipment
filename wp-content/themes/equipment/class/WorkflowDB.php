@@ -43,9 +43,11 @@ class WorkflowDB
     if ($exists) {
 
       $prev_proccess_history = $this->getProccessHistory($equipment_id);
-      $action = $this->action_data;
       $new_data = $current_data;
-      if ($action) $new_data["action"] = $action;
+      if ($this->action_data) {
+        $new_data["action"] = $this->action_data;
+      }
+
       $prev_proccess_history[] = $new_data;
 
       $data = [...$current_data, 'proccess_history' => json_encode($prev_proccess_history)];
