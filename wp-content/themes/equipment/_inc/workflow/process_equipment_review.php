@@ -2,15 +2,15 @@
 
 function process_equipment_review()
 {
-  $equipment_id = sanitize_text_field($_POST['equipment_id']);
-  $action_workflow = $_POST['action_workflow'] ?? null;
-  $message = 'داده‌ها با موفقیت ذخیره شدند';
+  $equipment_id = isset($_POST['equipment_id']) ? sanitize_text_field($_POST['equipment_id']) : '';
+  $action_workflow = isset($_POST['action_workflow']) ? $_POST['action_workflow'] : '';
 
-  $action_status = 'approved';
-  if ($action_workflow) {
-    $action_status = 'rejected';
-    $message = 'داده‌ها رد شدند';
-  }
+  if (empty($equipment_id)) wp_send_json_error(['message' => 'شناسه تجهیز معتبر نیست.'], 400);
+
+  $is_rejected = !empty($action_workflow);
+
+  $action_status = $is_rejected ? 'rejected' : 'approved';
+  $message       = $is_rejected ? 'داده‌ها رد شدند' : 'داده‌ها با موفقیت ذخیره شدند';
 
   global $wpdb;
   $workflow = new WorkflowManager($wpdb, $action_workflow);
