@@ -575,10 +575,8 @@ const Workflow = {
       });
 
       if (response.success) {
-        const trElement = document.querySelector(
-          'tr[data-equipment-id="' + equipmentId + '"]'
-        );
-        if (trElement) trElement.remove();
+        Utils.removeTableRow(equipmentId);
+
         ModalUtils.hide("modalIddisplayEquipment");
         Notification.show("success", response.data.message);
       }
@@ -594,10 +592,8 @@ const Workflow = {
     try {
       const response = await ApiService.post("save_equipment_data", formData);
       if (response.success) {
-        const trElement = document.querySelector(
-          'tr[data-equipment-id="' + equipmentId + '"]'
-        );
-        if (trElement) trElement.remove();
+        Utils.removeTableRow(equipmentId);
+
         ModalUtils.hide("modalIddisplayEquipment");
         Notification.show("success", response.data.message);
       }
@@ -652,10 +648,8 @@ const Workflow = {
       });
 
       if (response.success) {
-        const trElement = document.querySelector(
-          'tr[data-equipment-id="' + equipmentId + '"]'
-        );
-        if (trElement) trElement.remove();
+        Utils.removeTableRow(equipmentId);
+
         ModalUtils.hide("modalIddisplayEquipment");
         Notification.show("success", response.data.message);
       }
@@ -676,11 +670,19 @@ const Workflow = {
 // UTILITIES
 // ======================
 const Utils = {
-  btnClasses: ["btn", "mt-3", "flex-fill", "mx-1"],
+  removeTableRow(equipmentId) {
+    const trElement = document.querySelector(
+      'tr[data-equipment-id="' + equipmentId + '"]'
+    );
+    if (trElement) trElement.remove();
+  },
+
   createButton(text, classes, name, onClick) {
+    const btnClasses = ["btn", "mt-3", "flex-fill", "mx-1"];
     const btn = document.createElement("button");
+
     btn.textContent = text;
-    btn.classList.add(...this.btnClasses, ...classes);
+    btn.classList.add(...btnClasses, ...classes);
     btn.type = "button";
     btn.dataset.name = name;
     btn.addEventListener("click", onClick);
