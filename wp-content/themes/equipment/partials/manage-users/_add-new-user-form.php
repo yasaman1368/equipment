@@ -86,7 +86,7 @@
         <?php
         global $wpdb;
         $tabel_name = 'location_supervisors_users';
-        $locations = $wpdb->get_col($wpdb->prepare("SELECT location_name FROM {$tabel_name}", ARRAY_A));
+        $locations = $wpdb->get_col("SELECT location_name FROM {$tabel_name}", ARRAY_A);
 
 
         ?>
