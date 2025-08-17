@@ -14,10 +14,11 @@
     font-display: swap;
 }
 
-
 body {
-    font-family: Vazirmatn, sans-serif;
+  font-family: 'Vazirmatn', sans-serif;
+  font-feature-settings: "tnum", "ss01"; /* ss01 = اعداد فارسی در Vazirmatn */
 }
+
 
 .table-equipment{
     position: relative;
