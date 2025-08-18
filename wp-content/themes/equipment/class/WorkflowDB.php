@@ -29,6 +29,8 @@ class WorkflowDB
 
   public function saveWorkflow($equipment_id, $status, $role, $user_id)
   {
+    $user_nickname = get_user_meta($user_id, 'nickname', true);
+
     $current_data = [
       'equipment_id' => $equipment_id,
       'current_status' => $status,
@@ -40,10 +42,11 @@ class WorkflowDB
       $this->wpdb->prepare("SELECT COUNT(*) FROM $this->table WHERE equipment_id = %s", $equipment_id)
     );
 
+    $new_data = $current_data;
+    $new_data['nickname'] = $user_nickname;
     if ($exists) {
 
       $prev_proccess_history = $this->getProccessHistory($equipment_id);
-      $new_data = $current_data;
       if ($this->action_data) {
         $new_data["action"] = $this->action_data;
       }
@@ -53,7 +56,8 @@ class WorkflowDB
       $data = [...$current_data, 'proccess_history' => json_encode($prev_proccess_history)];
       return $this->wpdb->update($this->table, $data, ['equipment_id' => $equipment_id]) !== false;
     } else {
-      $proccess_history = [$current_data];
+
+      $proccess_history = [$new_data];
       $data = [...$current_data, 'proccess_history' => json_encode($proccess_history)];
 
       return $this->wpdb->insert($this->table, $data) !== false;

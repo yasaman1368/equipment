@@ -132,6 +132,11 @@ const Workflow = {
         this.fetchEquipmentData(e.target.dataset.equipmentId);
       }
     });
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("displayHistory")) {
+        this.getHistorySteps(e.target.dataset.equipmentId);
+      }
+    });
   },
   //show notifitions for user's
   notificationCount() {
@@ -662,8 +667,106 @@ const Workflow = {
     }
   },
 
-  // approve equpment data
-  // reject equipment data
+  async getHistorySteps(equipmentId) {
+    try {
+      const response = await ApiService.get("get_process_history", {
+        equipment_id: equipmentId,
+      });
+      if (response.success) {
+        this.displayHistory(JSON.parse(response.data.data), equipmentId);
+      }
+    } catch (error) {
+      console.error("Error adding equipment data:", error);
+      const message =
+        error?.response?.data?.message ||
+        "خطایی در افزودن اطلاعات مورد نظر رخ داده است";
+
+      ModalUtils.hide("processHistory");
+      Notification.show("error", message);
+    }
+  },
+  displayHistory(steps, equipmentId) {
+    const processHistoryBtn = document.querySelectorAll(".processHistory");
+    Array.from(processHistoryBtn).map((btn) => {
+      btn.setAttribute("data-equipment-id", equipmentId);
+      btn.addEventListener("click", this.processHistoryDirection);
+    });
+
+    const statusConfig = {
+      Pending: { color: "secondary", text: "در انتظار" },
+      SupervisorApproved: { color: "success", text: "تایید ناظر" },
+      SupervisorReject: { color: "danger", text: "رد ناظر" },
+      FinalApprove: { color: "primary", text: "تایید نهایی" },
+      ManagerReject: { color: "danger", text: "رد مدیر" },
+    };
+
+    const roleNames = {
+      user: "کاربر",
+      supervisor: "ناظر",
+      manager: "مدیر",
+    };
+    steps.forEach((item, index) => {
+      const step = index + 1;
+      const status = statusConfig[item.current_status] || {
+        color: "dark",
+        text: item.current_status,
+      };
+      const role = roleNames[item.active_role] || item.active_role;
+
+      let actionHtml = "";
+
+      if (item.action) {
+        if (Array.isArray(item.action)) {
+          let changes = item.action.filter((a) => a.field_name);
+          let commentObj = item.action.find((a) => a.comment);
+
+          if (changes.length > 0) {
+            actionHtml += `<ul class="small ps-3">`;
+            changes.forEach((change) => {
+              actionHtml += `<li>
+              <span class="fw-bold">${change.field_name}</span> : 
+              <span class="text-danger">${change.initial_value}</span> ⟶ 
+              <span class="text-success">${change.changed_value}</span>
+            </li>`;
+            });
+            actionHtml += `</ul>`;
+          }
+
+          if (commentObj) {
+            actionHtml += `<p class="text-muted mb-0"><strong>نظر:</strong> ${commentObj.comment}</p>`;
+          }
+        } else {
+          if (item.action.comment) {
+            actionHtml += `<p class="text-muted mb-0"><strong>نظر:</strong> ${item.action.comment}</p>`;
+          }
+        }
+      }
+
+      const card = document.createElement("div");
+      card.className = `card mb-3 border-${status.color} shadow-sm`;
+
+      card.innerHTML = `
+      <div class="card-body">
+        <h6 class="card-title text-${status.color}">مرحله ${step}</h6>
+        <p class="mb-1">
+          <strong>${item.nickname || role}</strong>
+          <span class="badge bg-${status.color} text-light">${
+        status.text
+      }</span>
+        </p>
+        ${actionHtml}
+      </div>
+    `;
+
+      historyContainer.appendChild(card);
+    });
+  },
+  processHistoryDirection(e) {
+    e.preventDefault();
+    window.location.href =
+      window.location.origin +
+      `/panel/processdate?equipment_id=${e.target.dataset.equipmentId}`;
+  },
 };
 
 // ======================
@@ -694,4 +797,19 @@ const Utils = {
 // ======================
 document.addEventListener("DOMContentLoaded", () => {
   Workflow.init();
+  const dateElements = document.querySelectorAll(".dateTime");
+  dateElements.forEach((el) => {
+    const dateTimeObj = new Date(el.textContent.trim());
+    if (!isNaN(dateTimeObj)) {
+      el.textContent = dateTimeObj.toLocaleDateString("fa-IR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+    }
+  });
 });

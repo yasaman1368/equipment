@@ -95,7 +95,7 @@ class Workflow_Notifications
 
     $this->render_notification_count(count($workflows));
 
-   
+
 ?>
     <div class="table-responsive text-center">
       <table class="table table-striped table-hover table-borderless table-primary align-middle">
@@ -125,7 +125,7 @@ class Workflow_Notifications
               <td><?php echo esc_html($workflow['equipment_id']) ?></td>
               <td><?php echo esc_html(get_user_meta($workflow['user_id'], 'nickname', true)) ?></td>
               <td><?php echo esc_html($this->status_persian[$workflow['current_status']] ?? $workflow['current_status']) ?></td>
-              <td><?php echo esc_html($workflow['update_at']) ?></td>
+              <td class="dateTime"><?php echo esc_html($workflow['update_at']) ?></td>
               <td>
                 <button
                   data-workflow-id="<?php echo esc_attr($workflow['workflow_id']) ?>"
@@ -177,7 +177,7 @@ class Workflow_Notifications
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalTitleId">Modal title</h5>
+            <h5 class="modal-title" id="modalTitleId">بازبینی تجهیز</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -186,6 +186,8 @@ class Workflow_Notifications
             </div>
           </div>
           <div class="modal-footer">
+
+            <button type="button" class="btn btn-success"   data-bs-dismiss="modal">مشاهده تاریخچه</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
           </div>
         </div>
@@ -193,18 +195,17 @@ class Workflow_Notifications
     </div>
 <?php
   }
+
   private function get_latest_comment($workflow)
   {
-    $process_history = json_decode($workflow['proccess_history'] ?? '', true);
+    $history = json_decode($workflow['proccess_history'] ?? '', true);
 
-    if (json_last_error() !== JSON_ERROR_NONE || !is_array($process_history) || empty($process_history)) {
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($history) || empty($history)) {
       return 'خطا در پردازش اطلاعات';
     }
-    $latest_action = end($process_history);
-    if (isset($latest_action['action']['comment'])) {
-      return $latest_action['action']['comment'];
-    }
-    return 'بدون نظر';
+
+    $latest = end($history);
+    return $latest['action']['comment'] ?? 'بدون نظر';
   }
 }
 
