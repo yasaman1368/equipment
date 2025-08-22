@@ -129,12 +129,16 @@ const Workflow = {
     document.addEventListener("DOMContentLoaded", this.notificationCount());
     document.addEventListener("click", (e) => {
       if (e.target.classList.contains("displayEquipmentView")) {
-        this.fetchEquipmentData(e.target.dataset.equipmentId);
+        const equipmentId = e.target.dataset.equipmentId;
+        this.fetchEquipmentData(equipmentId);
+        Utils.setClickEventOnHistoryBtn(equipmentId);
       }
     });
     document.addEventListener("click", (e) => {
+      const equipmentId = e.target.dataset.equipmentId;
       if (e.target.classList.contains("displayHistory")) {
-        this.getHistorySteps(e.target.dataset.equipmentId);
+        this.getHistorySteps(equipmentId);
+        Utils.setClickEventOnHistoryBtn(equipmentId);
       }
     });
   },
@@ -685,13 +689,10 @@ const Workflow = {
       Notification.show("error", message);
     }
   },
-  displayHistory(steps, equipmentId) {
-    const processHistoryBtn = document.querySelectorAll(".processHistory");
-    Array.from(processHistoryBtn).map((btn) => {
-      btn.setAttribute("data-equipment-id", equipmentId);
-      btn.addEventListener("click", this.processHistoryDirection);
-    });
 
+  displayHistory(steps) {
+    historyContainer.innerHTML = "";
+    
     const statusConfig = {
       Pending: { color: "secondary", text: "در انتظار" },
       SupervisorApproved: { color: "success", text: "تایید ناظر" },
@@ -705,6 +706,7 @@ const Workflow = {
       supervisor: "ناظر",
       manager: "مدیر",
     };
+
     steps.forEach((item, index) => {
       const step = index + 1;
       const status = statusConfig[item.current_status] || {
@@ -761,11 +763,10 @@ const Workflow = {
       historyContainer.appendChild(card);
     });
   },
-  processHistoryDirection(e) {
-    e.preventDefault();
+
+  processHistoryDirection(equipmentId) {
     window.location.href =
-      window.location.origin +
-      `/panel/processdate?equipment_id=${e.target.dataset.equipmentId}`;
+      window.location.origin + `/panel/processdate?equipment_id=${equipmentId}`;
   },
 };
 
@@ -773,6 +774,16 @@ const Workflow = {
 // UTILITIES
 // ======================
 const Utils = {
+  setClickEventOnHistoryBtn(equipmentId) {
+    const processHistoryBtn = document.querySelector(".processHistory");
+
+    processHistoryBtn.setAttribute("data-equipment-id", equipmentId);
+    processHistoryBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      Workflow.processHistoryDirection(equipmentId);
+    });
+  },
+
   removeTableRow(equipmentId) {
     const trElement = document.querySelector(
       'tr[data-equipment-id="' + equipmentId + '"]'
