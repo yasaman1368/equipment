@@ -75,7 +75,7 @@ function handle_get_locations()
 
     global $wpdb;
     $table_name = 'location_supervisors_users';
-    $locations = $wpdb->get_col("SELECT location_name FROM {$table_name}", ARRAY_A);
+    $locations = $wpdb->get_col("SELECT location_name FROM {$table_name}");
 
     if (empty($locations)) {
         wp_send_json_error(['message' => 'هیچ موقعیتی وجود ندارد'], 404);
