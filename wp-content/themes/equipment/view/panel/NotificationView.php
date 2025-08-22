@@ -187,7 +187,7 @@ class Workflow_Notifications
           </div>
           <div class="modal-footer">
 
-            <button type="button" class="btn btn-success"   data-bs-dismiss="modal">مشاهده تاریخچه</button>
+            <button type="button" class="btn btn-success processHistory"   data-bs-dismiss="modal">مشاهده تاریخچه</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
           </div>
         </div>
