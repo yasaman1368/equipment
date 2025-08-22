@@ -265,6 +265,8 @@ const LocationManager = {
     LocationManager.fetchLocations();
     LocationManager.initSelect2();
     LocationManager.prepareEdingUserLocationsSelector();
+    LocationManager.prepareUserLocationsSelector();
+
   },
 
   bindEvents: () => {
@@ -579,6 +581,50 @@ const LocationManager = {
       });
     }
   },
+  prepareUserLocationsSelector:async () => {
+    const selector = document.getElementById("locationSelector");
+    try {
+      const data = await ApiService.get("get_locations");
+
+      if (!data.success) {
+        throw new Error("Failed to fetch locations editing user section");
+      }
+
+      selector.innerHTML = "";
+      data.data.locations.forEach((location, index) => {
+        const option = document.createElement("option");
+        option.setAttribute("data-index", index);
+        option.textContent = location;
+        option.value = location;
+        selector.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+    } finally {
+      jQuery("#locationSelector").select2({
+        placeholder: "یک موقعیت را انتخاب کنید",
+        allowClear: true,
+        dropdownParent: jQuery("#add-location"),
+        width: "100%",
+        minimumInputLength: 0,
+        language: {
+          noResults: () => "No results found",
+        },
+        matcher: (params, data) => {
+          if (jQuery.trim(params.term) === "") return data;
+          if (data.text.toUpperCase().includes(params.term.toUpperCase()))
+            return data;
+          return null;
+        },
+      });
+
+      jQuery("#locationSelector").on("select2:open", () => {
+        setTimeout(() => {
+          document.querySelector(".select2-search__field").focus();
+        }, 0);
+      });
+    }
+  },
 
   updateEdidetLocations: async () => {
     const userId = document
@@ -614,4 +660,3 @@ const LocationManager = {
 document.addEventListener("DOMContentLoaded", () => {
   UserManager.init();
 });
-
