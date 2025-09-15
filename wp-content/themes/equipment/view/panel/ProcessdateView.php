@@ -8,8 +8,13 @@ $result = json_decode($result, true);
 ?>
 <div class="timeline">
   <?php if (!empty($result)): ?>
-    <?php foreach ($result as $item): ?>
+    <?php
+    $i = 1;
+    foreach ($result as $item): ?>
       <div class="timeline-item">
+        <div class="bg-secondary-subtle p-2 mb-2 rounded">
+          قدم: <?php echo $i++ ?>
+        </div>
         <div class="meta">
           وضعیت: <?php echo esc_html($item['current_status']); ?> |
           نقش: <?php
@@ -29,7 +34,7 @@ $result = json_decode($result, true);
         </h3>
 
         <?php
-        $action = $item['action'];
+        $action = $item['action'] ?? null;
         if (isset($action)): ?>
           <?php if (is_array($action)): ?>
             <?php foreach ($action as $action): ?>
