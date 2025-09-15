@@ -1,80 +1,101 @@
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('fonts/Vazirmatn[wght].woff2') format('woff2-variations');
+  font-weight: 100 900;
+  /* از وزن 100 تا 900 پشتیبانی می‌کنه */
+  font-style: normal;
+  font-display: swap;
+}
 
 @font-face {
-    font-family: 'Vazirmatn';
-    src: url('fonts/Vazirmatn[wght].woff2') format('woff2-variations');
-    font-weight: 100 900; /* از وزن 100 تا 900 پشتیبانی می‌کنه */
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'Vazirmatn';
-    src: url('fonts/Vazirmatn[wght].ttf') format('ttf-variations');
-    font-weight: 100 900; /* از وزن 100 تا 900 پشتیبانی می‌کنه */
-    font-style: normal;
-    font-display: swap;
+  font-family: 'Vazirmatn';
+  src: url('fonts/Vazirmatn[wght].ttf') format('ttf-variations');
+  font-weight: 100 900;
+  /* از وزن 100 تا 900 پشتیبانی می‌کنه */
+  font-style: normal;
+  font-display: swap;
 }
 
 body {
   font-family: 'Vazirmatn', sans-serif;
-  font-feature-settings: "tnum", "ss01"; /* ss01 = اعداد فارسی در Vazirmatn */
+  font-feature-settings: "tnum", "ss01";
+  /* ss01 = اعداد فارسی در Vazirmatn */
 }
 
 
-.table-equipment{
-    position: relative;
-    width: fit-content;
+.table-equipment {
+  position: relative;
+  width: fit-content;
 }
+
 .add-new-colum {
-    position: absolute;
-    top: 20px;
-    left: 20px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
 
 }
 
 /* modal add new form */
 .custom-modal {
-    width: 90%; /* Adjust width as needed */
-    max-width: 800px; /* Set a maximum width */
-    height: 90%; /* Adjust height as needed */
-    max-height: 90vh; /* Set a maximum height */
-    margin: auto; /* Center the modal */
-  }
-  
-  .modal-content {
-    height: 100%; /* Make modal content fill the custom modal */
-  }
-  
-  .modal-body {
-    overflow-y: auto; /* Allow scrolling if content overflows */
-  }
-  /* Custom CSS for image container */
+  width: 90%;
+  /* Adjust width as needed */
+  max-width: 800px;
+  /* Set a maximum width */
+  height: 90%;
+  /* Adjust height as needed */
+  max-height: 90vh;
+  /* Set a maximum height */
+  margin: auto;
+  /* Center the modal */
+}
+
+.modal-content {
+  height: 100%;
+  /* Make modal content fill the custom modal */
+}
+
+.modal-body {
+  overflow-y: auto;
+  /* Allow scrolling if content overflows */
+}
+
+/* Custom CSS for image container */
 .image-container {
   margin-top: 10px;
   margin-bottom: 10px;
-  text-align: center; /* Center the image */
+  text-align: center;
+  /* Center the image */
 }
 
 /* Custom CSS for thumbnail images */
 .img-thumbnail {
-  border: 1px solid #ddd; /* Add a border */
-  border-radius: 4px; /* Rounded corners */
-  padding: 5px; /* Add some padding */
-  transition: transform 0.2s; /* Add a hover effect */
+  border: 1px solid #ddd;
+  /* Add a border */
+  border-radius: 4px;
+  /* Rounded corners */
+  padding: 5px;
+  /* Add some padding */
+  transition: transform 0.2s;
+  /* Add a hover effect */
 }
 
 .img-thumbnail:hover {
-  transform: scale(1.05); /* Slightly enlarge the image on hover */
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2); /* Add a shadow on hover */
+  transform: scale(1.05);
+  /* Slightly enlarge the image on hover */
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+  /* Add a shadow on hover */
 }
 
-li.page-item{
+li.page-item {
   cursor: pointer;
 }
-i.bi-gear{
-float: left;
-cursor: pointer;
+
+i.bi-gear {
+  float: left;
+  cursor: pointer;
 }
-i.bi-gear:hover{
+
+i.bi-gear:hover {
   scale: 1.2;
 
 }
@@ -85,7 +106,8 @@ i.bi-gear:hover{
 /* bootstrap card styles */
 .section_our_solution .row {
   align-items: center;
-  direction: rtl; /* Add RTL direction */
+  direction: rtl;
+  /* Add RTL direction */
 }
 
 .our_solution_category {
@@ -93,11 +115,13 @@ i.bi-gear:hover{
   flex-direction: row;
   flex-wrap: wrap;
 }
+
 .our_solution_category .solution_cards_box {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
+
 .solution_cards_box .solution_card {
   flex: 0 50%;
   background: #fff;
@@ -111,7 +135,8 @@ i.bi-gear:hover{
   overflow: hidden;
   min-height: 265px;
   transition: 0.7s;
-  text-align: right; /* Align text to the right */
+  text-align: right;
+  /* Align text to the right */
 }
 
 .solution_cards_box .solution_card:hover {
@@ -138,7 +163,8 @@ i.bi-gear:hover{
   height: 400px;
   z-index: -1;
   transform: rotate(42deg);
-  left: -56px; /* Adjust for RTL */
+  left: -56px;
+  /* Adjust for RTL */
   top: -23px;
   border-radius: 35px;
 }
@@ -167,12 +193,10 @@ i.bi-gear:hover{
 .solution_card .solu_description button {
   border: 0;
   border-radius: 15px;
-  background: linear-gradient(
-    140deg,
-    #42c3ca 0%,
-    #42c3ca 50%,
-    #42c3cac7 75%
-  ) !important;
+  background: linear-gradient(140deg,
+      #42c3ca 0%,
+      #42c3ca 50%,
+      #42c3cac7 75%) !important;
   color: #fff;
   font-weight: 500;
   font-size: 1rem;
@@ -184,8 +208,8 @@ i.bi-gear:hover{
   margin-bottom: 1rem;
   font-size: 2.5rem;
 }
-.our_solution_content p {
-}
+
+.our_solution_content p {}
 
 .hover_color_bubble {
   position: absolute;
@@ -198,7 +222,8 @@ i.bi-gear:hover{
   top: 16rem;
   border-radius: 50%;
   transform: rotate(-36deg);
-  right: -18rem; /* Adjust for RTL */
+  right: -18rem;
+  /* Adjust for RTL */
   transition: 0.7s;
 }
 
@@ -239,153 +264,236 @@ i.bi-gear:hover{
     flex: auto;
   }
 }
+
 @media only screen and (min-width: 768px) {
   .our_solution_category .solution_cards_box {
     flex: 1;
   }
 }
+
 @media only screen and (min-width: 1024px) {
   .sol_card_top_3 {
     position: relative;
     top: -1rem;
   }
+
   .our_solution_category {
     width: 50%;
     margin: 0 auto;
   }
 }
-button.active{
+
+button.active {
   border-bottom: 3px solid rgb(75, 75, 96) !important;
 }
 
-.icon-nav{
+.icon-nav {
   position: relative;
   top: -2px;
 }
 
 /* Fix Select2 z-index in modal */
 .select2-container {
-    z-index: 999999 !important;
+  z-index: 999999 !important;
 }
 
 /* Adjust dropdown position */
 .select2-dropdown {
-    z-index: 999999 !important;
+  z-index: 999999 !important;
 }
 
 /* Modal styling */
 .modal {
-    z-index: 99999;
+  z-index: 99999;
 }
 
-  .location-tag {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            background-color: #0dcaf0;
-            color: #000;
-            border-radius: 15px;
-            padding: 4px 12px;
-            margin: 4px;
-            font-size: 0.9rem;
-        }
-
-        .close-circle {
-            cursor: pointer;
-            margin-left: 8px;
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-
-        .close-circle:hover {
-            background: rgb(164, 3, 3);
-            
-            scale: 1.07;
-            box-shadow: 0 4px 10px rgba(72, 71, 71, 0.3);
-        }
-
-        #user-locations {
-            display: flex;
-            flex-wrap: wrap;
-            min-height: 40px;
-            padding: 5px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        .empty-locations {
-            color: #6c757d;
-            font-style: italic;
-            width: 100%;
-            text-align: center;
-            padding: 5px;
-        }
-
-        button.select2-selection__clear {
-            display: none;
-        }
-
-  .multi-location-flex{
-        display: flex !important;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-items: baseline;
+.location-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: #0dcaf0;
+  color: #000;
+  border-radius: 15px;
+  padding: 4px 12px;
+  margin: 4px;
+  font-size: 0.9rem;
 }
+
+.close-circle {
+  cursor: pointer;
+  margin-left: 8px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.close-circle:hover {
+  background: rgb(164, 3, 3);
+
+  scale: 1.07;
+  box-shadow: 0 4px 10px rgba(72, 71, 71, 0.3);
+}
+
+#user-locations {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 40px;
+  padding: 5px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.empty-locations {
+  color: #6c757d;
+  font-style: italic;
+  width: 100%;
+  text-align: center;
+  padding: 5px;
+}
+
+button.select2-selection__clear {
+  display: none;
+}
+
+.multi-location-flex {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: baseline;
+}
+
 .swal2-container {
   z-index: 2000000 !important;
 }
 
 
-    .dropdown-toggle::before {
-        display: inline-block !important;
-        margin-right: .255em !important;
-        vertical-align: .255em !important;
-        content: "" !important;
-        border-top: .3em solid !important;
-        border-left: .3em solid transparent !important;
-        border-bottom: 0 !important;
-        border-right: .3em solid transparent !important;
-    }
+.dropdown-toggle::before {
+  display: inline-block !important;
+  margin-right: .255em !important;
+  vertical-align: .255em !important;
+  content: "" !important;
+  border-top: .3em solid !important;
+  border-left: .3em solid transparent !important;
+  border-bottom: 0 !important;
+  border-right: .3em solid transparent !important;
+}
 
-    .dropdown-toggle::after {
-        display: none !important;
-    }
+.dropdown-toggle::after {
+  display: none !important;
+}
 
- .notificationCount {
-          position: absolute;
-          border-radius: 50%;
-          width: 30px;
-          display: block;
-          top: 34px;
-          right: 0;
-          text-align: center;
-          height: 30px;
-          line-height: 12px;
-          animation: notificationCount 1.5s infinite alternate-reverse ;
-          text-decoration: none;
-          transition:all 1 ease-in-out ;
-        }
-      
-        @keyframes notificationCount {
-          0% {opacity: 0.5;
-          transform: scale(0.8);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(0.9);
-        
-          }
-          
-        }
-  
+.notificationCount {
+  position: absolute;
+  border-radius: 50%;
+  width: 30px;
+  display: block;
+  top: 34px;
+  right: 0;
+  text-align: center;
+  height: 30px;
+  line-height: 12px;
+  animation: notificationCount 1.5s infinite alternate-reverse;
+  text-decoration: none;
+  transition: all 1 ease-in-out;
+}
+
+@keyframes notificationCount {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(0.9);
+
+  }
+
+}
+
+
+body {
+  font-family: Vazirmatn, sans-serif;
+  direction: rtl;
+  background: #f9f9f9;
+}
+
+.timeline {
+  position: relative;
+  margin: 0 auto;
+  padding: 10px 40px 10px 10px;
+  width: 70%;
+}
+
+.timeline::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: #4CAF50;
+  border-radius: 2px;
+}
+
+.timeline-item {
+  position: relative;
+  margin: 20px 40px 20px 0;
+  padding: 15px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  right: -48px;
+  top: 20px;
+  width: 18px;
+  height: 18px;
+  background: #4CAF50;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #4CAF50;
+}
+
+.timeline-item h3 {
+  margin: 0 0 5px;
+  font-size: 16px;
+  color: #333;
+}
+
+.timeline-item p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.meta {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.changes {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #666;
+  border-top: 1px dashed #eee;
+  padding-top: 8px;
+}
+
+.change-item {
+  margin-bottom: 4px;
+}
