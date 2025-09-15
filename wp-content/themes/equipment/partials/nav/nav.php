@@ -67,6 +67,9 @@
       <li class="nav-item">
         <a class="nav-link " href="<?php echo home_url('panel/workflow') ?>">گردش کار</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link " href="<?php echo home_url('panel/importexport') ?>">Import/Export</a>
+      </li>
     
     </ul>
 
