@@ -1,4 +1,3 @@
-// ghugkjkmbkjm
 const EquipmentExcelManager = {
   elements: {},
   mode: "import",
