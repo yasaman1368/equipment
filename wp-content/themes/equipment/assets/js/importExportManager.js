@@ -1,0 +1,123 @@
+const EquipmentExcelManager = {
+  elements: {},
+  mode: "import",
+
+  initialize() {
+    this.cacheElements();
+    this.attachEvents();
+    this.populateFormSelector();
+  },
+
+  cacheElements() {
+    this.elements = {
+      modeSelect: document.getElementById("mode"),
+      formSelect: document.getElementById("formsSelector"),
+      downloadSection: document.getElementById("downloadBtnDiv"),
+      selectedFormName: document.getElementById("formSelected"),
+      uploadSection: document.getElementById("excelFileDiv"),
+      actionButton: document.getElementById("modeBtn"),
+      downloadTemplateButton: document.getElementById("excelFormat"),
+    };
+  },
+
+  attachEvents() {
+    this.elements.modeSelect.addEventListener("change", (e) =>
+      this.updateModeUI(e)
+    );
+    this.elements.formSelect.addEventListener("change", (e) =>
+      this.updateFormSelection(e)
+    );
+    this.elements.actionButton.addEventListener("click", () =>
+      this.sendAction()
+    );
+  },
+
+  async populateFormSelector() {
+    try {
+      const response = await ApiService.get("get_saved_forms");
+      if (!response.success) return;
+
+      const forms = response.data.forms || [];
+      const { formSelect } = this.elements;
+
+      // پاکسازی اولیه
+      formSelect.innerHTML =
+        "<option value='undefined'>فرم مورد نظر را انتخاب کنید</option>";
+
+      // استفاده از DocumentFragment برای بهبود عملکرد
+      const fragment = document.createDocumentFragment();
+      forms.forEach(({ id, form_name }) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = form_name;
+        fragment.appendChild(option);
+      });
+      formSelect.appendChild(fragment);
+    } catch (error) {
+      console.error("Error loading forms:", error);
+      const message =
+        error?.response?.data?.message ||
+        "خطایی در بارگذاری فرم‌ها رخ داده است";
+      Notification.show("error", message);
+    }
+  },
+
+  updateModeUI(e) {
+    this.mode = e.target.value;
+    const { actionButton, uploadSection, downloadSection } = this.elements;
+
+    const modes = {
+      export: {
+        buttonText: "📑 خروجی اکسل",
+        buttonMode: "export",
+        showUpload: false,
+        showDownload: false,
+      },
+      import: {
+        buttonText: "📥 ثبت اطلاعات",
+        buttonMode: "import",
+        showUpload: true,
+        showDownload: true,
+      },
+    };
+
+    const config = modes[this.mode];
+    actionButton.textContent = config.buttonText;
+    actionButton.dataset.mode = config.buttonMode;
+
+    uploadSection.classList.toggle("d-none", !config.showUpload);
+    downloadSection.classList.toggle("d-none", !config.showDownload);
+  },
+
+  updateFormSelection(e) {
+    const { value, options, selectedIndex } = e.target;
+    const { selectedFormName, downloadSection } = this.elements;
+
+    if (value !== "undefined") {
+      selectedFormName.textContent = options[selectedIndex].text;
+      if (this.mode === "import") {
+        downloadSection.classList.remove("d-none");
+      }
+    } else {
+      downloadSection.classList.add("d-none");
+      selectedFormName.textContent = "";
+    }
+  },
+
+  async sendAction() {
+    const action = this.mode + "_data";
+    const formId = this.elements.formSelect.value;
+
+    if (formId === "undefined") {
+      Notification.show("error", "یک فرم را انتخاب کنید");
+      return;
+    }
+
+    const response = await ApiService.post(action, { form_id: formId });
+    console.log(response);
+  },
+};
+
+document.addEventListener("DOMContentLoaded", () =>
+  EquipmentExcelManager.initialize()
+);
