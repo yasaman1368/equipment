@@ -27,6 +27,8 @@ include_once '_inc/users/location/update-user-location.php';
 include_once '_inc/utility/get-user-role.php';
 include_once '_inc/workflow/process_equipment_review.php';
 include_once '_inc/workflow/get-process-history.php';
+include_once '_inc/export/get-excel-format.php';
+
 //****** to do this below function  i think will use but till i dont use
 include_once '_inc/utility/get_users_relative_by_supervisor.php';
 include_once '_inc/utility/get_supervisors_relative_by_user.php';
@@ -35,7 +37,7 @@ include_once 'panel/router.php';
 
 define('COMPOSER_ROOT', get_template_directory() . '/composer');
 include_once COMPOSER_ROOT . '/vendor/autoload.php';
-include_once '_inc/create-excel-file/create-excel-file.php';
+
 
 // require_once(ABSPATH . 'wp-admin/includes/user.php');
 

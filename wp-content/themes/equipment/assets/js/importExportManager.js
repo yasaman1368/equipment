@@ -17,6 +17,7 @@ const EquipmentExcelManager = {
       uploadSection: document.getElementById("excelFileDiv"),
       actionButton: document.getElementById("modeBtn"),
       downloadTemplateButton: document.getElementById("excelFormat"),
+      dlExcelFormatterBtn: document.getElementById("excelFormatDownloadBtn"),
     };
   },
 
@@ -29,6 +30,9 @@ const EquipmentExcelManager = {
     );
     this.elements.actionButton.addEventListener("click", () =>
       this.sendAction()
+    );
+    this.elements.dlExcelFormatterBtn.addEventListener("click", () =>
+      this.downloadExcelFormat()
     );
   },
 
@@ -116,8 +120,28 @@ const EquipmentExcelManager = {
     const response = await ApiService.post(action, { form_id: formId });
     console.log(response);
   },
+
+  downloadExcelFormat() {
+    const formId = this.elements.formSelect.value;
+    const form = document.createElement("form");
+    form.method = "POST";
+    const inputAction = makeHiddenInput("action", "dlExcelFormatter");
+    const inputFormId = makeHiddenInput("form_id", formId);
+
+    form.append(inputAction, inputFormId);
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+  },
 };
 
 document.addEventListener("DOMContentLoaded", () =>
   EquipmentExcelManager.initialize()
 );
+const makeHiddenInput = (name, value) => {
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = name;
+  input.value = value;
+  return input;
+};
