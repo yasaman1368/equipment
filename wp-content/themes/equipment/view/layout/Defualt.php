@@ -1,8 +1,15 @@
 <?php
-if (isset($_GET['action']) && $_GET['action'] === 'export_equipments') {
-  export_equipments();
-} else if (isset($_POST['action']) && $_POST['action'] === 'dlExcelFormatter') {
-  get_excel_format(intval($_POST['form_id']));
+$action = $_REQUEST['action'] ?? null;
+switch ($action) {
+  case 'export_equipments':
+    export_equipments();
+    break;
+  case 'dlExcelFormatter':
+    $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
+    if ($form_id > 0) {
+      get_excel_format($form_id);
+    }
+    break;
 }
 ?>
 <!DOCTYPE html>
