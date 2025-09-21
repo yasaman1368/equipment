@@ -1,13 +1,19 @@
 <?php
 $action = $_REQUEST['action'] ?? null;
+$form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
+
 switch ($action) {
   case 'export_equipments':
     export_equipments();
     break;
   case 'dlExcelFormatter':
-    $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
     if ($form_id > 0) {
       get_excel_format($form_id);
+    }
+    break;
+  case 'export_equipments_data_from_form':
+    if ($form_id > 0) {
+      export_equipments_data_from_form($form_id);
     }
     break;
 }

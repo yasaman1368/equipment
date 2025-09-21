@@ -28,6 +28,7 @@ include_once '_inc/utility/get-user-role.php';
 include_once '_inc/workflow/process_equipment_review.php';
 include_once '_inc/workflow/get-process-history.php';
 include_once '_inc/export/get-excel-format.php';
+include_once '_inc/export/export-equipments-data-from-form.php';
 
 //****** to do this below function  i think will use but till i dont use
 include_once '_inc/utility/get_users_relative_by_supervisor.php';

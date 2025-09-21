@@ -109,7 +109,7 @@ const EquipmentExcelManager = {
   },
 
   async sendAction() {
-    const action = this.mode + "_data";
+    const action = this.mode + "_equipments_data_from_form";
     const formId = this.elements.formSelect.value;
 
     if (formId === "undefined") {
@@ -117,8 +117,15 @@ const EquipmentExcelManager = {
       return;
     }
 
-    const response = await ApiService.post(action, { form_id: formId });
-    console.log(response);
+    const form = document.createElement("form");
+    form.method = "POST";
+    const inputAction = makeHiddenInput("action", action);
+    const inputFormId = makeHiddenInput("form_id", formId);
+
+    form.append(inputAction, inputFormId);
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
   },
 
   downloadExcelFormat() {
