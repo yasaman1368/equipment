@@ -17,7 +17,7 @@ class FormManager {
         
         // Field modal
         document.getElementById('input-type').addEventListener('change', () => this.handleFeatureTypeChange());
-        document.getElementById('save-modal').addEventListener('click', (e) => this.handleSaveModal(e));
+        document.getElementById('save-new-field').addEventListener('click', (e) => this.handleSaveNewField(e));
         document.getElementById('add-new-option').addEventListener('click', () => this.handleAddNewOption());
         
         // Main buttons
@@ -63,7 +63,7 @@ class FormManager {
         }
     }
 
-    handleSaveModal(event) {
+    handleSaveNewField(event) {
         event.preventDefault();
     
         const featureName = document.getElementById('new-feature-name').value;
@@ -78,7 +78,7 @@ class FormManager {
         const field = this.createField(featureName, featureType);
         if (field) {
             formContainerDiv.appendChild(field);
-            document.getElementById('modal-form').reset();
+            document.getElementById('modal-new-field-form').reset();
             this.modals.addForm.hide();
         }
     }
@@ -309,7 +309,7 @@ class FormManager {
             fieldDiv.classList.add('col-sm-6', 'border-bottom', 'p-2');
             
             const label = document.createElement('label');
-            label.textContent = field.field_name;
+            label.textContent = field.field_name==='equipment_id'? 'سریال تجهیز': field.field_name
             label.classList.add('form-label');
             
             let inputElement;

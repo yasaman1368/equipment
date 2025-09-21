@@ -32,7 +32,7 @@ function save_form_data()
     $existing_columns = $wpdb->get_col("SHOW COLUMNS FROM `$table_name_equipments`");
     $new_columns = [];
     foreach ($form_data['fields'] as $field) {
-        $field_name = $field['field_name'] !== 'سریال تجهیز' ? sanitize_text_field($field['field_name']) : 'equipment_serial';
+        $field_name = $field['field_name'] !== 'سریال تجهیز' ? sanitize_text_field($field['field_name']) : 'equipment_id';
         $new_columns[] = $field_name;
         $wpdb->insert(
             $table_name_fields,

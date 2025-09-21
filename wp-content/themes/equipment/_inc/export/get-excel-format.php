@@ -46,7 +46,7 @@ function get_columns_formatter_excel($form_id)
   if (!$columns) {
     return false;
   }
-  array_unshift($columns,'equipment_id');
+
   
   return $columns;
 }

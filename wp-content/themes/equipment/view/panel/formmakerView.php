@@ -67,14 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-sm-6">
-        <div class="mb-3">
-            <label for="equipment-id" class="form-label">سریال تجهیز</label>
-            <input type="text" name="equipment-id" class="form-control" id="equipment-id" aria-describedby="helpId">
+        <div class="col-sm-6">
+            <div class="mb-3">
+                <label for="equipment-id" class="form-label">سریال تجهیز</label>
+                <input type="text" name="equipment-id" class="form-control" id="equipment-id" aria-describedby="helpId">
+            </div>
         </div>
     </div>
+    
 
     <div class="row">
         <div class="d-grid gap-2 w-auto m-3">
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <div class="modal-body">
                 <div class="container-fluid">
-                    <form id="modal-form">
+                    <form id="modal-new-field-form">
                         <div class="mb-3">
                             <label for="new-feature-name" class="form-label">
                                 <i class="bi bi-person"></i> نام ویژگی
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
-                <button type="button" id="save-modal" class="btn btn-primary">ذخیره</button>
+                <button type="button" id="save-new-field" class="btn btn-primary">ذخیره</button>
             </div>
         </div>
     </div>
