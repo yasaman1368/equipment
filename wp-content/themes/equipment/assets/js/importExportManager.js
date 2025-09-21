@@ -142,9 +142,10 @@ const EquipmentExcelManager = {
   },
 };
 
-document.addEventListener("DOMContentLoaded", () =>
-  EquipmentExcelManager.initialize()
-);
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.location.pathname === "/panel/importexport")
+    EquipmentExcelManager.initialize();
+});
 const makeHiddenInput = (name, value) => {
   const input = document.createElement("input");
   input.type = "hidden";
