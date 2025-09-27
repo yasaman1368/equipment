@@ -116,16 +116,20 @@ const EquipmentExcelManager = {
       Notification.show("error", "یک فرم را انتخاب کنید");
       return;
     }
+    if (this.mode === "export") {
+      const form = document.createElement("form");
+      form.method = "POST";
+      const inputAction = makeHiddenInput("action", action);
+      const inputFormId = makeHiddenInput("form_id", formId);
 
-    const form = document.createElement("form");
-    form.method = "POST";
-    const inputAction = makeHiddenInput("action", action);
-    const inputFormId = makeHiddenInput("form_id", formId);
-
-    form.append(inputAction, inputFormId);
-    document.body.appendChild(form);
-    form.submit();
-    form.remove();
+      form.append(inputAction, inputFormId);
+      document.body.appendChild(form);
+      form.submit();
+      form.remove();
+    }
+    if (this.mode === "import") {
+      this.importEquipmentData(formId);
+    }
   },
 
   downloadExcelFormat() {
@@ -139,6 +143,21 @@ const EquipmentExcelManager = {
     document.body.appendChild(form);
     form.submit();
     form.remove();
+  },
+  async importEquipmentData(formId) {
+    const excelFile = document.getElementById("excelFile").files[0];
+    if (!excelFile) {
+      Notification.show("error", "فایل اکسل را انتخاب کنید");
+    }
+    const formData = new FormData();
+    formData.append("form_id", formId);
+    formData.append("excel_file", excelFile);
+    try {
+      const response = await ApiService.post(
+        "import_equipments_data_from_form",
+        formData
+      );
+    } catch (error) {}
   },
 };
 
