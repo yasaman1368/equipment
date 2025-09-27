@@ -93,9 +93,6 @@ class Workflow_Notifications
       return;
     }
 
-    $this->render_notification_count(count($workflows));
-
-
 ?>
     <div class="table-responsive text-center">
       <table class="table table-striped table-hover table-borderless table-primary align-middle">
@@ -145,12 +142,7 @@ class Workflow_Notifications
   <?php
   }
 
-  private function render_notification_count($count)
-  {
-  ?>
-    <input type="hidden" name="notificationCount" value="<?php echo esc_attr($count) ?>">
-  <?php
-  }
+
 
   private function render_no_workflows_message()
   {

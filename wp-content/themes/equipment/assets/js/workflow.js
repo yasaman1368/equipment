@@ -126,7 +126,6 @@ const Workflow = {
   },
 
   bindEvent() {
-    document.addEventListener("DOMContentLoaded", this.notificationCount());
     document.addEventListener("click", (e) => {
       if (e.target.classList.contains("displayEquipmentView")) {
         const equipmentId = e.target.dataset.equipmentId;
@@ -142,19 +141,8 @@ const Workflow = {
       }
     });
   },
-  //show notifitions for user's
-  notificationCount() {
-    counterElement =
-      document.querySelector("input[name=notificationCount]") || "";
-    holderNotificationsCount = document.querySelector("#notificationCount");
 
-    if (!counterElement) {
-      holderNotificationsCount.classList.add("d-none");
-      return;
-    }
-    numberNotification = counterElement.value;
-    holderNotificationsCount.textContent = numberNotification;
-  },
+
   //show equipment
   async fetchEquipmentData(equipmentId) {
     try {

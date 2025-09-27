@@ -393,15 +393,10 @@ button.select2-selection__clear {
 }
 
 .notificationCount {
-  position: absolute;
-  border-radius: 50%;
-  width: 30px;
-  display: block;
-  top: 34px;
-  right: 0;
-  text-align: center;
-  height: 30px;
-  line-height: 12px;
+    display: inline-block;
+    border-radius: 50%;
+    width: 5px;
+    height: 5px;
   animation: notificationCount 1.5s infinite alternate-reverse;
   text-decoration: none;
   transition: all 1 ease-in-out;
@@ -409,13 +404,13 @@ button.select2-selection__clear {
 
 @keyframes notificationCount {
   0% {
-    opacity: 0.5;
-    transform: scale(0.8);
+    opacity: 0.6;
+    transform: scale(0.3);
   }
 
   100% {
     opacity: 1;
-    transform: scale(0.9);
+    transform: scale(1);
 
   }
 
@@ -496,4 +491,23 @@ body {
 
 .change-item {
   margin-bottom: 4px;
+}
+.hasNotification{
+    animation: hasNotification 1.5s infinite alternate-reverse;
+ background-color: rgb(247, 63, 63) !important;
+  transition: all 1 ease-in-out;
+  color: white;
+
+
+}
+@keyframes hasNotification {
+    0% {
+    opacity: 0.6;
+ 
+  }
+  
+  100% {
+    opacity: 1;
+
+  }
 }

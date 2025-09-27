@@ -1,3 +1,5 @@
+<input type="hidden" name="" id="count-notification" value="<?php echo get_workflow_notification_count() ?>">
+
 <nav
   class="navbar navbar-expand-sm navbar-dark bg-dark mb-3 position-absoulte w-100"
   style="height: 56px;"
@@ -29,9 +31,11 @@
       </li>
       <li class="nav-item">
         <div class="position-relative">
-          <a href="<?php echo home_url('panel/notification') ?>" id="notificationCount" class="p-2 bg-danger shadow p-2 text-white notificationCount"></a>
+         
         </div>
-        <a class="nav-link " href="<?php echo home_url('panel/notification') ?>">تجهیزات نیازمند بررسی</a>
+        <a class="nav-link " href="<?php echo home_url('panel/notification') ?>">تجهیزات نیازمند بررسی
+           <span href="<?php echo home_url('panel/notification') ?>" id="notificationCount" class="bg-danger notificationCount"></span>
+        </a>
       </li>
       <li class="nav-item">
         <a class="nav-link " href="<?php echo home_url('panel/manageuser') ?>">مدیریت کاربران</a>

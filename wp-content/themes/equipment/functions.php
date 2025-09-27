@@ -25,6 +25,7 @@ include_once '_inc/users/location/CRUD-location.php';
 include_once '_inc/users/location/add-new-user-to-location.php';
 include_once '_inc/users/location/update-user-location.php';
 include_once '_inc/utility/get-user-role.php';
+include_once '_inc/utility/get-count-nitifications.php';
 include_once '_inc/workflow/process_equipment_review.php';
 include_once '_inc/workflow/get-process-history.php';
 include_once '_inc/export/get-excel-format.php';
