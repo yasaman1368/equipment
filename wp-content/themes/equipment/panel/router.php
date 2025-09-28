@@ -1,7 +1,4 @@
 <?php
-
-
-
 class Router
 {
     public function __construct()
@@ -52,7 +49,7 @@ class Router
 
     private function get_controller_file($controller_name)
     {
-        return get_template_directory() . '/panel/Controller/' . $controller_name . '.php';
+        return get_template_directory() . '/panel/controller/' . $controller_name . '.php';
     }
 
     private function is_valid_controller($controller_file_path)
