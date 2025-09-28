@@ -31,50 +31,54 @@
       </li>
       <li class="nav-item">
         <div class="position-relative">
-         
+
         </div>
         <a class="nav-link " href="<?php echo home_url('panel/notification') ?>">تجهیزات نیازمند بررسی
-           <span href="<?php echo home_url('panel/notification') ?>" id="notificationCount" class="bg-danger notificationCount"></span>
+          <span href="<?php echo home_url('panel/notification') ?>" id="notificationCount" class="bg-danger notificationCount"></span>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link " href="<?php echo home_url('panel/manageuser') ?>">مدیریت کاربران</a>
-      </li>
+
       <li class="nav-item dropdown">
         <a
-          class="nav-link dropdown-toggle"
-          href="#"
+          class="nav-link "
+           href="<?php echo home_url('panel/equipmenttracker') ?>"
           id="equipments-dropdown"
           data-bs-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false">تجهیزات</a>
-        <div class="dropdown-menu" aria-labelledby="equipments-dropdown">
-          <a class="dropdown-item" href="<?php echo home_url('panel/equipmenttracker') ?>">جستجو تجهیز</a>
-          <a class="dropdown-item" onclick="triggerExport()" href="javascript:void(0)">خروجی اکسل</a>
-        </div>
-
-      </li>
-      <li class="nav-item dropdown">
-        <a
-          class="nav-link dropdown-toggle"
-          href="#"
-          id="dropdownId"
-          data-bs-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false">مدیریت فرم ها</a>
-        <div class="dropdown-menu" aria-labelledby="dropdownId">
-          <a class="dropdown-item" href="<?php echo home_url('panel/formmaker/?newform=on') ?>">فرم جدید</a>
-          <a class="dropdown-item" href="<?php echo home_url('panel/formmaker/?showforms=on') ?>">نمایش فرم ها</a>
-        </div>
+        
+         
+    
 
       </li>
       <li class="nav-item">
         <a class="nav-link " href="<?php echo home_url('panel/workflow') ?>">گردش کار</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link " href="<?php echo home_url('panel/importexport') ?>">Import/Export</a>
-      </li>
-    
+      <?php if (is_manager()): ?>
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="dropdownId"
+            data-bs-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false">مدیریت فرم ها</a>
+          <div class="dropdown-menu" aria-labelledby="dropdownId">
+            <a class="dropdown-item" href="<?php echo home_url('panel/formmaker/?newform=on') ?>">فرم جدید</a>
+            <a class="dropdown-item" href="<?php echo home_url('panel/formmaker/?showforms=on') ?>">نمایش فرم ها</a>
+          </div>
+
+        </li>
+
+
+        <li class="nav-item">
+          <a class="nav-link " href="<?php echo home_url('panel/importexport') ?>">Import/Export</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " href="<?php echo home_url('panel/manageuser') ?>">مدیریت کاربران</a>
+        </li>
+      <?php endif; ?>
+
     </ul>
 
   </div>

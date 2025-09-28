@@ -27,3 +27,14 @@ function user_is_manager(): bool
 
     return true;
 }
+function is_manager(): bool
+{
+    $user_id = get_current_user_id();
+    $role = eqiupment_get_user_role($user_id);
+
+    if ($role !== 'مدیر') {
+        return false;
+    }
+
+    return true;
+}

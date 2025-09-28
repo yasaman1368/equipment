@@ -40,3 +40,9 @@
     </div>
   </div>
 </div>
+
+<div class="mt-3 p-2 mx-auto text-center ">
+  <a class="btn btn-primary shadow" role="button" onclick="triggerExport()" href="javascript:void(0)">خروجی تمام تجهیزات</a>
+
+  
+</div>
