@@ -1,4 +1,5 @@
 <?php
+if(!is_manager())wp_redirect( home_url('panel') );
 // PHP section at the top for initial page setup
 $showNewFormScript = isset($_GET['newform']) && $_GET['newform'] === 'on';
 $showFormsScript = isset($_GET['showforms']) && $_GET['showforms'] === 'on';

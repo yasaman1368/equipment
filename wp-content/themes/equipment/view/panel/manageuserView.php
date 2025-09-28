@@ -1,4 +1,5 @@
 <?php
+if(!is_manager())wp_redirect( home_url('panel') );
 $user_id = get_current_user_id();
 $role = eqiupment_get_user_role($user_id);
 

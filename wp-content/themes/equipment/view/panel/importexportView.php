@@ -1,3 +1,7 @@
+<?php 
+if(!is_manager())wp_redirect( home_url('panel') );
+?>
+
 <div class="container mt-5">
   <div class="card shadow p-4">
     <h3 class="text-center mb-4">ورودی و خروجی تجهیزات</h3>
