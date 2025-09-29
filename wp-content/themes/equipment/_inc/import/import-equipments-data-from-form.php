@@ -71,7 +71,7 @@ function prepare_form_data(array $row_values, array $form_fields_data): array {
 
     foreach ($form_fields_data as $index => $field) {
         // پرش ستون اول (equipment_id)
-        if ($index === 0) continue;
+        // if ($index === 0) continue;
         $form_data[$field['id']] = $row_values[$index] ?? null;
     }
 
