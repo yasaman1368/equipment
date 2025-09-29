@@ -42,10 +42,7 @@
         <a
           class="nav-link "
           href="<?php echo home_url('panel/equipmenttracker') ?>"
-          id="equipments-dropdown"
-          data-bs-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false">تجهیزات</a>
+       >تجهیزات</a>
 
 
 
@@ -66,7 +63,7 @@
           <a class="nav-link " href="<?php echo home_url('panel/importexport') ?>">Import/Export</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="<?php echo home_url('panel/manageuser') ?>">مدیریت کاربران</a>
+          <a class="nav-link " href="<?php echo home_url('panel/manageuser') ?>">مدیریت کاربران و موقعیت </a> 
         </li>
       <?php endif; ?>
 
