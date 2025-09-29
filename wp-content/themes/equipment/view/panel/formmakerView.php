@@ -6,7 +6,7 @@ if(!is_manager())wp_redirect( home_url('panel') );
 <div class="container">
     <!-- Form Management Header -->
     <div class="card shadow text-center m-2">
-        <div class="card-body bg-secondary rounded text-white">
+        <div class="card-body bg-light rounded text-dark">
             <h4 class="card-title">مدیریت فرم ها</h4>
             <button class="btn btn-success p-2 m-3" id="add-new-form" data-bs-toggle="modal" data-bs-target="#modal-add-form-name">
                 فرم جدید <i class="bi bi-folder-plus"></i>
@@ -22,16 +22,16 @@ if(!is_manager())wp_redirect( home_url('panel') );
 <div class="container p-2 bg-light rounded d-none" id="main-container-form">
     <div id="form-container-builder" class="row" data-custom-form-id="10">
         <div class="col-sm-12">
-            <div class="card text-dark bg-warning mb-2">
-                <div class="card-body">
+            <div class="card text-dark mb-2">
+                <div class="card-body ">
                     <p class="card-text">نام فرم:</p>
                     <h4 class="card-title" id="placeholder-form-name"></h4>
                 </div>
                 
                 <div class="col-sm-12 p-2">
                     <span class="mb-3 multi-location-flex">
-                        <label for="select-location" class="form-label mt-3">
-                            <i class="bi bi-geo-alt-fill text-danger"></i> موقعیت های مکانی
+                        <label for="select-location" class="form-label mt-3 d-block w-100">
+                            <i class="bi bi-geo-alt-fill text-danger"></i> موقعیت های مکانی:
                         </label>
                         <?php
                         global $wpdb;
@@ -138,7 +138,7 @@ if(!is_manager())wp_redirect( home_url('panel') );
                         </div>
                         
                         <div class="container-options text-center m-2 mt-3 d-none" id="container-options-modal">
-                            <div class="bg-warning p-1 text-center rounded m-2">
+                            <div class="text-secondary p-1 text-center rounded m-2">
                                 <p>موارد <span id="selected-input"></span> را وارد کنید</p>
                             </div>
                             <div class="options" id="input-option-container"></div>
