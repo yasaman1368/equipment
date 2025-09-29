@@ -41,33 +41,24 @@
       <li class="nav-item dropdown">
         <a
           class="nav-link "
-           href="<?php echo home_url('panel/equipmenttracker') ?>"
+          href="<?php echo home_url('panel/equipmenttracker') ?>"
           id="equipments-dropdown"
           data-bs-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false">تجهیزات</a>
-        
-         
-    
+
+
+
 
       </li>
       <li class="nav-item">
         <a class="nav-link " href="<?php echo home_url('panel/workflow') ?>">گردش کار</a>
       </li>
       <?php if (is_manager()): ?>
-        <li class="nav-item dropdown">
+        <li class="nav-item ">
           <a
-            class="nav-link dropdown-toggle"
-            href="#"
-            id="dropdownId"
-            data-bs-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false">مدیریت فرم ها</a>
-          <div class="dropdown-menu" aria-labelledby="dropdownId">
-            <a class="dropdown-item" href="<?php echo home_url('panel/formmaker/?newform=on') ?>">فرم جدید</a>
-            <a class="dropdown-item" href="<?php echo home_url('panel/formmaker/?showforms=on') ?>">نمایش فرم ها</a>
-          </div>
-
+            class="nav-link "
+            href="<?php echo home_url('panel/formmaker') ?>">مدیریت فرم ها</a>
         </li>
 
 

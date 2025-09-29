@@ -1,23 +1,7 @@
 <?php
 if(!is_manager())wp_redirect( home_url('panel') );
 // PHP section at the top for initial page setup
-$showNewFormScript = isset($_GET['newform']) && $_GET['newform'] === 'on';
-$showFormsScript = isset($_GET['showforms']) && $_GET['showforms'] === 'on';
-?>
-
-<?php if ($showNewFormScript): ?>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById("add-new-form").click();
-});
-</script>
-<?php elseif ($showFormsScript): ?>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById("show-forms").click();
-});
-</script>
-<?php endif; ?>
+ ?>
 
 <div class="container">
     <!-- Form Management Header -->
@@ -117,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- Modal for Adding New Field -->
-<div class="modal fade" id="modal-add-form" tabindex="-1" role="dialog" aria-labelledby="modalTitleId" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+<div class="modal fade" id="modal-add-form" tabindex="-1" aria-labelledby="modalTitleId" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content custom-modal">
             <div class="modal-header">
@@ -175,11 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- Modal for Form Name -->
-<div class="modal fade" id="modal-add-form-name" tabindex="-1" role="dialog" aria-labelledby="modalTitleId" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+<div class="modal fade" id="modal-add-form-name" tabindex="-1" aria-labelledby="modalTitleIdNewForm" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content custom-modal">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalTitleId">نام فرم جدید</h5>
+                <h5 class="modal-title" id="modalTitleIdNewForm">نام فرم جدید</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
