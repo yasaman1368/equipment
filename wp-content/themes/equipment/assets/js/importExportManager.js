@@ -144,6 +144,7 @@ const EquipmentExcelManager = {
     form.submit();
     form.remove();
   },
+
   async importEquipmentData(formId) {
     const excelFile = document.getElementById("excelFile").files[0];
     if (!excelFile) {
@@ -157,7 +158,15 @@ const EquipmentExcelManager = {
         "import_equipments_data_from_form",
         formData
       );
-    } catch (error) {}
+      if (response.success) {
+        Notification.show("success", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error loading forms:", error);
+      const message =
+        error?.response?.data?.message || "خطایی در ورود اطلاعات رخ داده است";
+      Notification.show("error", message);
+    }
   },
 };
 
