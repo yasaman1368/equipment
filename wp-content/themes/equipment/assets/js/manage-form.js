@@ -65,7 +65,7 @@ class FormManager {
     this.modals.addFormName.hide();
     const backdrop = document.querySelector("div.modal-backdrop");
     if (backdrop) {
-      backdrop.style.display = "none";
+      backdrop.remove()
     }
   }
 
@@ -108,6 +108,10 @@ class FormManager {
       formContainerDiv.appendChild(field);
       document.getElementById("modal-new-field-form").reset();
       this.modals.addForm.hide();
+        const backdrop = document.querySelector("div.modal-backdrop");
+    if (backdrop) {
+      backdrop.remove()
+    }
     }
   }
 
