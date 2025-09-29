@@ -219,6 +219,8 @@ const UserManager = {
       } else {
         Notification.show("error", data.data);
       }
+         container = document.getElementById("user-locations");
+         container.innerHTML='هنوز موقعیتی انتخاب نشده است'
     } catch (error) {
       console.error("Error adding user:", error);
       const message =

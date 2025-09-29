@@ -22,15 +22,18 @@ function validate_request_add_new_user()
 function add_new_user_callback()
 {
   $locations = json_decode(wp_unslash($_POST['locations'] ?? ''), true);
-  if (!is_array($locations) || empty($locations)) {
-    wp_send_json_error(['message' => 'اطلاعات موقعیت‌ها اشتباه است'], 400);
-  }
+  $role            = sanitize_text_field($_POST['role']);
 
+  if($role!=='manager'){
+    if (!is_array($locations) || empty($locations)) {
+      wp_send_json_error(['message' => 'اطلاعات موقعیت‌ها اشتباه است'], 400);
+    }
+  }
+    
   validate_request_add_new_user();
 
   $fullname        = sanitize_text_field($_POST['fullname']);
   $phone           = sanitize_text_field($_POST['phone']);
-  $role            = sanitize_text_field($_POST['role']);
   $password        = $_POST['password'];
   $repeat_password = $_POST['repeat_password'];
 
