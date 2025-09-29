@@ -34,7 +34,7 @@ function import_equipments_data_from_form() {
 
         // بازیابی فیلدهای فرم از دیتابیس
         $form_fields_data = $wpdb->get_results(
-            $wpdb->prepare("SELECT id, field_name FROM pn_equipment_form_fields WHERE form_id=%d ORDER BY id ASC", $form_id),
+            $wpdb->prepare("SELECT id, field_name FROM PN_equipment_form_fields WHERE form_id=%d ORDER BY id ASC", $form_id),
             ARRAY_A
         );
 
