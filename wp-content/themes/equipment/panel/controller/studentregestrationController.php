@@ -2,7 +2,7 @@
 
 
 
-class WorkflowController
+class StudentregestrationController
 {
     public function __construct() {}
     public function index()
@@ -10,7 +10,7 @@ class WorkflowController
         $params = [
             'current_user_dispaly_name' => $this->get_current_user_dispaly_name()
         ];
-        View::loadView(get_template_directory() . '/view/panel/studentregestrationView.php', $params);
+        View::loadView(get_template_directory() . '/view/panel/studentregestrationView.php', $params,'Register');
         die;
     }
     private function get_current_user_dispaly_name()
