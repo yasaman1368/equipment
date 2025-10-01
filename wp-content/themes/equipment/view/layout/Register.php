@@ -1,13 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="<?php echo  get_template_directory_uri() . '/assets/img/gassFavIcon.png' ?>" type="image/png">
+  <link rel="icon" href="<?php echo  get_template_directory_uri() . '/assets/img/math-favIcon.png' ?>" type="image/png">
 
-  <title>سیستم ردیاب تجهیزات</title>
+  <title>ثبت نام کلاس</title>
   <!-- Bootstrap CSS RTL (latest version) -->
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css"
@@ -27,11 +26,12 @@
 
 
 </head>
+
 <body>
-  
+
   <?php
-require_once $view;
-?>
+  require_once $view;
+  ?>
 </body>
 
 </html>
