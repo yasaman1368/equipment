@@ -32,6 +32,7 @@ include_once '_inc/export/get-excel-format.php';
 include_once '_inc/export/export-equipments-data-from-form.php';
 include_once '_inc/import/import-equipments-data-from-form.php';
 include_once '_inc/student-registeration/register-student.php';
+include_once '_inc/student-registeration/get-class-stats.php';
 
 //****** to do this below function  i think will use but till i dont use
 include_once '_inc/utility/get_users_relative_by_supervisor.php';
