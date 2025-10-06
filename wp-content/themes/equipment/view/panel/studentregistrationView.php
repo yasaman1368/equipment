@@ -248,5 +248,9 @@ if(isset($_GET['result']) && $_GET['result']==='registeration'){
   get_template_part('partials/student-registration/result');
   return;
 }
+if(isset($_GET['page']) && $_GET['page']==='class-details'){
+  get_template_part('partials/student-registration/class-details');
+  return;
+}
 get_template_part('partials/student-registration/registration');
 ?>

@@ -40,5 +40,6 @@ function get_class_details() {
     'time_1' => $time1,
     'time_2' => $time2,
     'time_3' => $time3,
+   
   ]);
 }

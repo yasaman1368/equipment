@@ -36,31 +36,44 @@
       });
 
     // 🔹 کلیک روی هر کلاس برای دریافت جزئیات
-    classBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const classId = btn.dataset.class;
+   classBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const classId = btn.dataset.class;
 
-        fetch("<?php echo admin_url('admin-ajax.php'); ?>?action=get_class_details&class_id=" + classId)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              classResultsBox.classList.remove("hidden");
-              classTitle.textContent = "📘 آمار کلاس " + data.data.class_name;
-              classDetails.innerHTML = `
-                <li>تعداد کل ثبت‌نامی‌ها: ${data.data.total} نفر</li>
-                <li>روزهای زوج: ${data.data.even_days} نفر</li>
-                <li>روزهای فرد: ${data.data.odd_days} نفر</li>
-                <li>ساعت 16:00 - 17:15 → ${data.data.time_1} نفر</li>
-                <li>ساعت 17:20 - 18:35 → ${data.data.time_2} نفر</li>
-                <li>ساعت 18:40 - 19:55 → ${data.data.time_3} نفر</li>
-              `;
-            } else {
-              classResultsBox.classList.remove("hidden");
-              classTitle.textContent = "❌ خطا در دریافت آمار";
-              classDetails.innerHTML = "<li>داده‌ای یافت نشد.</li>";
-            }
+    fetch("<?php echo admin_url('admin-ajax.php'); ?>?action=get_class_details&class_id=" + classId)
+      .then(res => res.json())
+      .then(data => {
+        classResultsBox.classList.remove("hidden");
+
+        if (data.success) {
+          classTitle.textContent = "📘 آمار کلاس " + data.data.class_name;
+          classDetails.innerHTML = `
+            <li>تعداد کل ثبت‌نامی‌ها: ${data.data.total} نفر</li>
+            <li>روزهای زوج: ${data.data.even_days} نفر</li>
+            <li>روزهای فرد: ${data.data.odd_days} نفر</li>
+            <li>ساعت 16:00 - 17:15 → ${data.data.time_1} نفر</li>
+            <li>ساعت 17:20 - 18:35 → ${data.data.time_2} نفر</li>
+            <li>ساعت 18:40 - 19:55 → ${data.data.time_3} نفر</li>
+            <br>
+            <button id="viewDetailsBtn" >
+              👀 مشاهده اسامی و جزئیات ثبت‌نام کلاس
+            </button>
+          `;
+
+          // وقتی روی دکمه کلیک می‌شود
+          const viewBtn = document.getElementById("viewDetailsBtn");
+          viewBtn.addEventListener("click", () => {
+            // آدرس مورد نظر رو اینجا بنویس
+            window.location.href = `?page=class-details&class_id=${classId}`;
           });
+
+        } else {
+          classTitle.textContent = "❌ خطا در دریافت آمار";
+          classDetails.innerHTML = "<li>داده‌ای یافت نشد.</li>";
+        }
       });
-    });
+  });
+});
+
   });
 </script>
