@@ -34,19 +34,29 @@ update_option('_counter_view', $counter_view);
           <img src="<?PHP echo get_template_directory_uri() . '/assets/img/student-register/7.webp' ?>" alt="کلاس ۱">
           <h5>کلاس حل مسئله و تمرین </h5>
           <h5> ویژه هفتم</h5>
-          <p><small style="color: #aaa;">(12 جلسه)</small></p>
+          <p style="margin: 0; font-size: 14px;">
+            <small style="color: #aaa;"> 10 جلسه - </small>
+            <span style="color: #D4AF37;">700 هزار تومان</span>
+          </p>
+
         </div>
         <div class="class-card" data-class="8">
           <img src="<?PHP echo get_template_directory_uri() . '/assets/img/student-register/8.webp' ?>" alt="کلاس ۲">
           <h5>کلاس حل مسئله و تمرین </h5>
           <h5> ویژه هشتم</h5>
-          <p><small style="color: #aaa;">(12 جلسه)</small></p>
+          <p style="margin: 0; font-size: 14px;">
+            <small style="color: #aaa;"> 10 جلسه - </small>
+            <span style="color: #D4AF37;">700 هزار تومان</span>
+          </p>
         </div>
         <div class="class-card" data-class="9">
           <img src="<?PHP echo get_template_directory_uri() . '/assets/img/student-register/9.webp' ?>" alt="کلاس ۳">
           <h5>کلاس حل مسئله و تست </h5>
           <h5> ویژه نهم</h5>
-          <p><small style="color: #aaa;">(12 جلسه)</small></p>
+          <p style="margin: 0; font-size: 14px;">
+            <small style="color: #aaa;"> 10 جلسه - </small>
+            <span style="color: #D4AF37;">700 هزار تومان</span>
+          </p>
         </div>
       </div>
       <input type="hidden" name="class_name" id="selected-class" required>
