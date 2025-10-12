@@ -49,3 +49,87 @@ include_once COMPOSER_ROOT . '/vendor/autoload.php';
 // for( $i= 36; $i< 70; $i++ ){
 //   wp_delete_user($i);
 // }
+
+
+// اضافه کردن action برای آپدیت فرم
+function update_form_data()
+{
+  try {
+    $form_data = json_decode(stripslashes($_POST['form_data']), true);
+
+    global $wpdb;
+    $forms_table = $wpdb->prefix . 'equipment_forms';
+    $fields_table = $wpdb->prefix . 'equipment_form_fields';
+
+    // آپدیت اطلاعات اصلی فرم
+    $wpdb->update(
+      $forms_table,
+      [
+        'form_name' => sanitize_text_field($form_data['form_name']),
+        'locations' => json_encode($form_data['locations']),
+        'updated_at' => current_time('mysql')
+      ],
+      ['id' => intval($form_data['form_id'])]
+    );
+
+    // آپدیت فیلدهای موجود و اضافه کردن فیلدهای جدید
+    foreach ($form_data['fields'] as $field) {
+      if (isset($field['field_id']) && !empty($field['field_id'])) {
+        // آپدیت فیلد موجود
+        $wpdb->update(
+          $fields_table,
+          [
+            'field_name' => sanitize_text_field($field['field_name']),
+            'field_type' => sanitize_text_field($field['field_type']),
+            'options' => json_encode($field['options']),
+            'updated_at' => current_time('mysql')
+          ],
+          ['id' => intval($field['field_id'])]
+        );
+      } else {
+        // اضافه کردن فیلد جدید
+        $wpdb->insert(
+          $fields_table,
+          [
+            'form_id' => intval($form_data['form_id']),
+            'field_name' => sanitize_text_field($field['field_name']),
+            'field_type' => sanitize_text_field($field['field_type']),
+            'options' => json_encode($field['options']),
+            'created_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql')
+          ]
+        );
+      }
+    }
+
+    wp_send_json_success(['message' => 'فرم با موفقیت بروزرسانی شد.']);
+  } catch (Exception $e) {
+    wp_send_json_error(['message' => 'خطا در بروزرسانی فرم: ' . $e->getMessage()]);
+  }
+}
+add_action('wp_ajax_update_form_data', 'update_form_data');
+
+// اضافه کردن action برای حذف فیلد
+function remove_form_field()
+{
+  try {
+    $field_id = intval($_POST['field_id']);
+
+    global $wpdb;
+    $fields_table = $wpdb->prefix . 'equipment_form_fields';
+
+    $result = $wpdb->delete(
+      $fields_table,
+      ['id' => $field_id]
+    );
+
+    if ($result !== false) {
+      wp_send_json_success(['message' => 'فیلد با موفقیت حذف شد.']);
+    } else {
+      wp_send_json_error(['message' => 'خطا در حذف فیلد.']);
+    }
+  } catch (Exception $e) {
+    wp_send_json_error(['message' => 'خطا در حذف فیلد: ' . $e->getMessage()]);
+  }
+}
+add_action('wp_ajax_remove_form_field', 'remove_form_field');

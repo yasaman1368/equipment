@@ -65,7 +65,7 @@ class FormManager {
     this.modals.addFormName.hide();
     const backdrop = document.querySelector("div.modal-backdrop");
     if (backdrop) {
-      backdrop.remove()
+      backdrop.remove();
     }
   }
 
@@ -108,10 +108,10 @@ class FormManager {
       formContainerDiv.appendChild(field);
       document.getElementById("modal-new-field-form").reset();
       this.modals.addForm.hide();
-        const backdrop = document.querySelector("div.modal-backdrop");
-    if (backdrop) {
-      backdrop.remove()
-    }
+      const backdrop = document.querySelector("div.modal-backdrop");
+      if (backdrop) {
+        backdrop.remove();
+      }
     }
   }
 
@@ -458,12 +458,26 @@ class FormManager {
   }
 
   addRemoveButton(container) {
+    const buttonContainer = document.createElement("div");
+    buttonContainer.classList.add("btn-group", "mt-2");
+
+    // دکمه ویرایش
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.textContent = "ویرایش فرم";
+    editBtn.classList.add("btn", "btn-warning", "btn-lg", "shadow");
+    editBtn.addEventListener("click", () => this.handleEditForm());
+
+    // دکمه حذف
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.textContent = "حذف فرم";
-    removeBtn.classList.add("btn", "btn-danger", "btn-lg", "shadow", "mt-2");
+    removeBtn.classList.add("btn", "btn-danger", "btn-lg", "shadow");
     removeBtn.addEventListener("click", () => this.handleRemoveForm());
-    container.appendChild(removeBtn);
+
+    buttonContainer.appendChild(editBtn);
+    buttonContainer.appendChild(removeBtn);
+    container.appendChild(buttonContainer);
   }
 
   handleSaveForm() {
@@ -570,6 +584,307 @@ class FormManager {
           });
       }
     });
+  }
+  handleEditForm() {
+    const formSelector = document.getElementById("form-selector");
+    const formId = formSelector.options[formSelector.selectedIndex].value;
+    const formName =
+      formSelector.options[formSelector.selectedIndex].textContent;
+
+    // نمایش فرم در حالت ویرایش
+    this.fetchData("/wp-admin/admin-ajax.php?action=get_form_fields", {
+      form_id: formId,
+    })
+      .then((data) => {
+        if (data.success) {
+          this.displayFormForEditing(formId, formName, data.data);
+        } else {
+          this.showAlert(
+            "خطا!",
+            "خطا در دریافت اطلاعات فرم برای ویرایش.",
+            "error"
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        this.showAlert("خطا!", "خطا در دریافت اطلاعات فرم.", "error");
+      });
+  }
+
+  displayFormForEditing(formId, formName, formData) {
+    // پنهان کردن بخش نمایش فرم‌ها
+    const formContainer = document.getElementById("show-saved-forms");
+    const mainContainerForm = document.getElementById("main-container-form");
+
+    formContainer.classList.add("d-none");
+    mainContainerForm.classList.remove("d-none");
+
+    // تنظیم نام فرم
+    document.getElementById("placeholder-form-name").textContent = formName;
+
+    // پاکسازی فرم ساز
+    const formBuilder = document.getElementById("form-container-builder");
+    formBuilder.innerHTML = "";
+
+    // ایجاد فیلدهای موجود برای ویرایش
+    formData.fields.forEach((field, index) => {
+      const fieldElement = this.createEditableField(field, index + 1);
+      if (fieldElement) {
+        formBuilder.appendChild(fieldElement);
+      }
+    });
+
+    // ذخیره ID فرم برای استفاده در آپدیت
+    this.currentEditingFormId = formId;
+
+    // اضافه کردن دکمه ذخیره تغییرات
+    this.addUpdateButton();
+  }
+
+  createEditableField(field, fieldNumber) {
+    const divColSM6 = document.createElement("div");
+    divColSM6.classList.add("col-sm-6", "border-bottom", "editable-field");
+    divColSM6.dataset.fieldId = field.id;
+
+    const divMb3 = document.createElement("div");
+    divMb3.classList.add("mb-3", "position-relative");
+
+    // لیبل با آیکون ویرایش
+    const labelContainer = document.createElement("div");
+    labelContainer.classList.add(
+      "d-flex",
+      "justify-content-between",
+      "align-items-center"
+    );
+
+    const label = document.createElement("label");
+    label.textContent = field.field_name;
+    label.classList.add("form-label", "mb-2");
+
+    // دکمه حذف فیلد
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.innerHTML = "&times;";
+    deleteBtn.classList.add("btn", "btn-sm", "btn-danger");
+    deleteBtn.addEventListener("click", (e) => this.removeField(e, field.id));
+
+    labelContainer.appendChild(label);
+    labelContainer.appendChild(deleteBtn);
+
+    let inputElement;
+
+    switch (field.field_type) {
+      case "text":
+      case "number":
+      case "date":
+      case "time":
+        inputElement = this.createInputField(field.field_type, fieldNumber);
+        break;
+      case "file":
+        inputElement = this.createInputField(field.field_type, fieldNumber);
+        inputElement.accept = "image/*";
+        break;
+      case "select":
+        const options = JSON.parse(field.options);
+        inputElement = this.createSelectFieldWithOptions(options, fieldNumber);
+        break;
+      case "checkbox":
+      case "radio":
+        const checkboxOptions = JSON.parse(field.options);
+        inputElement = this.createCheckboxRadioFieldWithOptions(
+          field.field_name,
+          field.field_type,
+          checkboxOptions,
+          fieldNumber
+        );
+        break;
+      case "geo":
+        inputElement = this.createGeoField();
+        break;
+    }
+
+    if (!inputElement) return null;
+
+    divMb3.append(labelContainer, inputElement);
+    divColSM6.appendChild(divMb3);
+    return divColSM6;
+  }
+
+  createSelectFieldWithOptions(options, fieldNumber) {
+    const selectElement = document.createElement("select");
+    selectElement.classList.add("form-control");
+    selectElement.name = "input-" + fieldNumber;
+
+    options.forEach((option) => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option;
+      optionElement.textContent = option;
+      selectElement.appendChild(optionElement);
+    });
+
+    return selectElement;
+  }
+
+  createCheckboxRadioFieldWithOptions(
+    featureName,
+    featureType,
+    options,
+    fieldNumber
+  ) {
+    const container = document.createElement("div");
+
+    options.forEach((option) => {
+      const label = document.createElement("label");
+      const inputElement = document.createElement("input");
+      const inputuniqcode = `${featureType}-${fieldNumber}-${option.replace(
+        /\s+/g,
+        "-"
+      )}`;
+
+      label.textContent = option;
+      label.htmlFor = inputuniqcode;
+      label.classList.add("form-label", "m-2", "p-2");
+
+      inputElement.type = featureType;
+      inputElement.value = option;
+      inputElement.name = `input-${fieldNumber}`;
+      inputElement.id = inputuniqcode;
+
+      label.prepend(inputElement);
+      container.appendChild(label);
+    });
+
+    return container;
+  }
+
+  removeField(event, fieldId) {
+    this.showConfirm(
+      "حذف فیلد",
+      "آیا از حذف این فیلد مطمئن هستید؟",
+      "warning",
+      "بله، حذف شود",
+      "لغو"
+    ).then((result) => {
+      if (result.isConfirmed) {
+        // حذف از دیتابیس
+        this.fetchData("/wp-admin/admin-ajax.php?action=remove_form_field", {
+          field_id: fieldId,
+        })
+          .then((data) => {
+            if (data.success) {
+              // حذف از رابط کاربری
+              event.target.closest(".editable-field").remove();
+              this.showAlert("موفق!", "فیلد با موفقیت حذف شد.", "success");
+            } else {
+              this.showAlert("خطا!", "خطا در حذف فیلد.", "error");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            this.showAlert("خطا!", "خطا در حذف فیلد.", "error");
+          });
+      }
+    });
+  }
+
+  addUpdateButton() {
+    const existingUpdateBtn = document.getElementById("update-form-btn");
+    if (existingUpdateBtn) {
+      existingUpdateBtn.remove();
+    }
+
+    const updateBtn = document.createElement("button");
+    updateBtn.id = "update-form-btn";
+    updateBtn.type = "button";
+    updateBtn.textContent = "ذخیره تغییرات فرم";
+    updateBtn.classList.add(
+      "btn",
+      "btn-success",
+      "btn-lg",
+      "shadow",
+      "mt-3",
+      "mx-2"
+    );
+    updateBtn.addEventListener("click", () => this.handleUpdateForm());
+
+    const saveBtn = document.getElementById("save-form-btn");
+    saveBtn.parentNode.insertBefore(updateBtn, saveBtn.nextSibling);
+  }
+
+  handleUpdateForm() {
+    const formName = document.getElementById(
+      "placeholder-form-name"
+    ).textContent;
+    const formContainerDiv = document.getElementById("form-container-builder");
+    const fields = [];
+
+    formContainerDiv.querySelectorAll(".editable-field").forEach((fieldDiv) => {
+      const label = fieldDiv.querySelector(".form-label").textContent;
+      const input = fieldDiv.querySelector("input, select");
+      const fieldId = fieldDiv.dataset.fieldId;
+
+      if (!input) return;
+
+      const fieldType =
+        input.tagName.toLowerCase() === "select" ? "select" : input.type;
+      let options = [];
+      let value = "";
+
+      if (fieldType === "select") {
+        options = Array.from(input.options).map((option) => option.value);
+        value = input.value;
+      } else if (["checkbox", "radio"].includes(fieldType)) {
+        const inputs = fieldDiv.querySelectorAll(`input[type="${fieldType}"]`);
+        const selectedValues = [];
+
+        inputs.forEach((input) => {
+          if (input.checked) selectedValues.push(input.value);
+          options.push(input.value);
+        });
+
+        value = selectedValues.join(",");
+      } else {
+        value = input.value;
+      }
+
+      fields.push({
+        field_id: fieldId,
+        field_name: label,
+        field_type: fieldType,
+        options: options,
+        value: value,
+      });
+    });
+
+    const locationsInput = document.querySelectorAll(
+      'input[name="locations[]"]:checked'
+    );
+    const locations = Array.from(locationsInput).map((input) => input.value);
+
+    const formData = {
+      form_id: this.currentEditingFormId,
+      form_name: formName,
+      locations: locations,
+      fields: fields,
+    };
+
+    this.fetchData("/wp-admin/admin-ajax.php?action=update_form_data", {
+      form_data: JSON.stringify(formData),
+    })
+      .then((data) => {
+        if (data.success) {
+          this.showAlert("موفق!", data.data.message, "success").then(() => {
+            this.handleShowForms();
+          });
+        } else {
+          this.showAlert("خطا!", "خطا در بروزرسانی فرم.", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        this.showAlert("خطا!", "خطا در بروزرسانی فرم.", "error");
+      });
   }
 
   // Utility methods
