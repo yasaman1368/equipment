@@ -1,4 +1,6 @@
 <?php
+
+// this function in product no used yet
 function get_suprevisors_relative_by_user($current_user_id)
 {
   global $wpdb;
@@ -11,10 +13,7 @@ function get_suprevisors_relative_by_user($current_user_id)
     $supervisors_id[] = json_decode($wpdb->get_var($query));
   }
 
-  echo '<pre>';
-  var_dump( $supervisors_id );
-  echo '</pre>';
-  echo '</br>';
+
 
 
 
