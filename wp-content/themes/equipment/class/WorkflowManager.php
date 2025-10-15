@@ -17,11 +17,23 @@ class WorkflowManager
   public function handle($equipment_id, $action)
   {
     $current_status = $this->db->getCurrentStatus($equipment_id);
-
-    if (!$current_status || $this->current_user_role === 'user') {
-      return $this->db->saveWorkflow($equipment_id, 'Pending', 'user', $this->current_user_id)
-        ? true
-        : new WP_Error('db_error', 'بروز رسانی گردش کار با خطا مواجه شد');
+    if (!$current_status) {
+      if ($this->current_user_role === 'user') {
+        return $this->db->saveWorkflow($equipment_id, 'Pending', 'user', $this->current_user_id)
+          ? true
+          : new WP_Error('db_error', 'بروز رسانی گردش کار با خطا مواجه شد');
+      }
+      if ($this->current_user_role === 'supervisor') {
+        return $this->db->saveWorkflow($equipment_id, 'SupervisorApproved', 'supervisor', $this->current_user_id)
+          ? true
+          : new WP_Error('db_error', 'بروز رسانی گردش کار با خطا مواجه شد');
+      }
+      if ($this->current_user_role === 'manager') {
+    
+        return $this->db->saveWorkflow($equipment_id, 'FinalApprove', 'manager', $this->current_user_id)
+          ? true
+          : new WP_Error('db_error', 'بروز رسانی گردش کار با خطا مواجه شد');
+      }
     }
 
     $next_status = WorkflowStatus::getNextStatus($current_status, $action);

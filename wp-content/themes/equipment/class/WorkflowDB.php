@@ -58,8 +58,9 @@ class WorkflowDB
     } else {
 
       $proccess_history = [$new_data];
+     
       $data = [...$current_data, 'proccess_history' => json_encode($proccess_history)];
-
+      
       return $this->wpdb->insert($this->table, $data) !== false;
     }
   }

@@ -6,7 +6,7 @@ class EquipmentFormSaver
     global $wpdb;
     $table_name = $wpdb->prefix . 'equipment_data';
     $existing = $wpdb->get_results($wpdb->prepare(
-      "SELECT * FROM $table_name WHERE equipment_id = %d",
+      "SELECT * FROM $table_name WHERE equipment_id = %s",
       $equipment_id
     ));
 
@@ -15,7 +15,7 @@ class EquipmentFormSaver
     if (!empty($existing)) {
       foreach ($form_data as $field_id => $value) {
         $existing_value = $wpdb->get_var($wpdb->prepare(
-          "SELECT value FROM $table_name WHERE equipment_id = %d AND field_id = %d",
+          "SELECT value FROM $table_name WHERE equipment_id = %s AND field_id = %d",
           $equipment_id,
           $field_id
         ));

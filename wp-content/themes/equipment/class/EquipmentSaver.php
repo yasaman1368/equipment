@@ -21,7 +21,7 @@ class EquipmentSaver
     }
 
     $existing = $wpdb->get_row($wpdb->prepare(
-      "SELECT * FROM $table_name WHERE equipment_id = %d",
+      "SELECT * FROM $table_name WHERE equipment_id = %s",
       $equipment_id
     ));
 
