@@ -676,6 +676,9 @@ class FormManager {
       option.textContent = form.form_name;
       this.elements.formSelector.appendChild(option);
     });
+    this.elements.formPreview.innerHTML=''
+    this.elements.locationsDisplay.innerHTML=''
+    this.elements.showFormNameCheck.innerHTML='-'
   }
 
   async loadForm(formId) {
@@ -1151,13 +1154,13 @@ getEquipmentFieldId() {
     try {
       const response = await this.apiCall("remove_form", { form_id: formId });
       if (response.success) {
-        this.showNotification("فرم با موفقیت حذف شد", "success");
+        this.showNotification(response.data.message, "success");
         this.loadSavedForms();
       } else {
-        this.showNotification("خطا در حذف فرم", "error");
+        this.showNotification(response.data.message, "error");
       }
     } catch (error) {
-      this.showNotification("خطا در حذف فرم", "error");
+      this.showNotification(response.data.message, "error");
     }
   }
 
