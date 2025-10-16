@@ -1,58 +1,141 @@
 <?php
 function save_form_data()
 {
-    // Decode and sanitize input data
-    $form_data = json_decode(stripslashes($_POST['form_data']), true);
+    try {
+        // Security checks
+        if (!is_manager()) {
+            wp_send_json_error(['message' => 'شما دسترسی لازم برای این عملیات را ندارید.']);
+        }
 
-    global $wpdb;
-    $table_name_forms = $wpdb->prefix . 'equipment_forms';
-    $table_name_fields = $wpdb->prefix . 'equipment_form_fields';
-    $table_name_equipments = $wpdb->prefix . 'equipments';
+        // Validate input
+        if (empty($_POST['form_data'])) {
+            wp_send_json_error(['message' => 'داده‌های فرم دریافت نشد.']);
+        }
 
-    $current_time = current_time('mysql');
-    $locations = json_encode(array_map('sanitize_text_field', $form_data['locations']));
+        // Decode and sanitize input data
+        $raw_data = wp_unslash($_POST['form_data']);
+        $form_data = json_decode($raw_data, true);
 
-    $inserted = $wpdb->insert(
-        $table_name_forms,
-        array(
-            'form_name' => sanitize_text_field($form_data['form_name']),
-            'locations' => $locations,
-            'created_at' => $current_time,
-            'updated_at' => $current_time
-        )
-    );
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($form_data)) {
+            wp_send_json_error(['message' => 'فرمت داده‌ها نامعتبر است.']);
+        }
 
-    if ($inserted === false) {
-        wp_send_json_error(array('message' => 'Failed to save form.'));
-        return;
-    }
+        // Validate required fields
+        if (empty($form_data['form_name'])) {
+            wp_send_json_error(['message' => 'نام فرم الزامی است.']);
+        }
 
-    $form_id = $wpdb->insert_id;
-    // Check if columns need to be added
-    $existing_columns = $wpdb->get_col("SHOW COLUMNS FROM `$table_name_equipments`");
-    $new_columns = [];
-    foreach ($form_data['fields'] as $field) {
-        $field_name = $field['field_name'] !== 'سریال تجهیز' ? sanitize_text_field($field['field_name']) : 'equipment_id';
-        $new_columns[] = $field_name;
-        $wpdb->insert(
-            $table_name_fields,
-            array(
-                'form_id' => $form_id,
-                'field_name' => $field_name,
-                'field_type' => sanitize_text_field($field['field_type']),
-                'options' => json_encode($field['options']),
+        if (empty($form_data['locations']) || !is_array($form_data['locations'])) {
+            wp_send_json_error(['message' => 'حداقل یک موقعیت مکانی باید انتخاب شود.']);
+        }
+
+        global $wpdb;
+        $table_name_forms = $wpdb->prefix . 'equipment_forms';
+        $table_name_fields = $wpdb->prefix . 'equipment_form_fields';
+        // $table_name_equipments = $wpdb->prefix . 'equipments';
+
+        // Start transaction
+        $wpdb->query('START TRANSACTION');
+
+        $current_time = current_time('mysql');
+        $locations = wp_json_encode(array_map('sanitize_text_field', $form_data['locations']));
+
+        // Insert main form
+        $inserted = $wpdb->insert(
+            $table_name_forms,
+            [
+                'form_name' => sanitize_text_field($form_data['form_name']),
+                'locations' => $locations,
                 'created_at' => $current_time,
                 'updated_at' => $current_time
-            )
+            ],
+            ['%s', '%s', '%s', '%s']
         );
-    }
 
-    // Add new columns to the equipments table if they do not exist
-    foreach ($new_columns as $new_column) {
-        if (!in_array($new_column, $existing_columns)) {
-            $stmt = $wpdb->query("ALTER TABLE `$table_name_equipments` ADD `$new_column` VARCHAR(255) NOT NULL");
+        if ($inserted === false) {
+            throw new Exception('خطا در ذخیره‌سازی فرم اصلی.');
         }
+
+        $form_id = $wpdb->insert_id;
+
+        // First, always add equipment_id field
+        $equipment_field_inserted = $wpdb->insert(
+            $table_name_fields,
+            [
+                'form_id' => $form_id,
+                'field_name' => 'equipment_id',
+                'field_type' => 'text',
+                'options' => wp_json_encode([]),
+                'created_at' => $current_time,
+                'updated_at' => $current_time
+            ],
+            ['%d', '%s', '%s', '%s', '%s', '%s']
+        );
+
+        if ($equipment_field_inserted === false) {
+            throw new Exception('خطا در ایجاد فیلد سریال تجهیز.');
+        }
+
+        // Then process dynamic fields
+        if (!empty($form_data['fields']) && is_array($form_data['fields'])) {
+            foreach ($form_data['fields'] as $field) {
+                // Skip if field data is invalid
+                if (empty($field['field_name']) || empty($field['field_type'])) {
+                    continue;
+                }
+
+                // Skip equipment_id as it's already added
+                if ($field['field_name'] === 'equipment_id' || $field['field_name'] === 'سریال تجهیز') {
+                    continue;
+                }
+
+                $field_name = sanitize_text_field($field['field_name']);
+                $field_type = sanitize_text_field($field['field_type']);
+                $options = !empty($field['options']) && is_array($field['options']) ? 
+                    array_map('sanitize_text_field', $field['options']) : [];
+
+                // Insert field
+                $field_inserted = $wpdb->insert(
+                    $table_name_fields,
+                    [
+                        'form_id' => $form_id,
+                        'field_name' => $field_name,
+                        'field_type' => $field_type,
+                        'options' => wp_json_encode($options),
+                        'created_at' => $current_time,
+                        'updated_at' => $current_time
+                    ],
+                    ['%d', '%s', '%s', '%s', '%s', '%s']
+                );
+
+                if ($field_inserted === false) {
+                    throw new Exception("خطا در ایجاد فیلد: {$field_name}");
+                }
+            }
+        }
+
+        // Commit transaction
+        $wpdb->query('COMMIT');
+
+        wp_send_json_success([
+            'message' => 'فرم با موفقیت ذخیره شد.',
+            'form_id' => $form_id,
+            'fields_count' => $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table_name_fields} WHERE form_id = %d",
+                $form_id
+            ))
+        ]);
+
+    } catch (Exception $e) {
+        // Rollback on error
+        $wpdb->query('ROLLBACK');
+        
+        error_log('Save form data error: ' . $e->getMessage());
+        
+        wp_send_json_error([
+            'message' => 'خطا در ذخیره‌سازی فرم.',
+            'debug' => WP_DEBUG ? $e->getMessage() : ''
+        ]);
     }
-    wp_send_json_success(array('message' => 'فرم با موفقیت ذخیره شد.', 'form_id' => $form_id));
 }
 add_action('wp_ajax_save_form_data', 'save_form_data');

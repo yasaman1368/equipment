@@ -33,6 +33,8 @@ include_once '_inc/export/export-equipments-data-from-form.php';
 include_once '_inc/import/import-equipments-data-from-form.php';
 include_once '_inc/student-registeration/register-student.php';
 include_once '_inc/student-registeration/get-class-stats.php';
+include_once '_inc/form-equipment/edite-saved-form/remove-form-field.php';
+include_once '_inc/form-equipment/edite-saved-form/update-form-data.php';
 
 //****** to do this below function  i think will use but till i dont use
 include_once '_inc/utility/get_users_relative_by_supervisor.php';
@@ -49,120 +51,3 @@ include_once COMPOSER_ROOT . '/vendor/autoload.php';
 // for( $i= 36; $i< 70; $i++ ){
 //   wp_delete_user($i);
 // }
-
-
-// اضافه کردن action برای آپدیت فرم
-function update_form_data() {
-  // if ( ! current_user_can('manage_options') ) { // یا capability مناسب شما مثل is_manager
-  //   wp_send_json_error(['message' => 'حق دسترسی ندارید.']);
-  // }
-
-  // اگر تصمیم دارید nonce استفاده کنید:
-  // check_ajax_referer('form_manager_nonce', 'security');
-
-  if ( empty( $_POST['form_data'] ) ) {
-    wp_send_json_error(['message' => 'ورودی نامعتبر.']);
-  }
-
-  $raw = wp_unslash( $_POST['form_data'] ); // امن‌سازی اولیه
-  $form_data = json_decode( $raw, true );
-
-  if ( json_last_error() !== JSON_ERROR_NONE || ! is_array($form_data) ) {
-    wp_send_json_error(['message' => 'فرمت داده نامعتبر.']);
-  }
-
-  global $wpdb;
-  $forms_table = $wpdb->prefix . 'equipment_forms';
-  $fields_table = $wpdb->prefix . 'equipment_form_fields';
-
-  $form_id = intval( $form_data['form_id'] ?? 0 );
-  if ( ! $form_id ) {
-    wp_send_json_error(['message' => 'شناسه فرم نامعتبر.']);
-  }
-
-  // آپدیت اصلی
-  $updated = $wpdb->update(
-    $forms_table,
-    [
-      'form_name' => sanitize_text_field( $form_data['form_name'] ?? '' ),
-      'locations' => wp_json_encode( $form_data['locations'] ?? [] ),
-      'updated_at' => current_time('mysql')
-    ],
-    ['id' => $form_id],
-    ['%s','%s','%s'],
-    ['%d']
-  );
-
-  // جمع idهای موجود در payload برای بررسی حذف‌های احتمالی
-  $incoming_field_ids = [];
-
-  foreach ( $form_data['fields'] as $field ) {
-    if ( ! empty( $field['field_id'] ) ) {
-      $fid = intval( $field['field_id'] );
-      $incoming_field_ids[] = $fid;
-      $wpdb->update(
-        $fields_table,
-        [
-          'field_name' => sanitize_text_field( $field['field_name'] ?? '' ),
-          'field_type' => sanitize_text_field( $field['field_type'] ?? '' ),
-          'options'    => wp_json_encode( $field['options'] ?? [] ),
-          'updated_at' => current_time('mysql')
-        ],
-        ['id' => $fid],
-        ['%s','%s','%s','%s'],
-        ['%d']
-      );
-    } else {
-      $wpdb->insert(
-        $fields_table,
-        [
-          'form_id' => $form_id,
-          'field_name' => sanitize_text_field( $field['field_name'] ?? '' ),
-          'field_type' => sanitize_text_field( $field['field_type'] ?? '' ),
-          'options' => wp_json_encode( $field['options'] ?? [] ),
-          'created_at' => current_time('mysql'),
-          'updated_at' => current_time('mysql')
-        ],
-        ['%d','%s','%s','%s','%s','%s']
-      );
-    }
-  }
-
-  // حذف فیلدهایی که در payload نیستند (اختیاری ولی مفید)
-  if (!empty($incoming_field_ids)) {
-    // حذف همه فیلدهای فرم که در incoming نیستند
-    $placeholders = implode(',', array_fill(0, count($incoming_field_ids), '%d'));
-    $sql = $wpdb->prepare(
-      "DELETE FROM {$fields_table} WHERE form_id = %d AND id NOT IN ($placeholders)",
-      array_merge([$form_id], $incoming_field_ids)
-    );
-    $wpdb->query($sql);
-  }
-
-  wp_send_json_success(['message' => 'فرم با موفقیت بروزرسانی شد.']);
-}
-add_action('wp_ajax_update_form_data', 'update_form_data');
-
-
-function remove_form_field() {
-  if ( ! current_user_can('manage_options') ) {
-    wp_send_json_error(['message' => 'حق دسترسی ندارید.']);
-  }
-
-  $field_id = intval( $_POST['field_id'] ?? 0 );
-  if ( ! $field_id ) {
-    wp_send_json_error(['message' => 'شناسه نامعتبر.']);
-  }
-
-  global $wpdb;
-  $fields_table = $wpdb->prefix . 'equipment_form_fields';
-  $result = $wpdb->delete( $fields_table, ['id' => $field_id], ['%d'] );
-
-  if ( $result !== false ) {
-    wp_send_json_success(['message' => 'فیلد با موفقیت حذف شد.']);
-  } else {
-    wp_send_json_error(['message' => 'خطا در حذف فیلد.']);
-  }
-}
-add_action('wp_ajax_remove_form_field', 'remove_form_field');
-
