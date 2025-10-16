@@ -368,7 +368,7 @@ class FormManager {
     const formContainer = document.getElementById("display-form");
     formContainer.innerHTML = "";
 
-    formData.fields.forEach((field) => {
+    formData.fields.forEach((field, idx) => {
       const fieldDiv = document.createElement("div");
       fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
 
@@ -385,10 +385,16 @@ class FormManager {
         case "number":
         case "date":
         case "time":
-          inputElement = this.createInputField(field.field_type);
+          inputElement = this.createInputField(
+            field.field_type,
+            field.id || idx + 1
+          );
           break;
         case "file":
-          inputElement = this.createInputField(field.field_type);
+          inputElement = this.createInputField(
+            field.field_type,
+            field.id || idx + 1
+          );
           inputElement.accept = "image/*";
           break;
         case "select":
@@ -399,7 +405,7 @@ class FormManager {
           fieldDiv.appendChild(label);
           this.createCheckboxRadioDisplay(field, fieldDiv);
           break;
-        case "button": // For geo location
+        case "button" || "geo": // For geo location
           inputElement = document.createElement("input");
           inputElement.id = "capture-geo-btn";
           inputElement.type = "button";
@@ -417,7 +423,7 @@ class FormManager {
     });
 
     // Add remove button
-    this.addRemoveButton(formContainer);
+    this.addRemoveEditButton(formContainer);
   }
 
   createFilledSelectField(options) {
@@ -457,7 +463,7 @@ class FormManager {
     });
   }
 
-  addRemoveButton(container) {
+  addRemoveEditButton(container) {
     const buttonContainer = document.createElement("div");
     buttonContainer.classList.add("btn-group", "mt-2");
 
@@ -622,7 +628,6 @@ class FormManager {
 
     // تنظیم نام فرم
     document.getElementById("placeholder-form-name").textContent = formName;
-
     // پاکسازی فرم ساز
     const formBuilder = document.getElementById("form-container-builder");
     formBuilder.innerHTML = "";
@@ -809,6 +814,9 @@ class FormManager {
     updateBtn.addEventListener("click", () => this.handleUpdateForm());
 
     const saveBtn = document.getElementById("save-form-btn");
+    // if(saveBtn){
+    //   saveBtn.remove()
+    // }
     saveBtn.parentNode.insertBefore(updateBtn, saveBtn.nextSibling);
   }
 

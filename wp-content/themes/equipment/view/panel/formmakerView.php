@@ -1,6 +1,5 @@
 <?php
 if(!is_manager())wp_redirect( home_url('panel') );
-// PHP section at the top for initial page setup
  ?>
 
 <div class="container">
