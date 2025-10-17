@@ -1,4 +1,5 @@
 class EquipmentFormHandler {
+
   constructor() {
     this.serialInput = document.getElementById("serial-input");
     this.searchBtn = document.getElementById("search-btn");
@@ -43,7 +44,6 @@ class EquipmentFormHandler {
         if (data.success) {
           if (data.data.status) {
             this.displayEquipmentData(data.data);
-            // Attach event listener for geo-location button
             this.captureGeoBtn = document.getElementById("capture-geo-btn");
             if (this.captureGeoBtn) {
               this.captureGeoBtn.addEventListener("click", () =>
@@ -63,13 +63,11 @@ class EquipmentFormHandler {
           });
         }
       })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+      .catch((error) => console.error("Error:", error));
   }
 
   displayEquipmentData(data) {
-    this.formContainer.innerHTML = ""; // Clear previous form
+    this.formContainer.innerHTML = "";
     data.data.forEach((item) => {
       const fieldDiv = document.createElement("div");
       fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
@@ -79,48 +77,35 @@ class EquipmentFormHandler {
       label.classList.add("form-label");
       fieldDiv.appendChild(label);
 
-      // Handle file/image fields
       if (item.field_type === "file" || item.field_type === "image") {
         if (item.value) {
-          // Create a container for the image
           const imageContainer = document.createElement("div");
           imageContainer.classList.add("image-container");
-
-          // Create a thumbnail image
           const thumbnail = document.createElement("img");
-          thumbnail.src = item.value; // Use the file URL
+          thumbnail.src = item.value;
           thumbnail.alt = item.field_name;
-          thumbnail.classList.add("img-thumbnail", "img-responsive"); // Add Bootstrap classes for responsiveness
-          thumbnail.style.maxWidth = "100%"; // Ensure the image is responsive
-          thumbnail.style.height = "auto"; // Maintain aspect ratio
-
-          // Create a link to view the full-size image
+          thumbnail.classList.add("img-thumbnail", "img-responsive");
+          thumbnail.style.maxWidth = "100%";
+          thumbnail.style.height = "auto";
           const imageLink = document.createElement("a");
-          imageLink.href = item.value; // Link to the full-size image
-          imageLink.target = "_blank"; // Open in a new tab
-          imageLink.appendChild(thumbnail); // Add the thumbnail to the link
-
-          // Add the link to the container
+          imageLink.href = item.value;
+          imageLink.target = "_blank";
+          imageLink.appendChild(thumbnail);
           imageContainer.appendChild(imageLink);
-
-          // Add the container to the field div
           fieldDiv.appendChild(imageContainer);
         } else {
-          // If no file is uploaded, display a message
           const noFileMessage = document.createElement("span");
-          noFileMessage.textContent = "No file uploaded.";
+          noFileMessage.textContent = "فایلی بارگذاری نشده است.";
           noFileMessage.classList.add("text-muted");
           fieldDiv.appendChild(noFileMessage);
         }
       } else if (item.field_type === "geo_location") {
-        // Display geo-location data
         const geoLocationDisplay = document.createElement("div");
         geoLocationDisplay.textContent =
           item.value || "موقعیت جغرافیایی ثبت نشده است.";
         geoLocationDisplay.classList.add("text-muted");
         fieldDiv.appendChild(geoLocationDisplay);
       } else {
-        // For other field types, create the appropriate input element
         const inputElement = this.createInputElement(item);
         fieldDiv.appendChild(inputElement);
       }
@@ -128,28 +113,26 @@ class EquipmentFormHandler {
       this.formContainer.appendChild(fieldDiv);
     });
 
-    //button group
     const divGroupBtns = document.createElement("div");
     divGroupBtns.classList.add("btn-group");
     divGroupBtns.setAttribute("role", "group");
     divGroupBtns.setAttribute("aria-label", "Two button group");
-
-    // Add an "Edit" button
     const editButton = document.createElement("button");
     editButton.textContent = "ویرایش";
     editButton.classList.add("btn", "btn-primary", "mt-3");
     editButton.addEventListener("click", () => this.enableEditMode());
     divGroupBtns.appendChild(editButton);
 
-    // Add a "Remove" button
     const removeButton = document.createElement("button");
     removeButton.textContent = "حذف";
     removeButton.classList.add("btn", "btn-danger", "mt-3", "ml-2");
     removeButton.addEventListener("click", () => this.handleRemoveEquipment());
     divGroupBtns.appendChild(removeButton);
+
     this.formContainer.appendChild(divGroupBtns);
   }
 
+  /** ✅ Updated section — added textarea support **/
   createInputElement(item) {
     let inputElement;
     let options;
@@ -162,40 +145,46 @@ class EquipmentFormHandler {
         inputElement.type = item.field_type;
         inputElement.classList.add("form-control");
         inputElement.value = item.value ?? "";
-        inputElement.name = `field_${item.id}`; // Ensure the name is set correctly
+        inputElement.name = `field_${item.id}`;
         inputElement.disabled = item.field_name === "equipment_id";
         break;
+
+      case "textarea":
+        inputElement = document.createElement("textarea");
+        inputElement.classList.add("form-control");
+        inputElement.name = `field_${item.id}`;
+        inputElement.rows = 4;
+        inputElement.value = item.value ?? "";
+        break;
+
       case "select":
         inputElement = document.createElement("select");
         inputElement.classList.add("form-control");
-        inputElement.name = `field_${item.id}`; // Ensure the name is set correctly
-        options = JSON.parse(item.options);
+        inputElement.name = `field_${item.id}`;
+        options = JSON.parse(item.options || "[]");
         options.forEach((option) => {
           const optionElement = document.createElement("option");
           optionElement.value = option;
           optionElement.textContent = option;
-          if (option === item.value) {
-            optionElement.selected = true;
-          }
+          if (option === item.value) optionElement.selected = true;
           inputElement.appendChild(optionElement);
         });
         break;
+
       case "checkbox":
       case "radio":
         inputElement = document.createElement("div");
-        const values = item.value ? item.value.split(",") : "";
-        options = JSON.parse(item.options);
+        const values = item.value ? item.value.split(",") : [];
+        options = JSON.parse(item.options || "[]");
         options.forEach((option) => {
           const optionDiv = document.createElement("div");
           optionDiv.classList.add("form-check");
           const input = document.createElement("input");
           input.type = item.field_type;
-          input.name = `field_${item.id}`; // Ensure the name is set correctly
+          input.name = `field_${item.id}`;
           input.value = option;
           input.classList.add("form-check-input");
-          if (values.includes(option)) {
-            input.checked = true;
-          }
+          if (values.includes(option)) input.checked = true;
           const optionLabel = document.createElement("label");
           optionLabel.textContent = option;
           optionLabel.classList.add("form-check-label");
@@ -204,34 +193,35 @@ class EquipmentFormHandler {
           inputElement.appendChild(optionDiv);
         });
         break;
+
       case "file":
       case "image":
         inputElement = document.createElement("input");
         inputElement.type = "file";
         inputElement.classList.add("form-control");
         inputElement.accept = "image/*";
-        inputElement.name = `field_${item.id}`; // Ensure the name is set correctly
+        inputElement.name = `field_${item.id}`;
         break;
+
       case "button":
-        // Button for geo-location
         inputElement = document.createElement("button");
         inputElement.id = "capture-geo-btn";
         inputElement.type = "button";
         inputElement.classList.add("form-control", "bg-warning");
         inputElement.textContent = "موقعیت جغرافیایی";
         break;
+
       default:
         inputElement = document.createElement("input");
         inputElement.type = "text";
         inputElement.classList.add("form-control");
-        inputElement.value = item.value;
-        inputElement.name = `field_${item.id}`; // Ensure the name is set correctly
+        inputElement.value = item.value ?? "";
+        inputElement.name = `field_${item.id}`;
         break;
     }
     return inputElement;
   }
-
-  displayFormSelector() {
+    displayFormSelector() {
     this.fetchData("/wp-admin/admin-ajax.php?action=get_saved_forms")
       .then((data) => {
         if (data.success) {
@@ -272,7 +262,6 @@ class EquipmentFormHandler {
       .then((data) => {
         if (data.success) {
           this.formContainer.innerHTML = "";
-          console.log(data.data);
           data.data.fields.forEach((field) => {
             const fieldDiv = document.createElement("div");
             fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
@@ -288,7 +277,6 @@ class EquipmentFormHandler {
             this.formContainer.appendChild(fieldDiv);
           });
 
-          // Check if the captureGeoBtn exists before adding the event listener
           this.captureGeoBtn = document.getElementById("capture-geo-btn");
           if (this.captureGeoBtn) {
             this.captureGeoBtn.addEventListener("click", () =>
@@ -309,69 +297,46 @@ class EquipmentFormHandler {
         equipmentIdInput.value = this.serialInput.value;
         equipmentIdInput.disabled = true;
       })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+      .catch((error) => console.error("Error:", error));
   }
 
+  /** ✅ Updated: includes textarea fields in form collection **/
   handleSaveData() {
     const equipmentId = this.serialInput.value;
-    const formId = this.formSelector.value; // Ensure form_id is included
+    const formId = this.formSelector.value;
     const formData = new FormData();
 
-    // Append serial number and form ID
     formData.append("equipment_id", equipmentId);
-    formData.append("form_id", formId); // Include form_id in the request
+    formData.append("form_id", formId);
 
-    // Append form data as JSON
     const formFields = {};
-    this.formContainer.querySelectorAll("input, select").forEach((input) => {
-      const fieldId = input.name.replace("field_", ""); // Extract field_id from the name attribute
+    this.formContainer.querySelectorAll("input, select, textarea").forEach((input) => {
+      const fieldId = input.name.replace("field_", "");
       if (input.type === "file") {
         if (input.files.length > 0) {
           formData.append(`field_${fieldId}`, input.files[0]);
         }
       } else if (input.type === "checkbox") {
-        // Handle checkboxes
         if (input.checked) {
-          if (!formFields[fieldId]) {
-            formFields[fieldId] = []; // Initialize as an array if not already
-          }
-          formFields[fieldId].push(input.value); // Push the value into the array
+          if (!formFields[fieldId]) formFields[fieldId] = [];
+          formFields[fieldId].push(input.value);
         }
       } else if (input.type === "radio") {
-        // Handle radio buttons (only one can be selected)
-        if (input.checked) {
-          formFields[fieldId] = input.value;
-        }
+        if (input.checked) formFields[fieldId] = input.value;
       } else {
-        // Handle other input types
         formFields[fieldId] = input.value;
       }
     });
 
-    // Append geo-location data if available
-    const geoLocationInput = this.formContainer.querySelector(
-      'input[name="geo_location"]'
-    );
-    if (geoLocationInput) {
-      formFields["geo_location"] = geoLocationInput.value;
-    }
-    // Convert arrays to comma-separated strings for checkboxes and radio buttons
     for (const key in formFields) {
       if (Array.isArray(formFields[key])) {
         formFields[key] = formFields[key].join(",");
       }
     }
 
-    // Append form fields as JSON
     formData.append("form_data", JSON.stringify(formFields));
 
-    // Send the form data
-    this.fetchData(
-      "/wp-admin/admin-ajax.php?action=save_equipment_data",
-      formData
-    )
+    this.fetchData("/wp-admin/admin-ajax.php?action=save_equipment_data", formData)
       .then((data) => {
         if (data.success) {
           Swal.fire({
@@ -390,10 +355,10 @@ class EquipmentFormHandler {
           });
         }
       })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+      .catch((error) => console.error("Error:", error));
   }
+
+
   enableEditMode() {
     // Enable all input fields
     this.formContainer
