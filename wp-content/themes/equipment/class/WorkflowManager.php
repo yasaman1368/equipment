@@ -26,7 +26,7 @@ class WorkflowManager
     $current_status = $this->db->getCurrentStatus($equipment_id);
 
     // اگر گردش کار هنوز ثبت نشده
-    if (!$current_status) {
+    if (!$current_status || $this->current_user_role === 'manager') {
       if ($this->current_user_role === 'user') {
         return $this->db->saveWorkflow($equipment_id, 'Pending', 'user', $this->current_user_id);
       }

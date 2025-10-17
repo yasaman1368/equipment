@@ -1,3 +1,12 @@
+<?php 
+$isManager=is_manager();
+if($isManager){
+  ?>
+  <input type="hidden" id="isManager"  value="isManager">
+  <?php 
+}
+?>
+
 <div class="container bg-secondary rounded p-3 container-equipment my-5">
     <div class="text-white m-2 p-3">
         <h4>ردیاب تجهیزات</h4>

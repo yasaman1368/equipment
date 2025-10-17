@@ -1,5 +1,4 @@
 class EquipmentFormHandler {
-
   constructor() {
     this.serialInput = document.getElementById("serial-input");
     this.searchBtn = document.getElementById("search-btn");
@@ -120,6 +119,8 @@ class EquipmentFormHandler {
     const editButton = document.createElement("button");
     editButton.textContent = "ویرایش";
     editButton.classList.add("btn", "btn-primary", "mt-3");
+    const isManager = document.getElementById("isManager")?.value ?? "isUser";
+    if (isManager !== "isManager") editButton.disabled = true;
     editButton.addEventListener("click", () => this.enableEditMode());
     divGroupBtns.appendChild(editButton);
 
@@ -221,7 +222,7 @@ class EquipmentFormHandler {
     }
     return inputElement;
   }
-    displayFormSelector() {
+  displayFormSelector() {
     this.fetchData("/wp-admin/admin-ajax.php?action=get_saved_forms")
       .then((data) => {
         if (data.success) {
@@ -310,23 +311,25 @@ class EquipmentFormHandler {
     formData.append("form_id", formId);
 
     const formFields = {};
-    this.formContainer.querySelectorAll("input, select, textarea").forEach((input) => {
-      const fieldId = input.name.replace("field_", "");
-      if (input.type === "file") {
-        if (input.files.length > 0) {
-          formData.append(`field_${fieldId}`, input.files[0]);
+    this.formContainer
+      .querySelectorAll("input, select, textarea")
+      .forEach((input) => {
+        const fieldId = input.name.replace("field_", "");
+        if (input.type === "file") {
+          if (input.files.length > 0) {
+            formData.append(`field_${fieldId}`, input.files[0]);
+          }
+        } else if (input.type === "checkbox") {
+          if (input.checked) {
+            if (!formFields[fieldId]) formFields[fieldId] = [];
+            formFields[fieldId].push(input.value);
+          }
+        } else if (input.type === "radio") {
+          if (input.checked) formFields[fieldId] = input.value;
+        } else {
+          formFields[fieldId] = input.value;
         }
-      } else if (input.type === "checkbox") {
-        if (input.checked) {
-          if (!formFields[fieldId]) formFields[fieldId] = [];
-          formFields[fieldId].push(input.value);
-        }
-      } else if (input.type === "radio") {
-        if (input.checked) formFields[fieldId] = input.value;
-      } else {
-        formFields[fieldId] = input.value;
-      }
-    });
+      });
 
     for (const key in formFields) {
       if (Array.isArray(formFields[key])) {
@@ -336,7 +339,10 @@ class EquipmentFormHandler {
 
     formData.append("form_data", JSON.stringify(formFields));
 
-    this.fetchData("/wp-admin/admin-ajax.php?action=save_equipment_data", formData)
+    this.fetchData(
+      "/wp-admin/admin-ajax.php?action=save_equipment_data",
+      formData
+    )
       .then((data) => {
         if (data.success) {
           Swal.fire({
@@ -357,7 +363,6 @@ class EquipmentFormHandler {
       })
       .catch((error) => console.error("Error:", error));
   }
-
 
   enableEditMode() {
     // Enable all input fields
