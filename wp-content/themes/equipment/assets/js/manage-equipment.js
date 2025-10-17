@@ -219,9 +219,70 @@ class EquipmentFormHandler {
         inputElement.value = item.value ?? "";
         inputElement.name = `field_${item.id}`;
         break;
+      case "qr_code":
+        inputElement = document.createElement("div");
+        inputElement.classList.add("qr-code-field");
+
+        const inputGroup = document.createElement("div");
+        inputGroup.classList.add("input-group", "mb-2");
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.classList.add("form-control", "qr-input");
+        input.value = item.value ?? "";
+        input.name = `field_${item.id}`;
+        input.placeholder = "QR کد اسکن شود";
+
+        const scanButton = document.createElement("button");
+        scanButton.type = "button";
+        scanButton.classList.add("btn", "btn-outline-primary", "scan-qr-btn");
+        scanButton.innerHTML = '<i class="bi bi-qr-code-scan"></i> اسکن QR';
+        scanButton.addEventListener("click", () =>
+          this.handleScanQrForField(input)
+        );
+
+        inputGroup.appendChild(input);
+        inputGroup.appendChild(scanButton);
+        inputElement.appendChild(inputGroup);
+        break;
     }
     return inputElement;
   }
+
+  // Add method to handle QR scanning for specific fields
+  handleScanQrForField(inputField) {
+    const html5QrCode = new Html5Qrcode("qr-reader");
+
+    // Show QR reader modal or container
+    this.qrReader.style.display = "block";
+
+    html5QrCode
+      .start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: 250,
+        },
+        (qrCodeMessage) => {
+          inputField.value = qrCodeMessage;
+          html5QrCode.stop();
+          this.qrReader.style.display = "none";
+          Swal.fire({
+            title: "موفق!",
+            text: "QR کد با موفقیت اسکن شد",
+            icon: "success",
+          });
+        },
+        (errorMessage) => {
+          // Optional error handling
+        }
+      )
+      .catch((err) => {
+        console.error("Error starting QR scanner:", err);
+        this.qrReader.style.display = "none";
+      });
+  }
+
   displayFormSelector() {
     this.fetchData("/wp-admin/admin-ajax.php?action=get_saved_forms")
       .then((data) => {

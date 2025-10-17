@@ -121,47 +121,6 @@ class FormManager {
     this.resetModal("#modal-form-name");
   }
 
-  getFieldData() {
-    const fieldName = this.elements.newFeatureName.value.trim();
-    const fieldType = this.elements.inputType.value;
-    const isRequired =
-      document.getElementById("field-required")?.checked || false;
-    const isUnique = document.getElementById("field-unique")?.checked || false;
-
-    // Get options for select, checkbox, radio
-    let options = [];
-    if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
-      const optionInputs =
-        this.elements.inputOptionContainer.querySelectorAll(".input-option");
-      options = Array.from(optionInputs)
-        .map((input) => input.value.trim())
-        .filter((value) => value !== "");
-    }
-
-    return {
-      field_name: fieldName,
-      field_type: fieldType,
-      required: isRequired,
-      unique: isUnique,
-      options: options,
-      placeholder: this.getPlaceholderByType(fieldType),
-    };
-  }
-
-  getPlaceholderByType(fieldType) {
-    const placeholders = {
-      text: "متن خود را وارد کنید",
-      number: "عدد وارد کنید",
-      email: "example@email.com",
-      tel: "۰۹۱۲۳۴۵۶۷۸۹",
-      date: "تاریخ را انتخاب کنید",
-      time: "زمان را انتخاب کنید",
-      file: "فایل را انتخاب کنید",
-      image: "تصویر را انتخاب کنید",
-    };
-    return placeholders[fieldType] || "مقدار را وارد کنید";
-  }
-
   async addNewField(event) {
     event.preventDefault();
 
@@ -173,29 +132,6 @@ class FormManager {
 
     this.modals.addForm.hide();
     this.resetModal("#modal-new-field-form");
-  }
-
-  handleFieldTypeChange() {
-    const fieldType = this.elements.inputType.value;
-    const optionsContainer = this.elements.optionsContainer;
-
-    // Show/hide options container for field types that need options
-    if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
-      optionsContainer.classList.remove("d-none");
-      this.elements.selectedInput.textContent =
-        this.getFieldTypeLabel(fieldType);
-      this.initializeOptionsContainer();
-    } else {
-      optionsContainer.classList.add("d-none");
-    }
-
-    // Handle special field types
-    if (fieldType === "geo") {
-      this.elements.newFeatureName.value = "موقعیت جغرافیایی";
-      this.elements.newFeatureName.disabled = true;
-    } else {
-      this.elements.newFeatureName.disabled = false;
-    }
   }
 
   initializeOptionsContainer() {
@@ -239,29 +175,6 @@ class FormManager {
 
     this.addFieldActions(fieldWrapper, fieldId);
     return fieldWrapper;
-  }
-
-  getFieldTemplate(fieldData, fieldId) {
-    const templates = {
-      text: () => this.createInputTemplate(fieldData, fieldId, "text"),
-      number: () => this.createInputTemplate(fieldData, fieldId, "number"),
-      email: () => this.createInputTemplate(fieldData, fieldId, "email"),
-      tel: () => this.createInputTemplate(fieldData, fieldId, "tel"),
-      date: () => this.createInputTemplate(fieldData, fieldId, "date"),
-      time: () => this.createInputTemplate(fieldData, fieldId, "time"),
-      file: () => this.createInputTemplate(fieldData, fieldId, "file"),
-      image: () => this.createInputTemplate(fieldData, fieldId, "file"),
-      select: () => this.createSelectTemplate(fieldData, fieldId),
-      multiselect: () => this.createMultiSelectTemplate(fieldData, fieldId),
-      checkbox: () => this.createCheckboxTemplate(fieldData, fieldId),
-      radio: () => this.createRadioTemplate(fieldData, fieldId),
-      textarea: () => this.createTextareaTemplate(fieldData, fieldId),
-      geo: () => this.createGeoTemplate(fieldData, fieldId),
-    };
-
-    return templates[fieldData.field_type]
-      ? templates[fieldData.field_type]()
-      : this.createInputTemplate(fieldData, fieldId, "text");
   }
 
   createInputTemplate(fieldData, fieldId, type) {
@@ -485,23 +398,6 @@ class FormManager {
         `;
   }
 
-  addFieldActions(fieldWrapper, fieldId) {
-    const removeBtn = fieldWrapper.querySelector(".remove-field");
-    if (removeBtn) {
-        removeBtn.addEventListener("click", () => {
-            this.removeField(fieldWrapper);
-        });
-    }
-
-    // Add geo location functionality
-    const geoBtn = fieldWrapper.querySelector(".geo-btn");
-    if (geoBtn) {
-        geoBtn.addEventListener("click", () => {
-            this.getGeolocation(fieldWrapper);
-        });
-    }
-}
-
   // اضافه کردن این متد در کلاس FormManager
   async removeFieldFromServer(fieldId) {
     if (!fieldId) return false;
@@ -524,42 +420,42 @@ class FormManager {
     }
   }
 
- async removeField(fieldWrapper) {
+  async removeField(fieldWrapper) {
     if (!confirm("آیا از حذف این فیلد مطمئن هستید؟")) {
-        return;
+      return;
     }
 
     // نمایش وضعیت لودینگ
-    const removeBtn = fieldWrapper.querySelector('.remove-field');
+    const removeBtn = fieldWrapper.querySelector(".remove-field");
     const originalHtml = removeBtn.innerHTML;
     removeBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
     removeBtn.disabled = true;
 
     try {
-        // اگر در حالت ویرایش هستیم و فیلد از سرور باید حذف شود
-        const fieldCard = fieldWrapper.querySelector('.field-card');
-        const originalFieldId = fieldCard?.dataset?.originalFieldId;
-        
-        if (this.currentEditingFormId && originalFieldId) {
-            // حذف از سرور
-            const success = await this.removeFieldFromServer(originalFieldId);
-            if (success) {
-                fieldWrapper.remove();
-                this.showNotification("فیلد با موفقیت حذف شد", "success");
-            }
-        } else {
-            // فقط حذف از رابط کاربری
-            fieldWrapper.remove();
-            this.showNotification("فیلد حذف شد", "success");
+      // اگر در حالت ویرایش هستیم و فیلد از سرور باید حذف شود
+      const fieldCard = fieldWrapper.querySelector(".field-card");
+      const originalFieldId = fieldCard?.dataset?.originalFieldId;
+
+      if (this.currentEditingFormId && originalFieldId) {
+        // حذف از سرور
+        const success = await this.removeFieldFromServer(originalFieldId);
+        if (success) {
+          fieldWrapper.remove();
+          this.showNotification("فیلد با موفقیت حذف شد", "success");
         }
+      } else {
+        // فقط حذف از رابط کاربری
+        fieldWrapper.remove();
+        this.showNotification("فیلد حذف شد", "success");
+      }
     } catch (error) {
-        this.showNotification("خطا در حذف فیلد", "error");
+      this.showNotification("خطا در حذف فیلد", "error");
     } finally {
-        // بازگرداندن وضعیت دکمه
-        removeBtn.innerHTML = originalHtml;
-        removeBtn.disabled = false;
+      // بازگرداندن وضعیت دکمه
+      removeBtn.innerHTML = originalHtml;
+      removeBtn.disabled = false;
     }
-}
+  }
 
   getGeolocation(fieldWrapper) {
     if (!navigator.geolocation) {
@@ -676,9 +572,9 @@ class FormManager {
       option.textContent = form.form_name;
       this.elements.formSelector.appendChild(option);
     });
-    this.elements.formPreview.innerHTML=''
-    this.elements.locationsDisplay.innerHTML=''
-    this.elements.showFormNameCheck.innerHTML='-'
+    this.elements.formPreview.innerHTML = "";
+    this.elements.locationsDisplay.innerHTML = "";
+    this.elements.showFormNameCheck.innerHTML = "-";
   }
 
   async loadForm(formId) {
@@ -763,26 +659,6 @@ class FormManager {
         `;
   }
 
-  getFieldPreview(field) {
-    const previews = {
-      text: "[متن]",
-      number: "[عدد]",
-      email: "[ایمیل]",
-      tel: "[تلفن]",
-      select: "[انتخاب از لیست]",
-      multiselect: "[انتخاب چندگانه]",
-      checkbox: "[انتخاب چندگانه]",
-      radio: "[انتخاب تکی]",
-      date: "[تاریخ]",
-      time: "[زمان]",
-      file: "[فایل]",
-      image: "[تصویر]",
-      textarea: "[متن طولانی]",
-      geo: "[موقعیت جغرافیایی]",
-    };
-    return previews[field.field_type] || "[مقدار]";
-  }
-
   addFormActionButtons() {
     const actionContainer = document.createElement("div");
     actionContainer.className = "col-12 mt-4";
@@ -831,86 +707,71 @@ class FormManager {
     }
   }
 
- collectFormData() {
-    const formName = this.elements.placeholderFormName.querySelector(
+  collectFormData() {
+    const formName =
+      this.elements.placeholderFormName.querySelector(
         ".placeholder-text"
-    ).textContent;
+      ).textContent;
     const locations = Array.from(
-        document.querySelectorAll('input[name="locations[]"]:checked')
+      document.querySelectorAll('input[name="locations[]"]:checked')
     ).map((checkbox) => checkbox.value);
 
     const fields = [];
 
     // ابتدا فیلد سریال تجهیز را اضافه کن (همیشه اولین فیلد)
     const equipmentField = {
-        field_name: "equipment_id",
-        field_type: "text",
-        options: [],
-        value: document.getElementById("equipment-id")?.value || "",
-        required: true
+      field_name: "equipment_id",
+      field_type: "text",
+      options: [],
+      value: document.getElementById("equipment-id")?.value || "",
+      required: true,
     };
     fields.push(equipmentField);
 
     // سپس فیلدهای داینامیک را اضافه کن
-    const fieldElements = this.elements.formBuilder.querySelectorAll(".field-card");
-    
+    const fieldElements =
+      this.elements.formBuilder.querySelectorAll(".field-card");
+
     fieldElements.forEach((fieldElement) => {
-        // رد کردن فیلد equipment_id اصلی (چون قبلاً اضافه شده)
-        if (fieldElement.dataset.fieldId === "equipment-field" || 
-            fieldElement.querySelector("#equipment-id")) {
-            return;
-        }
+      // رد کردن فیلد equipment_id اصلی (چون قبلاً اضافه شده)
+      if (
+        fieldElement.dataset.fieldId === "equipment-field" ||
+        fieldElement.querySelector("#equipment-id")
+      ) {
+        return;
+      }
 
-        const fieldId = fieldElement.dataset.fieldId;
-        const fieldName = fieldElement
-            .querySelector(".form-label")
-            .textContent.replace("*", "")
-            .trim();
-        const fieldType = this.detectFieldType(fieldElement);
+      const fieldId = fieldElement.dataset.fieldId;
+      const fieldName = fieldElement
+        .querySelector(".form-label")
+        .textContent.replace("*", "")
+        .trim();
+      const fieldType = this.detectFieldType(fieldElement);
 
-        let options = [];
-        let value = "";
+      let options = [];
+      let value = "";
 
-        if (["select", "multiselect", "checkbox", "radio"].includes(fieldType)) {
-            options = this.collectFieldOptions(fieldElement, fieldType);
-            value = this.collectFieldValue(fieldElement, fieldType);
-        } else {
-            const input = fieldElement.querySelector("input, textarea");
-            value = input ? input.value : "";
-        }
+      if (["select", "multiselect", "checkbox", "radio"].includes(fieldType)) {
+        options = this.collectFieldOptions(fieldElement, fieldType);
+        value = this.collectFieldValue(fieldElement, fieldType);
+      } else {
+        const input = fieldElement.querySelector("input, textarea");
+        value = input ? input.value : "";
+      }
 
-        fields.push({
-            field_name: fieldName,
-            field_type: fieldType,
-            options: options,
-            value: value,
-        });
+      fields.push({
+        field_name: fieldName,
+        field_type: fieldType,
+        options: options,
+        value: value,
+      });
     });
 
     return {
-        form_name: formName,
-        locations: locations,
-        fields: fields,
+      form_name: formName,
+      locations: locations,
+      fields: fields,
     };
-}
-
-  detectFieldType(fieldElement) {
-    const input = fieldElement.querySelector("input, select, textarea");
-    if (!input) return "text";
-
-    if (input.tagName.toLowerCase() === "select") {
-      return input.multiple ? "multiselect" : "select";
-    }
-
-    if (input.type === "checkbox") {
-      return "checkbox";
-    }
-
-    if (input.type === "radio") {
-      return "radio";
-    }
-
-    return input.type || "text";
   }
 
   collectFieldOptions(fieldElement, fieldType) {
@@ -931,49 +792,29 @@ class FormManager {
     return [];
   }
 
-  collectFieldValue(fieldElement, fieldType) {
-    if (fieldType === "select") {
-      const select = fieldElement.querySelector("select");
-      return select ? select.value : "";
-    }
-
-    if (fieldType === "multiselect" || fieldType === "checkbox") {
-      const inputs = fieldElement.querySelectorAll("input:checked");
-      return Array.from(inputs)
-        .map((input) => input.value)
-        .join(",");
-    }
-
-    if (fieldType === "radio") {
-      const input = fieldElement.querySelector("input:checked");
-      return input ? input.value : "";
-    }
-
-    const input = fieldElement.querySelector("input, textarea");
-    return input ? input.value : "";
-  }
-
-validateFormData(formData) {
+  validateFormData(formData) {
     if (!formData.form_name || formData.form_name === "نام فرم انتخاب نشده") {
-        this.showNotification("لطفاً نام فرم را وارد کنید", "error");
-        return false;
+      this.showNotification("لطفاً نام فرم را وارد کنید", "error");
+      return false;
     }
 
     if (formData.locations.length === 0) {
-        this.showNotification("لطفاً حداقل یک موقعیت مکانی انتخاب کنید", "error");
-        return false;
+      this.showNotification("لطفاً حداقل یک موقعیت مکانی انتخاب کنید", "error");
+      return false;
     }
 
     // فقط فیلدهای داینامیک را بشمار (بدون equipment_id)
-    const dynamicFields = formData.fields.filter(field => field.field_name !== "equipment_id");
-    
+    const dynamicFields = formData.fields.filter(
+      (field) => field.field_name !== "equipment_id"
+    );
+
     if (dynamicFields.length === 0) {
-        this.showNotification("لطفاً حداقل یک فیلد به فرم اضافه کنید", "error");
-        return false;
+      this.showNotification("لطفاً حداقل یک فیلد به فرم اضافه کنید", "error");
+      return false;
     }
 
     return true;
-}
+  }
 
   // Edit form functionality - FIXED VERSION
   async editForm() {
@@ -1026,43 +867,48 @@ validateFormData(formData) {
     });
   }
 
-rebuildFormFields(fields) {
+  rebuildFormFields(fields) {
     // ابتدا فیلد equipment_id را پیدا کن و نمایش بده
-    const equipmentField = fields.find(field => field.field_name === "equipment_id");
-    
+    const equipmentField = fields.find(
+      (field) => field.field_name === "equipment_id"
+    );
+
     if (equipmentField) {
-        // فیلد equipment_id را به صورت پیشفرض تنظیم کن
-        const equipmentInput = document.getElementById("equipment-id");
-        if (equipmentInput && equipmentField.value) {
-            equipmentInput.value = equipmentField.value;
-        }
-        
-        // field_id را برای equipment_id ذخیره کن
-        const equipmentFieldElement = this.elements.formBuilder.querySelector('[data-field-id="equipment-field"]');
-        if (equipmentFieldElement && equipmentField.id) {
-            equipmentFieldElement.dataset.originalFieldId = equipmentField.id;
-        }
+      // فیلد equipment_id را به صورت پیشفرض تنظیم کن
+      const equipmentInput = document.getElementById("equipment-id");
+      if (equipmentInput && equipmentField.value) {
+        equipmentInput.value = equipmentField.value;
+      }
+
+      // field_id را برای equipment_id ذخیره کن
+      const equipmentFieldElement = this.elements.formBuilder.querySelector(
+        '[data-field-id="equipment-field"]'
+      );
+      if (equipmentFieldElement && equipmentField.id) {
+        equipmentFieldElement.dataset.originalFieldId = equipmentField.id;
+      }
     }
 
     // سپس فیلدهای دیگر را اضافه کن
     fields.forEach((field) => {
-        // Skip equipment_id field (already exists)
-        if (field.field_name === "equipment_id") return;
+      // Skip equipment_id field (already exists)
+      if (field.field_name === "equipment_id") return;
 
-        const fieldData = {
-            field_name: field.field_name,
-            field_type: field.field_type,
-            options: JSON.parse(field.options || "[]"),
-            required: field.required || false,
-            unique: field.unique || false,
-        };
+      const fieldData = {
+        field_name: field.field_name,
+        field_type: field.field_type,
+        options: JSON.parse(field.options || "[]"),
+        required: field.required || false,
+        unique: field.unique || false,
+      };
 
-        const fieldElement = this.createFieldElement(fieldData);
-        // Add field_id to the element for update purposes
-        fieldElement.querySelector(".field-card").dataset.originalFieldId = field.id;
-        this.elements.formBuilder.appendChild(fieldElement);
+      const fieldElement = this.createFieldElement(fieldData);
+      // Add field_id to the element for update purposes
+      fieldElement.querySelector(".field-card").dataset.originalFieldId =
+        field.id;
+      this.elements.formBuilder.appendChild(fieldElement);
     });
-}
+  }
 
   showUpdateButton() {
     // Hide save button, show update button
@@ -1099,48 +945,62 @@ rebuildFormFields(fields) {
     }
   }
 
- collectUpdateFormData() {
+  collectUpdateFormData() {
     const formData = this.collectFormData();
     formData.form_id = this.currentEditingFormId;
 
     // اضافه کردن field_id برای تمام فیلدها شامل equipment_id
-    const fieldElements = this.elements.formBuilder.querySelectorAll(".field-card");
-    
+    const fieldElements =
+      this.elements.formBuilder.querySelectorAll(".field-card");
+
     formData.fields = formData.fields.map((field, index) => {
-        // برای هر فیلد، field_id مربوطه را پیدا کن
-        if (field.field_name === "equipment_id") {
-            // پیدا کردن field_id برای equipment_id
-            const equipmentFieldElement = this.elements.formBuilder.querySelector('[data-field-id="equipment-field"]');
-            if (equipmentFieldElement && equipmentFieldElement.dataset.originalFieldId) {
-                field.field_id = parseInt(equipmentFieldElement.dataset.originalFieldId);
-            }
-        } else {
-            // برای فیلدهای دیگر
-            const fieldElement = Array.from(fieldElements).find(el => {
-                const label = el.querySelector('.form-label');
-                return label && label.textContent.replace('*', '').trim() === field.field_name;
-            });
-            
-            if (fieldElement && fieldElement.dataset.originalFieldId) {
-                field.field_id = parseInt(fieldElement.dataset.originalFieldId);
-            }
+      // برای هر فیلد، field_id مربوطه را پیدا کن
+      if (field.field_name === "equipment_id") {
+        // پیدا کردن field_id برای equipment_id
+        const equipmentFieldElement = this.elements.formBuilder.querySelector(
+          '[data-field-id="equipment-field"]'
+        );
+        if (
+          equipmentFieldElement &&
+          equipmentFieldElement.dataset.originalFieldId
+        ) {
+          field.field_id = parseInt(
+            equipmentFieldElement.dataset.originalFieldId
+          );
         }
-        return field;
+      } else {
+        // برای فیلدهای دیگر
+        const fieldElement = Array.from(fieldElements).find((el) => {
+          const label = el.querySelector(".form-label");
+          return (
+            label &&
+            label.textContent.replace("*", "").trim() === field.field_name
+          );
+        });
+
+        if (fieldElement && fieldElement.dataset.originalFieldId) {
+          field.field_id = parseInt(fieldElement.dataset.originalFieldId);
+        }
+      }
+      return field;
     });
 
     return formData;
-}
+  }
 
-// متد کمکی برای پیدا کردن field_id مربوط به equipment_id
-getEquipmentFieldId() {
-    const fieldElements = this.elements.formBuilder.querySelectorAll(".field-card");
+  // متد کمکی برای پیدا کردن field_id مربوط به equipment_id
+  getEquipmentFieldId() {
+    const fieldElements =
+      this.elements.formBuilder.querySelectorAll(".field-card");
     for (let element of fieldElements) {
-        if (element.querySelector("#equipment-id")) {
-            return element.dataset.originalFieldId ? parseInt(element.dataset.originalFieldId) : null;
-        }
+      if (element.querySelector("#equipment-id")) {
+        return element.dataset.originalFieldId
+          ? parseInt(element.dataset.originalFieldId)
+          : null;
+      }
     }
     return null;
-}
+  }
 
   // Remove form functionality
   async removeForm() {
@@ -1212,7 +1072,7 @@ getEquipmentFieldId() {
     }, 5000);
   }
 
- resetFormBuilder() {
+  resetFormBuilder() {
     // همیشه فیلد سریال تجهیز را اضافه کن
     this.elements.formBuilder.innerHTML = `
         <div class="col-md-6">
@@ -1231,19 +1091,19 @@ getEquipmentFieldId() {
             </div>
         </div>
     `;
-    
+
     this.fieldCounter = 0;
     this.equipmentFieldAdded = true;
 
     // Remove update button if exists
     const updateBtn = document.getElementById("update-form-btn");
     if (updateBtn) {
-        updateBtn.remove();
+      updateBtn.remove();
     }
 
     // Show save button
     this.elements.saveFormBtn.classList.remove("d-none");
-}
+  }
 
   resetModal(modalSelector) {
     const form = document.querySelector(`${modalSelector} form`);
@@ -1258,6 +1118,251 @@ getEquipmentFieldId() {
     this.elements.newFeatureName.disabled = false;
   }
 
+  // In the FormManager class, add QR code to the input type options
+  // You'll need to add this option to your HTML select element for input types
+  // Add this to your getFieldData method:
+  getFieldData() {
+    const fieldName = this.elements.newFeatureName.value.trim();
+    const fieldType = this.elements.inputType.value;
+    const isRequired =
+      document.getElementById("field-required")?.checked || false;
+    const isUnique = document.getElementById("field-unique")?.checked || false;
+
+    // Get options for select, checkbox, radio
+    let options = [];
+    if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
+      const optionInputs =
+        this.elements.inputOptionContainer.querySelectorAll(".input-option");
+      options = Array.from(optionInputs)
+        .map((input) => input.value.trim())
+        .filter((value) => value !== "");
+    }
+
+    return {
+      field_name: fieldName,
+      field_type: fieldType,
+      required: isRequired,
+      unique: isUnique,
+      options: options,
+      placeholder: this.getPlaceholderByType(fieldType),
+    };
+  }
+
+  // Update getPlaceholderByType to include qr_code
+  getPlaceholderByType(fieldType) {
+    const placeholders = {
+      text: "متن خود را وارد کنید",
+      number: "عدد وارد کنید",
+      email: "example@email.com",
+      tel: "۰۹۱۲۳۴۵۶۷۸۹",
+      date: "تاریخ را انتخاب کنید",
+      time: "زمان را انتخاب کنید",
+      file: "فایل را انتخاب کنید",
+      image: "تصویر را انتخاب کنید",
+      qr_code: "QR کد اسکن شود", // Added QR code placeholder
+    };
+    return placeholders[fieldType] || "مقدار را وارد کنید";
+  }
+
+  // Update handleFieldTypeChange to handle QR code
+  handleFieldTypeChange() {
+    const fieldType = this.elements.inputType.value;
+    const optionsContainer = this.elements.optionsContainer;
+
+    // Show/hide options container for field types that need options
+    if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
+      optionsContainer.classList.remove("d-none");
+      this.elements.selectedInput.textContent =
+        this.getFieldTypeLabel(fieldType);
+      this.initializeOptionsContainer();
+    } else {
+      optionsContainer.classList.add("d-none");
+    }
+
+    // Handle special field types
+    if (fieldType === "geo") {
+      this.elements.newFeatureName.value = "موقعیت جغرافیایی";
+      this.elements.newFeatureName.disabled = true;
+    } else if (fieldType === "qr_code") {
+      this.elements.newFeatureName.value = "QR کد";
+      this.elements.newFeatureName.disabled = true;
+    } else {
+      this.elements.newFeatureName.disabled = false;
+    }
+  }
+
+  // Add QR code template to getFieldTemplate
+  getFieldTemplate(fieldData, fieldId) {
+    const templates = {
+      text: () => this.createInputTemplate(fieldData, fieldId, "text"),
+      number: () => this.createInputTemplate(fieldData, fieldId, "number"),
+      email: () => this.createInputTemplate(fieldData, fieldId, "email"),
+      tel: () => this.createInputTemplate(fieldData, fieldId, "tel"),
+      date: () => this.createInputTemplate(fieldData, fieldId, "date"),
+      time: () => this.createInputTemplate(fieldData, fieldId, "time"),
+      file: () => this.createInputTemplate(fieldData, fieldId, "file"),
+      image: () => this.createInputTemplate(fieldData, fieldId, "file"),
+      select: () => this.createSelectTemplate(fieldData, fieldId),
+      multiselect: () => this.createMultiSelectTemplate(fieldData, fieldId),
+      checkbox: () => this.createCheckboxTemplate(fieldData, fieldId),
+      radio: () => this.createRadioTemplate(fieldData, fieldId),
+      textarea: () => this.createTextareaTemplate(fieldData, fieldId),
+      geo: () => this.createGeoTemplate(fieldData, fieldId),
+      qr_code: () => this.createQrCodeTemplate(fieldData, fieldId), // Added QR code template
+    };
+
+    return templates[fieldData.field_type]
+      ? templates[fieldData.field_type]()
+      : this.createInputTemplate(fieldData, fieldId, "text");
+  }
+
+  // Create QR Code Template
+  createQrCodeTemplate(fieldData, fieldId) {
+    return `
+    <div class="field-card card border h-100" data-field-id="${fieldId}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <label class="form-label fw-semibold">
+            ${fieldData.field_name}
+            ${fieldData.required ? '<span class="text-danger">*</span>' : ""}
+          </label>
+          <span class="badge bg-secondary">${this.getFieldTypeLabel(
+            fieldData.field_type
+          )}</span>
+        </div>
+        
+        <div class="qr-code-field">
+          <div class="input-group mb-2">
+            <input type="text" class="form-control qr-input" 
+                   placeholder="${fieldData.placeholder || "QR کد اسکن شود"}"
+                   ${fieldData.required ? "required" : ""}
+                   readonly>
+            <button type="button" class="btn btn-outline-primary scan-qr-btn">
+              <i class="bi bi-qr-code-scan"></i>
+              اسکن QR
+            </button>
+          </div>
+          
+          <div class="qr-reader-container d-none mt-2">
+            <div id="qr-reader-${fieldId}" class="qr-reader"></div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2 cancel-scan-btn">
+              لغو اسکن
+            </button>
+          </div>
+        </div>
+        
+        <div class="field-actions mt-2">
+          <button type="button" class="btn btn-sm btn-outline-danger remove-field">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  }
+
+  // Update addFieldActions to handle QR code scanning
+  addFieldActions(fieldWrapper, fieldId) {
+    const removeBtn = fieldWrapper.querySelector(".remove-field");
+    if (removeBtn) {
+      removeBtn.addEventListener("click", () => {
+        this.removeField(fieldWrapper);
+      });
+    }
+
+    // Add geo location functionality
+    const geoBtn = fieldWrapper.querySelector(".geo-btn");
+    if (geoBtn) {
+      geoBtn.addEventListener("click", () => {
+        this.getGeolocation(fieldWrapper);
+      });
+    }
+
+    // Add QR code scanning functionality
+    const scanQrBtn = fieldWrapper.querySelector(".scan-qr-btn");
+    if (scanQrBtn) {
+      scanQrBtn.addEventListener("click", () => {
+        this.handleQrCodeScan(fieldWrapper, fieldId);
+      });
+    }
+
+    const cancelScanBtn = fieldWrapper.querySelector(".cancel-scan-btn");
+    if (cancelScanBtn) {
+      cancelScanBtn.addEventListener("click", () => {
+        this.cancelQrCodeScan(fieldWrapper);
+      });
+    }
+  }
+
+  // Add QR Code Scanning Methods
+  handleQrCodeScan(fieldWrapper, fieldId) {
+    const qrReaderContainer = fieldWrapper.querySelector(
+      ".qr-reader-container"
+    );
+    const scanBtn = fieldWrapper.querySelector(".scan-qr-btn");
+    const qrInput = fieldWrapper.querySelector(".qr-input");
+
+    // Show QR reader
+    qrReaderContainer.classList.remove("d-none");
+    scanBtn.disabled = true;
+
+    // Initialize QR code scanner
+    const qrReaderElement = document.getElementById(`qr-reader-${fieldId}`);
+
+    if (!window.Html5Qrcode) {
+      this.showNotification("کتابخانه اسکن QR بارگذاری نشده است", "error");
+      return;
+    }
+
+    const html5QrCode = new Html5Qrcode(`qr-reader-${fieldId}`);
+
+    html5QrCode
+      .start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: 250,
+        },
+        (qrCodeMessage) => {
+          // Success callback
+          qrInput.value = qrCodeMessage;
+          this.cancelQrCodeScan(fieldWrapper);
+          this.showNotification("QR کد با موفقیت اسکن شد", "success");
+        },
+        (errorMessage) => {
+          // Optional: Handle scanning errors
+          console.log(`QR Code scan error: ${errorMessage}`);
+        }
+      )
+      .catch((err) => {
+        this.showNotification("خطا در راه‌اندازی اسکنر QR", "error");
+        this.cancelQrCodeScan(fieldWrapper);
+      });
+
+    // Store scanner instance for cleanup
+    fieldWrapper._qrScanner = html5QrCode;
+  }
+
+  cancelQrCodeScan(fieldWrapper) {
+    const qrReaderContainer = fieldWrapper.querySelector(
+      ".qr-reader-container"
+    );
+    const scanBtn = fieldWrapper.querySelector(".scan-qr-btn");
+
+    // Hide QR reader
+    qrReaderContainer.classList.add("d-none");
+    scanBtn.disabled = false;
+
+    // Stop scanner if exists
+    if (fieldWrapper._qrScanner) {
+      fieldWrapper._qrScanner.stop().catch(() => {
+        // Ignore stop errors
+      });
+      fieldWrapper._qrScanner = null;
+    }
+  }
+
+  // Update getFieldTypeLabel to include QR code
   getFieldTypeLabel(type) {
     const labels = {
       text: "متن",
@@ -1274,8 +1379,84 @@ getEquipmentFieldId() {
       image: "تصویر",
       textarea: "متن طولانی",
       geo: "موقعیت",
+      qr_code: "QR کد", // Added QR code label
     };
     return labels[type] || type;
+  }
+
+  // Update detectFieldType to handle QR code
+  detectFieldType(fieldElement) {
+    const input = fieldElement.querySelector("input, select, textarea");
+    if (!input) return "text";
+
+    if (input.tagName.toLowerCase() === "select") {
+      return input.multiple ? "multiselect" : "select";
+    }
+
+    if (input.type === "checkbox") {
+      return "checkbox";
+    }
+
+    if (input.type === "radio") {
+      return "radio";
+    }
+
+    // Check for QR code field
+    if (fieldElement.querySelector(".qr-code-field")) {
+      return "qr_code";
+    }
+
+    return input.type || "text";
+  }
+
+  // Update collectFieldValue to handle QR code
+  collectFieldValue(fieldElement, fieldType) {
+    if (fieldType === "select") {
+      const select = fieldElement.querySelector("select");
+      return select ? select.value : "";
+    }
+
+    if (fieldType === "multiselect" || fieldType === "checkbox") {
+      const inputs = fieldElement.querySelectorAll("input:checked");
+      return Array.from(inputs)
+        .map((input) => input.value)
+        .join(",");
+    }
+
+    if (fieldType === "radio") {
+      const input = fieldElement.querySelector("input:checked");
+      return input ? input.value : "";
+    }
+
+    if (fieldType === "qr_code") {
+      const input = fieldElement.querySelector(".qr-input");
+      return input ? input.value : "";
+    }
+
+    const input = fieldElement.querySelector("input, textarea");
+    return input ? input.value : "";
+  }
+
+  // Update getFieldPreview to include QR code
+  getFieldPreview(field) {
+    const previews = {
+      text: "[متن]",
+      number: "[عدد]",
+      email: "[ایمیل]",
+      tel: "[تلفن]",
+      select: "[انتخاب از لیست]",
+      multiselect: "[انتخاب چندگانه]",
+      checkbox: "[انتخاب چندگانه]",
+      radio: "[انتخاب تکی]",
+      date: "[تاریخ]",
+      time: "[زمان]",
+      file: "[فایل]",
+      image: "[تصویر]",
+      textarea: "[متن طولانی]",
+      geo: "[موقعیت جغرافیایی]",
+      qr_code: "[QR کد]", // Added QR code preview
+    };
+    return previews[field.field_type] || "[مقدار]";
   }
 }
 

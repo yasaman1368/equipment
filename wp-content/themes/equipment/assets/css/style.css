@@ -528,3 +528,21 @@ body {
 .position-relative {
   position: relative;
 }
+
+.qr-code-field .qr-reader {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.qr-code-field .qr-reader-container {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8f9fa;
+}
+
+.qr-code-field .scan-qr-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
