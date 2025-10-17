@@ -1,439 +1,638 @@
 class EquipmentFormHandler {
   constructor() {
+    this.initializeElements();
+    this.initEventListeners();
+    this.initRealTimeValidation();
+  }
+
+  initializeElements() {
     this.serialInput = document.getElementById("serial-input");
     this.searchBtn = document.getElementById("search-btn");
     this.formContainer = document.getElementById("form-container");
     this.formSelector = document.getElementById("form-selector");
+    this.formSelectorContainer = document.getElementById("form-selector-container");
     this.saveDataBtn = document.getElementById("save-data-btn");
     this.scanQrBtn = document.getElementById("scan-qr-btn");
     this.qrReader = document.getElementById("qr-reader");
     this.searchResult = document.getElementById("description-search-result");
-    this.initEventListeners();
+    this.loadingIndicator = document.getElementById("loading-indicator");
   }
 
   initEventListeners() {
     this.searchBtn.addEventListener("click", () => this.handleSearch());
-    this.formSelector.addEventListener("change", () =>
-      this.handleFormSelectorChange()
-    );
+    this.formSelector.addEventListener("change", () => this.handleFormSelectorChange());
     this.saveDataBtn.addEventListener("click", () => this.handleSaveData());
     this.scanQrBtn.addEventListener("click", () => this.handleScanQr());
   }
 
-  handleSearch() {
+  async handleSearch() {
     const equipmentId = this.serialInput.value.trim();
+    
+    if (!this.validateEquipmentId(equipmentId)) return;
+
+    this.resetUI();
+    this.showLoading(true);
+
+    try {
+      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=get_equipment_data", {
+        equipment_id: equipmentId,
+      });
+
+      this.handleSearchResponse(data);
+    } catch (error) {
+      this.handleSearchError(error);
+    } finally {
+      this.showLoading(false);
+    }
+  }
+
+  validateEquipmentId(equipmentId) {
     if (!equipmentId) {
       Swal.fire({
         title: "خطا!",
         text: "سریال را بدرستی وارد کنید",
         icon: "error",
       });
-      return;
+      return false;
     }
+    return true;
+  }
+
+  resetUI() {
     this.formContainer.innerHTML = "";
     this.formSelector.innerHTML = "";
     this.searchResult.innerHTML = "";
-    this.formSelector.style.display = "none";
+    this.hideFormSelector();
     this.saveDataBtn.style.display = "none";
+  }
 
-    this.fetchData("/wp-admin/admin-ajax.php?action=get_equipment_data", {
-      equipment_id: equipmentId,
-    })
-      .then((data) => {
-        if (data.success) {
-          if (data.data.status) {
-            this.displayEquipmentData(data.data);
-            this.captureGeoBtn = document.getElementById("capture-geo-btn");
-            if (this.captureGeoBtn) {
-              this.captureGeoBtn.addEventListener("click", () =>
-                this.handleGeoLocation()
-              );
-            }
-          } else {
-            this.searchResult.textContent =
-              "تجهیز مورد نظر یافت نشد! برای ثبت اطلاعات فرم مرتبط را انتخاب کنید";
-            this.displayFormSelector();
-          }
-        } else {
-          Swal.fire({
-            title: "خطا!",
-            text: "خطا در جستجوی اطلاعات تجهیز.",
-            icon: "error",
-          });
-        }
-      })
-      .catch((error) => console.error("Error:", error));
+  hideFormSelector() {
+    this.formSelectorContainer.style.display = "none";
+    this.formSelector.style.display = "none";
+  }
+
+  showFormSelector() {
+    this.formSelectorContainer.style.display = "block";
+    this.formSelector.style.display = "block";
+  }
+
+  handleSearchResponse(data) {
+    if (!data.success) {
+      this.showError("خطا در جستجوی اطلاعات تجهیز.");
+      return;
+    }
+
+    if (data.data.status) {
+      this.handleEquipmentFound(data.data);
+    } else {
+      this.handleEquipmentNotFound();
+    }
+  }
+
+  handleEquipmentFound(equipmentData) {
+    this.searchResult.textContent = "تجهیز مورد نظر یافت شد";
+    this.searchResult.className = "fw-bold text-success";
+    this.displayEquipmentData(equipmentData);
+    this.attachGeoLocationListener();
+  }
+
+  handleEquipmentNotFound() {
+    this.searchResult.textContent = "تجهیز مورد نظر یافت نشد! برای ثبت اطلاعات فرم مرتبط را انتخاب کنید";
+    this.searchResult.className = "fw-bold text-warning";
+    this.displayFormSelector();
+  }
+
+  handleSearchError(error) {
+    console.error("Error:", error);
+    this.showError("خطا در ارتباط با سرور.");
+  }
+
+  async displayFormSelector() {
+    try {
+      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=get_saved_forms");
+      
+      if (data.success) {
+        this.populateFormSelector(data.data);
+      } else {
+        this.showError("خطا در دریافت فرم‌ها.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  populateFormSelector(formData) {
+    if (formData.status === "empty") {
+      this.formSelector.classList.add("text-danger", "fw-bold");
+      this.formSelector.innerHTML = '<option value="">برای شما هیچ فرمی ساخته نشده است</option>';
+    } else {
+      this.formSelector.innerHTML = '<option value="">-- انتخاب فرم --</option>';
+      formData.forms.forEach(form => {
+        const option = document.createElement("option");
+        option.value = form.id;
+        option.textContent = form.form_name;
+        this.formSelector.appendChild(option);
+      });
+    }
+    
+    this.showFormSelector();
+  }
+
+  async handleFormSelectorChange() {
+    const formId = this.formSelector.value;
+    
+    if (!formId) {
+      this.formContainer.innerHTML = "";
+      this.saveDataBtn.style.display = "none";
+      return;
+    }
+
+    try {
+      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=get_form_fields", {
+        form_id: formId,
+      });
+
+      if (data.success) {
+        this.renderFormFields(data.data.fields);
+        this.attachGeoLocationListener();
+        this.saveDataBtn.style.display = "block";
+        this.setEquipmentIdField();
+      } else {
+        this.showError("خطا در دریافت فیلدهای فرم.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  renderFormFields(fields) {
+    this.formContainer.innerHTML = "";
+    
+    fields.forEach(field => {
+      const fieldDiv = document.createElement("div");
+      fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
+      
+      const inputContainer = this.createInputElement(field);
+      fieldDiv.appendChild(inputContainer);
+      this.formContainer.appendChild(fieldDiv);
+    });
+  }
+
+  setEquipmentIdField() {
+    const equipmentIdInput = this.formContainer.querySelector("#equipment-id");
+    if (equipmentIdInput) {
+      equipmentIdInput.value = this.serialInput.value;
+      equipmentIdInput.disabled = true;
+      equipmentIdInput.required = true;
+    }
+  }
+
+  createInputElement(item) {
+    const isRequired = item.required == 1 || item.required == true;
+    const label = this.createLabel(item, isRequired);
+    const inputElement = this.createInputByType(item, isRequired);
+    
+    const container = document.createElement("div");
+    container.appendChild(label);
+    container.appendChild(inputElement);
+    
+    return container;
+  }
+
+  createLabel(item, isRequired) {
+    const label = document.createElement("label");
+    label.textContent = item.field_name === "equipment_id" ? "سریال تجهیز" : item.field_name;
+    label.classList.add("form-label");
+    
+    if (isRequired) {
+      const requiredSpan = document.createElement("span");
+      requiredSpan.className = "text-danger";
+      requiredSpan.textContent = " *";
+      label.appendChild(requiredSpan);
+    }
+    
+    return label;
+  }
+
+  createInputByType(item, isRequired) {
+    const fieldConfig = {
+      text: () => this.createTextInput(item, isRequired),
+      number: () => this.createTextInput(item, isRequired),
+      date: () => this.createTextInput(item, isRequired),
+      time: () => this.createTextInput(item, isRequired),
+      textarea: () => this.createTextareaInput(item, isRequired),
+      select: () => this.createSelectInput(item, isRequired),
+      checkbox: () => this.createCheckboxInput(item, isRequired),
+      radio: () => this.createRadioInput(item, isRequired),
+      file: () => this.createFileInput(item, isRequired),
+      image: () => this.createFileInput(item, isRequired),
+      qr_code: () => this.createQrCodeInput(item, isRequired),
+      button: () => this.createButtonInput(item),
+    };
+
+    const createFunction = fieldConfig[item.field_type] || fieldConfig.text;
+    return createFunction();
+  }
+
+  createTextInput(item, isRequired) {
+    const input = document.createElement("input");
+    input.type = item.field_type;
+    input.classList.add("form-control");
+    input.value = item.value ?? "";
+    input.name = `field_${item.id}`;
+    input.disabled = item.field_name === "equipment_id";
+    if (isRequired) input.required = true;
+    return input;
+  }
+
+  createTextareaInput(item, isRequired) {
+    const textarea = document.createElement("textarea");
+    textarea.classList.add("form-control");
+    textarea.name = `field_${item.id}`;
+    textarea.rows = 4;
+    textarea.value = item.value ?? "";
+    if (isRequired) textarea.required = true;
+    return textarea;
+  }
+
+  createSelectInput(item, isRequired) {
+    const select = document.createElement("select");
+    select.classList.add("form-control");
+    select.name = `field_${item.id}`;
+    if (isRequired) select.required = true;
+    
+    const options = JSON.parse(item.options || "[]");
+    
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = "-- انتخاب کنید --";
+    if (isRequired) {
+      emptyOption.disabled = true;
+      emptyOption.selected = !item.value;
+    }
+    select.appendChild(emptyOption);
+    
+    options.forEach(option => {
+      const optionElement = document.createElement("option");
+      optionElement.value = option;
+      optionElement.textContent = option;
+      if (option === item.value) optionElement.selected = true;
+      select.appendChild(optionElement);
+    });
+    
+    return select;
+  }
+
+  createCheckboxInput(item, isRequired) {
+    const container = document.createElement("div");
+    container.classList.add("checkbox-group");
+    if (isRequired) container.dataset.required = "true";
+    
+    const values = item.value ? item.value.split(",") : [];
+    const options = JSON.parse(item.options || "[]");
+    
+    options.forEach(option => {
+      const optionDiv = document.createElement("div");
+      optionDiv.classList.add("form-check");
+      
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.name = `field_${item.id}[]`;
+      input.value = option;
+      input.classList.add("form-check-input");
+      if (values.includes(option)) input.checked = true;
+      
+      const label = document.createElement("label");
+      label.textContent = option;
+      label.classList.add("form-check-label");
+      
+      optionDiv.appendChild(input);
+      optionDiv.appendChild(label);
+      container.appendChild(optionDiv);
+    });
+    
+    return container;
+  }
+
+  createRadioInput(item, isRequired) {
+    const container = document.createElement("div");
+    container.classList.add("radio-group");
+    const options = JSON.parse(item.options || "[]");
+    
+    options.forEach(option => {
+      const optionDiv = document.createElement("div");
+      optionDiv.classList.add("form-check");
+      
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = `field_${item.id}`;
+      input.value = option;
+      input.classList.add("form-check-input");
+      if (isRequired && !item.value) input.required = true;
+      if (option === item.value) input.checked = true;
+      
+      const label = document.createElement("label");
+      label.textContent = option;
+      label.classList.add("form-check-label");
+      
+      optionDiv.appendChild(input);
+      optionDiv.appendChild(label);
+      container.appendChild(optionDiv);
+    });
+    
+    return container;
+  }
+
+  createFileInput(item, isRequired) {
+    const container = document.createElement("div");
+    
+    if (item.value) {
+      const existingFileDiv = document.createElement("div");
+      existingFileDiv.classList.add("mb-2");
+      const fileLink = document.createElement("a");
+      fileLink.href = item.value;
+      fileLink.target = "_blank";
+      fileLink.textContent = "مشاهده فایل بارگذاری شده";
+      fileLink.classList.add("text-primary", "d-block", "mb-2");
+      existingFileDiv.appendChild(fileLink);
+      container.appendChild(existingFileDiv);
+    }
+    
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.classList.add("form-control");
+    if (item.field_type === "image") fileInput.accept = "image/*";
+    fileInput.name = `field_${item.id}`;
+    if (isRequired && !item.value) fileInput.required = true;
+    
+    container.appendChild(fileInput);
+    return container;
+  }
+
+  createQrCodeInput(item, isRequired) {
+    const container = document.createElement("div");
+    container.classList.add("qr-code-field");
+    
+    const inputGroup = document.createElement("div");
+    inputGroup.classList.add("input-group", "mb-2");
+    
+    const input = document.createElement("input");
+    input.type = "text";
+    input.classList.add("form-control", "qr-input");
+    input.value = item.value ?? "";
+    input.name = `field_${item.id}`;
+    input.placeholder = "QR کد اسکن شود";
+    if (isRequired) input.required = true;
+    
+    const scanButton = document.createElement("button");
+    scanButton.type = "button";
+    scanButton.classList.add("btn", "btn-outline-primary", "scan-qr-btn");
+    scanButton.innerHTML = '<i class="bi bi-qr-code-scan"></i> اسکن QR';
+    scanButton.addEventListener("click", () => this.handleScanQrForField(input));
+    
+    inputGroup.appendChild(input);
+    inputGroup.appendChild(scanButton);
+    container.appendChild(inputGroup);
+    
+    return container;
+  }
+
+  createButtonInput(item) {
+    const button = document.createElement("button");
+    button.id = "capture-geo-btn";
+    button.type = "button";
+    button.classList.add("form-control", "bg-warning");
+    button.textContent = "موقعیت جغرافیایی";
+    return button;
   }
 
   displayEquipmentData(data) {
     this.formContainer.innerHTML = "";
-    data.data.forEach((item) => {
+    
+    data.data.forEach(item => {
       const fieldDiv = document.createElement("div");
       fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
-      const label = document.createElement("label");
-      label.textContent =
-        item.field_name === "equipment_id" ? "سریال تجهیز" : item.field_name;
-      label.classList.add("form-label");
-      fieldDiv.appendChild(label);
-
-      if (item.field_type === "file" || item.field_type === "image") {
-        if (item.value) {
-          const imageContainer = document.createElement("div");
-          imageContainer.classList.add("image-container");
-          const thumbnail = document.createElement("img");
-          thumbnail.src = item.value;
-          thumbnail.alt = item.field_name;
-          thumbnail.classList.add("img-thumbnail", "img-responsive");
-          thumbnail.style.maxWidth = "100%";
-          thumbnail.style.height = "auto";
-          const imageLink = document.createElement("a");
-          imageLink.href = item.value;
-          imageLink.target = "_blank";
-          imageLink.appendChild(thumbnail);
-          imageContainer.appendChild(imageLink);
-          fieldDiv.appendChild(imageContainer);
-        } else {
-          const noFileMessage = document.createElement("span");
-          noFileMessage.textContent = "فایلی بارگذاری نشده است.";
-          noFileMessage.classList.add("text-muted");
-          fieldDiv.appendChild(noFileMessage);
-        }
+      
+      if (this.isFileOrImageField(item)) {
+        this.renderFileOrImageField(fieldDiv, item);
       } else if (item.field_type === "geo_location") {
-        const geoLocationDisplay = document.createElement("div");
-        geoLocationDisplay.textContent =
-          item.value || "موقعیت جغرافیایی ثبت نشده است.";
-        geoLocationDisplay.classList.add("text-muted");
-        fieldDiv.appendChild(geoLocationDisplay);
+        this.renderGeoLocationField(fieldDiv, item);
       } else {
-        const inputElement = this.createInputElement(item);
-        fieldDiv.appendChild(inputElement);
+        const inputContainer = this.createInputElement(item);
+        fieldDiv.appendChild(inputContainer);
       }
-
+      
       this.formContainer.appendChild(fieldDiv);
     });
+    
+    this.addActionButtons();
+  }
 
-    const divGroupBtns = document.createElement("div");
-    divGroupBtns.classList.add("btn-group");
-    divGroupBtns.setAttribute("role", "group");
-    divGroupBtns.setAttribute("aria-label", "Two button group");
-    const editButton = document.createElement("button");
-    editButton.textContent = "ویرایش";
-    editButton.classList.add("btn", "btn-primary", "mt-3");
+  isFileOrImageField(item) {
+    return item.field_type === "file" || item.field_type === "image";
+  }
+
+  renderFileOrImageField(container, item) {
+    const label = this.createLabel(item, item.required);
+    container.appendChild(label);
+
+    if (item.value) {
+      const imageContainer = document.createElement("div");
+      imageContainer.classList.add("image-container");
+      const thumbnail = document.createElement("img");
+      thumbnail.src = item.value;
+      thumbnail.alt = item.field_name;
+      thumbnail.classList.add("img-thumbnail", "img-responsive");
+      thumbnail.style.maxWidth = "100%";
+      thumbnail.style.height = "auto";
+      
+      const imageLink = document.createElement("a");
+      imageLink.href = item.value;
+      imageLink.target = "_blank";
+      imageLink.appendChild(thumbnail);
+      imageContainer.appendChild(imageLink);
+      container.appendChild(imageContainer);
+    } else {
+      const noFileMessage = document.createElement("span");
+      noFileMessage.textContent = "فایلی بارگذاری نشده است.";
+      noFileMessage.classList.add("text-muted");
+      container.appendChild(noFileMessage);
+    }
+  }
+
+  renderGeoLocationField(container, item) {
+    const label = this.createLabel(item, false);
+    container.appendChild(label);
+
+    const geoDisplay = document.createElement("div");
+    geoDisplay.textContent = item.value || "موقعیت جغرافیایی ثبت نشده است.";
+    geoDisplay.classList.add("text-muted");
+    container.appendChild(geoDisplay);
+  }
+
+  addActionButtons() {
+    const buttonGroup = document.createElement("div");
+    buttonGroup.classList.add("btn-group");
+    buttonGroup.setAttribute("role", "group");
+    buttonGroup.setAttribute("aria-label", "عملیات تجهیز");
+
+    const editButton = this.createActionButton("ویرایش", "btn-primary", () => this.enableEditMode());
+    const removeButton = this.createActionButton("حذف", "btn-danger", () => this.handleRemoveEquipment());
+
     const isManager = document.getElementById("isManager")?.value ?? "isUser";
     if (isManager !== "isManager") editButton.disabled = true;
-    editButton.addEventListener("click", () => this.enableEditMode());
-    divGroupBtns.appendChild(editButton);
 
-    const removeButton = document.createElement("button");
-    removeButton.textContent = "حذف";
-    removeButton.classList.add("btn", "btn-danger", "mt-3", "ml-2");
-    removeButton.addEventListener("click", () => this.handleRemoveEquipment());
-    divGroupBtns.appendChild(removeButton);
-
-    this.formContainer.appendChild(divGroupBtns);
+    buttonGroup.appendChild(editButton);
+    buttonGroup.appendChild(removeButton);
+    this.formContainer.appendChild(buttonGroup);
   }
 
-  /** ✅ Updated section — added textarea support **/
-  createInputElement(item) {
-    let inputElement;
-    let options;
-    switch (item.field_type) {
-      case "text":
-      case "number":
-      case "date":
-      case "time":
-        inputElement = document.createElement("input");
-        inputElement.type = item.field_type;
-        inputElement.classList.add("form-control");
-        inputElement.value = item.value ?? "";
-        inputElement.name = `field_${item.id}`;
-        inputElement.disabled = item.field_name === "equipment_id";
-        break;
+  createActionButton(text, style, clickHandler) {
+    const button = document.createElement("button");
+    button.textContent = text;
+    button.classList.add("btn", style, "mt-3", "ms-2");
+    button.addEventListener("click", clickHandler);
+    return button;
+  }
 
-      case "textarea":
-        inputElement = document.createElement("textarea");
-        inputElement.classList.add("form-control");
-        inputElement.name = `field_${item.id}`;
-        inputElement.rows = 4;
-        inputElement.value = item.value ?? "";
-        break;
+  async handleSaveData() {
+    if (!this.validateRequiredFields()) return;
 
-      case "select":
-        inputElement = document.createElement("select");
-        inputElement.classList.add("form-control");
-        inputElement.name = `field_${item.id}`;
-        options = JSON.parse(item.options || "[]");
-        options.forEach((option) => {
-          const optionElement = document.createElement("option");
-          optionElement.value = option;
-          optionElement.textContent = option;
-          if (option === item.value) optionElement.selected = true;
-          inputElement.appendChild(optionElement);
-        });
-        break;
-
-      case "checkbox":
-      case "radio":
-        inputElement = document.createElement("div");
-        const values = item.value ? item.value.split(",") : [];
-        options = JSON.parse(item.options || "[]");
-        options.forEach((option) => {
-          const optionDiv = document.createElement("div");
-          optionDiv.classList.add("form-check");
-          const input = document.createElement("input");
-          input.type = item.field_type;
-          input.name = `field_${item.id}`;
-          input.value = option;
-          input.classList.add("form-check-input");
-          if (values.includes(option)) input.checked = true;
-          const optionLabel = document.createElement("label");
-          optionLabel.textContent = option;
-          optionLabel.classList.add("form-check-label");
-          optionDiv.appendChild(input);
-          optionDiv.appendChild(optionLabel);
-          inputElement.appendChild(optionDiv);
-        });
-        break;
-
-      case "file":
-      case "image":
-        inputElement = document.createElement("input");
-        inputElement.type = "file";
-        inputElement.classList.add("form-control");
-        inputElement.accept = "image/*";
-        inputElement.name = `field_${item.id}`;
-        break;
-
-      case "button":
-        inputElement = document.createElement("button");
-        inputElement.id = "capture-geo-btn";
-        inputElement.type = "button";
-        inputElement.classList.add("form-control", "bg-warning");
-        inputElement.textContent = "موقعیت جغرافیایی";
-        break;
-
-      default:
-        inputElement = document.createElement("input");
-        inputElement.type = "text";
-        inputElement.classList.add("form-control");
-        inputElement.value = item.value ?? "";
-        inputElement.name = `field_${item.id}`;
-        break;
-      case "qr_code":
-        inputElement = document.createElement("div");
-        inputElement.classList.add("qr-code-field");
-
-        const inputGroup = document.createElement("div");
-        inputGroup.classList.add("input-group", "mb-2");
-
-        const input = document.createElement("input");
-        input.type = "text";
-        input.classList.add("form-control", "qr-input");
-        input.value = item.value ?? "";
-        input.name = `field_${item.id}`;
-        input.placeholder = "QR کد اسکن شود";
-
-        const scanButton = document.createElement("button");
-        scanButton.type = "button";
-        scanButton.classList.add("btn", "btn-outline-primary", "scan-qr-btn");
-        scanButton.innerHTML = '<i class="bi bi-qr-code-scan"></i> اسکن QR';
-        scanButton.addEventListener("click", () =>
-          this.handleScanQrForField(input)
-        );
-
-        inputGroup.appendChild(input);
-        inputGroup.appendChild(scanButton);
-        inputElement.appendChild(inputGroup);
-        break;
+    const formData = this.prepareFormData();
+    
+    try {
+      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=save_equipment_data", formData);
+      
+      if (data.success) {
+        this.showSuccess(data.data.message);
+      } else {
+        this.showError("خطا در ذخیره‌سازی داده‌ها.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
     }
-    return inputElement;
   }
 
-  // Add method to handle QR scanning for specific fields
-  handleScanQrForField(inputField) {
-    const html5QrCode = new Html5Qrcode("qr-reader");
-
-    // Show QR reader modal or container
-    this.qrReader.style.display = "block";
-
-    html5QrCode
-      .start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: 250,
-        },
-        (qrCodeMessage) => {
-          inputField.value = qrCodeMessage;
-          html5QrCode.stop();
-          this.qrReader.style.display = "none";
-          Swal.fire({
-            title: "موفق!",
-            text: "QR کد با موفقیت اسکن شد",
-            icon: "success",
-          });
-        },
-        (errorMessage) => {
-          // Optional error handling
-        }
-      )
-      .catch((err) => {
-        console.error("Error starting QR scanner:", err);
-        this.qrReader.style.display = "none";
-      });
-  }
-
-  displayFormSelector() {
-    this.fetchData("/wp-admin/admin-ajax.php?action=get_saved_forms")
-      .then((data) => {
-        if (data.success) {
-          if (data.data.status === "empty") {
-            this.formSelector.classList.add("text-danger", "fw-bold");
-            this.formSelector.innerHTML =
-              '<option  value=""> برای شما هیچ فرمی ساخته نشده است </option>';
-            this.formSelector.style.display = "block";
-            return;
-          }
-          this.formSelector.innerHTML =
-            '<option value="">-- انتخاب فرم --</option>';
-          data.data.forms.forEach((form) => {
-            const option = document.createElement("option");
-            option.value = form.id;
-            option.textContent = form.form_name;
-            this.formSelector.appendChild(option);
-          });
-          this.formSelector.style.display = "block";
-        } else {
-          Swal.fire({
-            title: "خطا!",
-            text: "خطا در دریافت فرم‌ها.",
-            icon: "error",
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }
-
-  handleFormSelectorChange() {
-    const formId = this.formSelector.value;
-    this.fetchData("/wp-admin/admin-ajax.php?action=get_form_fields", {
-      form_id: formId,
-    })
-      .then((data) => {
-        if (data.success) {
-          this.formContainer.innerHTML = "";
-          data.data.fields.forEach((field) => {
-            const fieldDiv = document.createElement("div");
-            fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
-            const label = document.createElement("label");
-            label.textContent =
-              field.field_name === "equipment_id"
-                ? "سریال تجهیز"
-                : field.field_name;
-            label.classList.add("form-label");
-            const inputElement = this.createInputElement(field);
-            fieldDiv.appendChild(label);
-            fieldDiv.appendChild(inputElement);
-            this.formContainer.appendChild(fieldDiv);
-          });
-
-          this.captureGeoBtn = document.getElementById("capture-geo-btn");
-          if (this.captureGeoBtn) {
-            this.captureGeoBtn.addEventListener("click", () =>
-              this.handleGeoLocation()
-            );
-          }
-
-          this.saveDataBtn.style.display = "block";
-        } else {
-          Swal.fire({
-            title: "خطا!",
-            text: "خطا در دریافت فیلدهای فرم.",
-            icon: "error",
-          });
-        }
-        const equipmentIdInput = this.formContainer.querySelector("input");
-        equipmentIdInput.id = "equipment-id";
-        equipmentIdInput.value = this.serialInput.value;
-        equipmentIdInput.disabled = true;
-      })
-      .catch((error) => console.error("Error:", error));
-  }
-
-  /** ✅ Updated: includes textarea fields in form collection **/
-  handleSaveData() {
-    const equipmentId = this.serialInput.value;
-    const formId = this.formSelector.value;
+  prepareFormData() {
     const formData = new FormData();
-
-    formData.append("equipment_id", equipmentId);
-    formData.append("form_id", formId);
+    formData.append("equipment_id", this.serialInput.value);
+    formData.append("form_id", this.formSelector.value);
 
     const formFields = {};
-    this.formContainer
-      .querySelectorAll("input, select, textarea")
-      .forEach((input) => {
-        const fieldId = input.name.replace("field_", "");
-        if (input.type === "file") {
-          if (input.files.length > 0) {
-            formData.append(`field_${fieldId}`, input.files[0]);
-          }
-        } else if (input.type === "checkbox") {
-          if (input.checked) {
-            if (!formFields[fieldId]) formFields[fieldId] = [];
-            formFields[fieldId].push(input.value);
-          }
-        } else if (input.type === "radio") {
-          if (input.checked) formFields[fieldId] = input.value;
-        } else {
-          formFields[fieldId] = input.value;
+    
+    this.formContainer.querySelectorAll("input, select, textarea").forEach(input => {
+      const fieldId = input.name.replace("field_", "");
+      
+      if (input.type === "file") {
+        if (input.files.length > 0) {
+          formData.append(`field_${fieldId}`, input.files[0]);
         }
-      });
+      } else if (input.type === "checkbox") {
+        if (input.checked) {
+          if (!formFields[fieldId]) formFields[fieldId] = [];
+          formFields[fieldId].push(input.value);
+        }
+      } else if (input.type === "radio") {
+        if (input.checked) formFields[fieldId] = input.value;
+      } else {
+        formFields[fieldId] = input.value;
+      }
+    });
 
-    for (const key in formFields) {
+    // Process array fields
+    Object.keys(formFields).forEach(key => {
       if (Array.isArray(formFields[key])) {
         formFields[key] = formFields[key].join(",");
       }
-    }
+    });
 
     formData.append("form_data", JSON.stringify(formFields));
+    return formData;
+  }
 
-    this.fetchData(
-      "/wp-admin/admin-ajax.php?action=save_equipment_data",
-      formData
-    )
-      .then((data) => {
-        if (data.success) {
-          Swal.fire({
-            title: "Success!",
-            text: data.data.message,
-            icon: "success",
-          }).then(() => {
-            window.location.href =
-              window.location.origin + "/panel/equipmenttracker";
-          });
-        } else {
-          Swal.fire({
-            title: "خطا!",
-            text: "خطا در ذخیره‌سازی داده‌ها.",
-            icon: "error",
-          });
-        }
-      })
-      .catch((error) => console.error("Error:", error));
+  validateRequiredFields() {
+    const requiredFields = this.formContainer.querySelectorAll("[required]");
+    let isValid = true;
+    const missingFields = [];
+
+    requiredFields.forEach(field => {
+      if (!this.isFieldValid(field)) {
+        isValid = false;
+        field.classList.add("is-invalid");
+        missingFields.push(this.getFieldName(field));
+      } else {
+        field.classList.remove("is-invalid");
+        field.classList.add("is-valid");
+      }
+    });
+
+    // Validate checkbox groups
+    const requiredCheckboxGroups = this.formContainer.querySelectorAll('.checkbox-group[data-required="true"]');
+    requiredCheckboxGroups.forEach(group => {
+      const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+      const isChecked = Array.from(checkboxes).some(cb => cb.checked);
+      
+      if (!isChecked) {
+        isValid = false;
+        checkboxes.forEach(cb => cb.classList.add("is-invalid"));
+        missingFields.push(this.getFieldName(group));
+      } else {
+        checkboxes.forEach(cb => {
+          cb.classList.remove("is-invalid");
+          cb.classList.add("is-valid");
+        });
+      }
+    });
+
+    if (!isValid) {
+      this.showValidationError(missingFields);
+    }
+
+    return isValid;
+  }
+
+  isFieldValid(field) {
+    if (field.type === "checkbox") {
+      const checkboxes = this.formContainer.querySelectorAll(`input[name="${field.name}"]`);
+      return Array.from(checkboxes).some(cb => cb.checked);
+    } else if (field.type === "radio") {
+      const radios = this.formContainer.querySelectorAll(`input[name="${field.name}"]`);
+      return Array.from(radios).some(radio => radio.checked);
+    } else if (field.type === "file") {
+      return field.files.length > 0;
+    } else if (field.tagName === "SELECT") {
+      return field.value !== "";
+    } else {
+      return field.value.trim() !== "";
+    }
+  }
+
+  getFieldName(field) {
+    const container = field.closest(".col-sm-6");
+    const label = container?.querySelector(".form-label");
+    return label ? label.textContent.replace("*", "").trim() : "این فیلد";
+  }
+
+  showValidationError(missingFields) {
+    Swal.fire({
+      title: "فیلدهای اجباری",
+      html: `لطفا فیلدهای زیر را پر کنید:<br><strong>${missingFields.join("، ")}</strong>`,
+      icon: "warning",
+      confirmButtonText: "متوجه شدم"
+    });
+
+    const firstInvalid = this.formContainer.querySelector(".is-invalid");
+    if (firstInvalid) {
+      firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+      firstInvalid.focus();
+    }
   }
 
   enableEditMode() {
-    // Enable all input fields
-    this.formContainer
-      .querySelectorAll("input, select, textarea")
-      .forEach((input) => {
-        input.disabled = false;
-      });
+    this.formContainer.querySelectorAll("input, select, textarea").forEach(input => {
+      input.disabled = false;
+    });
 
-    // Change the "Edit" button to a "Save" button
     const editButton = this.formContainer.querySelector("button");
     editButton.textContent = "ذخیره";
     editButton.classList.remove("btn-primary");
@@ -442,75 +641,92 @@ class EquipmentFormHandler {
     editButton.addEventListener("click", () => this.handleSaveData());
   }
 
-  handleScanQr() {
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    html5QrCode
-      .start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: 250,
-        },
-        (qrCodeMessage) => {
-          this.serialInput.value = qrCodeMessage;
-          html5QrCode.stop();
-        }
-      )
-      .catch((err) => {
-        console.error("Error:", err);
-      });
+  initRealTimeValidation() {
+    this.formContainer.addEventListener("input", (e) => {
+      this.validateSingleField(e.target);
+    });
+
+    this.formContainer.addEventListener("change", (e) => {
+      this.validateSingleField(e.target);
+    });
   }
-  handleGeoLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          console.log("Geo-location captured:", { latitude, longitude });
 
-          // Create a hidden input for geo-location data
-          const geoInput = document.createElement("input");
-          geoInput.type = "hidden";
-          geoInput.name = "geo_location";
-          geoInput.value = `${latitude},${longitude}`;
-          this.formContainer.appendChild(geoInput);
-
-          // Show success message
-          Swal.fire({
-            title: "Success!",
-            text: "موقعیت جغرافیایی با موفقیت ثبت شد.",
-            icon: "success",
-          });
-        },
-        (error) => {
-          Swal.fire({
-            title: "خطا!",
-            text: "خطا در دریافت موقعیت جغرافیایی.",
-            icon: "error",
-          });
-        },
-        { timeout: 10000 } // Optional: Set a timeout for the request
-      );
-    } else {
-      Swal.fire({
-        title: "خطا!",
-        text: "مرورگر شما از دریافت موقعیت جغرافیایی پشتیبانی نمی‌کند.",
-        icon: "error",
-      });
+  validateSingleField(field) {
+    if (field.hasAttribute("required")) {
+      if (this.isFieldValid(field)) {
+        field.classList.remove("is-invalid");
+        field.classList.add("is-valid");
+      } else {
+        field.classList.add("is-invalid");
+        field.classList.remove("is-valid");
+      }
     }
   }
-  handleRemoveEquipment() {
-    const equipmentId = this.serialInput.value.trim();
-    if (!equipmentId) {
-      Swal.fire({
-        title: "خطا!",
-        text: "سریال را بدرستی وارد کنید",
-        icon: "error",
-      });
+
+  handleScanQrForField(inputField) {
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    this.qrReader.style.display = "block";
+
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      (qrCodeMessage) => {
+        inputField.value = qrCodeMessage;
+        html5QrCode.stop();
+        this.qrReader.style.display = "none";
+        this.showSuccess("QR کد با موفقیت اسکن شد");
+      }
+    ).catch((err) => {
+      console.error("Error starting QR scanner:", err);
+      this.qrReader.style.display = "none";
+    });
+  }
+
+  handleScanQr() {
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      (qrCodeMessage) => {
+        this.serialInput.value = qrCodeMessage;
+        html5QrCode.stop();
+      }
+    ).catch((err) => {
+      console.error("Error:", err);
+    });
+  }
+
+  handleGeoLocation() {
+    if (!navigator.geolocation) {
+      this.showError("مرورگر شما از دریافت موقعیت جغرافیایی پشتیبانی نمی‌کند.");
       return;
     }
 
-    Swal.fire({
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        const geoInput = document.createElement("input");
+        geoInput.type = "hidden";
+        geoInput.name = "geo_location";
+        geoInput.value = `${latitude},${longitude}`;
+        this.formContainer.appendChild(geoInput);
+        
+        this.showSuccess("موقعیت جغرافیایی با موفقیت ثبت شد.");
+      },
+      (error) => {
+        this.showError("خطا در دریافت موقعیت جغرافیایی.");
+      },
+      { timeout: 10000 }
+    );
+  }
+
+  async handleRemoveEquipment() {
+    const equipmentId = this.serialInput.value.trim();
+    
+    if (!this.validateEquipmentId(equipmentId)) return;
+
+    const result = await Swal.fire({
       title: "آیا مطمئن هستید؟",
       text: "این عمل قابل بازگشت نیست!",
       icon: "warning",
@@ -519,58 +735,81 @@ class EquipmentFormHandler {
       cancelButtonColor: "#d33",
       confirmButtonText: "بله، حذف شود!",
       cancelButtonText: "لغو",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.fetchData(
-          "/wp-admin/admin-ajax.php?action=remove_equipment_data",
-          { equipment_id: equipmentId }
-        )
-          .then((data) => {
-            if (data.success) {
-              Swal.fire({
-                title: "حذف شد!",
-                text: "تجهیز با موفقیت حذف شد.",
-                icon: "success",
-              }).then(() => {
-                window.location.href =
-                  window.location.origin + "/panel/equipmenttracker";
-              });
-            } else {
-              Swal.fire({
-                title: "خطا!",
-                text: "خطا در حذف تجهیز.",
-                icon: "error",
-              });
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=remove_equipment_data", {
+        equipment_id: equipmentId,
+      });
+
+      if (data.success) {
+        this.showSuccess("تجهیز با موفقیت حذف شد.", true);
+      } else {
+        this.showError("خطا در حذف تجهیز.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  showLoading(show) {
+    if (this.loadingIndicator && this.searchBtn) {
+      if (show) {
+        this.loadingIndicator.style.display = "inline-block";
+        this.searchBtn.disabled = true;
+        this.searchBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>در حال جستجو...';
+      } else {
+        this.loadingIndicator.style.display = "none";
+        this.searchBtn.disabled = false;
+        this.searchBtn.innerHTML = '<i class="bi bi-search me-1"></i>جستجو';
+      }
+    }
+  }
+
+  showSuccess(message, redirect = false) {
+    Swal.fire({
+      title: "موفق!",
+      text: message,
+      icon: "success",
+    }).then(() => {
+      if (redirect) {
+        window.location.href = window.location.origin + "/panel/equipmenttracker";
       }
     });
   }
 
+  showError(message) {
+    Swal.fire({
+      title: "خطا!",
+      text: message,
+      icon: "error",
+    });
+  }
+
+  attachGeoLocationListener() {
+    this.captureGeoBtn = document.getElementById("capture-geo-btn");
+    if (this.captureGeoBtn) {
+      this.captureGeoBtn.addEventListener("click", () => this.handleGeoLocation());
+    }
+  }
+
   fetchData(url, body = {}) {
-    // If body is FormData, send it directly without headers
     if (body instanceof FormData) {
-      return fetch(url, {
-        method: "POST",
-        body: body, // No headers needed for FormData
-      }).then((response) => response.json());
+      return fetch(url, { method: "POST", body }).then(response => response.json());
     } else {
-      // For JSON data, use URLSearchParams
       const params = new URLSearchParams(body);
       return fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params,
-      }).then((response) => response.json());
+      }).then(response => response.json());
     }
   }
 }
 
+// Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   new EquipmentFormHandler();
 });

@@ -32,7 +32,6 @@ function save_form_data()
         global $wpdb;
         $table_name_forms = $wpdb->prefix . 'equipment_forms';
         $table_name_fields = $wpdb->prefix . 'equipment_form_fields';
-        // $table_name_equipments = $wpdb->prefix . 'equipments';
 
         // Start transaction
         $wpdb->query('START TRANSACTION');
@@ -58,7 +57,7 @@ function save_form_data()
 
         $form_id = $wpdb->insert_id;
 
-        // First, always add equipment_id field
+        // First, always add equipment_id field (always required)
         $equipment_field_inserted = $wpdb->insert(
             $table_name_fields,
             [
@@ -66,10 +65,12 @@ function save_form_data()
                 'field_name' => 'equipment_id',
                 'field_type' => 'text',
                 'options' => wp_json_encode([]),
+                'required' => 1, // equipment_id is always required
+                'unique_field' => 0,
                 'created_at' => $current_time,
                 'updated_at' => $current_time
             ],
-            ['%d', '%s', '%s', '%s', '%s', '%s']
+            ['%d', '%s', '%s', '%s', '%d', '%d', '%s', '%s']
         );
 
         if ($equipment_field_inserted === false) {
@@ -93,6 +94,12 @@ function save_form_data()
                 $field_type = sanitize_text_field($field['field_type']);
                 $options = !empty($field['options']) && is_array($field['options']) ? 
                     array_map('sanitize_text_field', $field['options']) : [];
+                
+                // Handle required field - default to 0 (not required) if not set
+                $required = isset($field['required']) ? (int) $field['required'] : 0;
+                
+                // Handle unique field - default to 0 (not unique) if not set
+                $unique_field = isset($field['unique_field']) ? (int) $field['unique_field'] : 0;
 
                 // Insert field
                 $field_inserted = $wpdb->insert(
@@ -102,10 +109,12 @@ function save_form_data()
                         'field_name' => $field_name,
                         'field_type' => $field_type,
                         'options' => wp_json_encode($options),
+                        'required' => $required,
+                        'unique_field' => $unique_field,
                         'created_at' => $current_time,
                         'updated_at' => $current_time
                     ],
-                    ['%d', '%s', '%s', '%s', '%s', '%s']
+                    ['%d', '%s', '%s', '%s', '%d', '%d', '%s', '%s']
                 );
 
                 if ($field_inserted === false) {
@@ -139,3 +148,4 @@ function save_form_data()
     }
 }
 add_action('wp_ajax_save_form_data', 'save_form_data');
+
