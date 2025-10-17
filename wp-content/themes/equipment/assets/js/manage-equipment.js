@@ -10,7 +10,9 @@ class EquipmentFormHandler {
     this.searchBtn = document.getElementById("search-btn");
     this.formContainer = document.getElementById("form-container");
     this.formSelector = document.getElementById("form-selector");
-    this.formSelectorContainer = document.getElementById("form-selector-container");
+    this.formSelectorContainer = document.getElementById(
+      "form-selector-container"
+    );
     this.saveDataBtn = document.getElementById("save-data-btn");
     this.scanQrBtn = document.getElementById("scan-qr-btn");
     this.qrReader = document.getElementById("qr-reader");
@@ -20,23 +22,28 @@ class EquipmentFormHandler {
 
   initEventListeners() {
     this.searchBtn.addEventListener("click", () => this.handleSearch());
-    this.formSelector.addEventListener("change", () => this.handleFormSelectorChange());
+    this.formSelector.addEventListener("change", () =>
+      this.handleFormSelectorChange()
+    );
     this.saveDataBtn.addEventListener("click", () => this.handleSaveData());
     this.scanQrBtn.addEventListener("click", () => this.handleScanQr());
   }
 
   async handleSearch() {
     const equipmentId = this.serialInput.value.trim();
-    
+
     if (!this.validateEquipmentId(equipmentId)) return;
 
     this.resetUI();
     this.showLoading(true);
 
     try {
-      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=get_equipment_data", {
-        equipment_id: equipmentId,
-      });
+      const data = await this.fetchData(
+        "/wp-admin/admin-ajax.php?action=get_equipment_data",
+        {
+          equipment_id: equipmentId,
+        }
+      );
 
       this.handleSearchResponse(data);
     } catch (error) {
@@ -97,7 +104,8 @@ class EquipmentFormHandler {
   }
 
   handleEquipmentNotFound() {
-    this.searchResult.textContent = "تجهیز مورد نظر یافت نشد! برای ثبت اطلاعات فرم مرتبط را انتخاب کنید";
+    this.searchResult.textContent =
+      "تجهیز مورد نظر یافت نشد! برای ثبت اطلاعات فرم مرتبط را انتخاب کنید";
     this.searchResult.className = "fw-bold text-warning";
     this.displayFormSelector();
   }
@@ -109,8 +117,10 @@ class EquipmentFormHandler {
 
   async displayFormSelector() {
     try {
-      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=get_saved_forms");
-      
+      const data = await this.fetchData(
+        "/wp-admin/admin-ajax.php?action=get_saved_forms"
+      );
+
       if (data.success) {
         this.populateFormSelector(data.data);
       } else {
@@ -124,23 +134,25 @@ class EquipmentFormHandler {
   populateFormSelector(formData) {
     if (formData.status === "empty") {
       this.formSelector.classList.add("text-danger", "fw-bold");
-      this.formSelector.innerHTML = '<option value="">برای شما هیچ فرمی ساخته نشده است</option>';
+      this.formSelector.innerHTML =
+        '<option value="">برای شما هیچ فرمی ساخته نشده است</option>';
     } else {
-      this.formSelector.innerHTML = '<option value="">-- انتخاب فرم --</option>';
-      formData.forms.forEach(form => {
+      this.formSelector.innerHTML =
+        '<option value="">-- انتخاب فرم --</option>';
+      formData.forms.forEach((form) => {
         const option = document.createElement("option");
         option.value = form.id;
         option.textContent = form.form_name;
         this.formSelector.appendChild(option);
       });
     }
-    
+
     this.showFormSelector();
   }
 
   async handleFormSelectorChange() {
     const formId = this.formSelector.value;
-    
+
     if (!formId) {
       this.formContainer.innerHTML = "";
       this.saveDataBtn.style.display = "none";
@@ -148,9 +160,12 @@ class EquipmentFormHandler {
     }
 
     try {
-      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=get_form_fields", {
-        form_id: formId,
-      });
+      const data = await this.fetchData(
+        "/wp-admin/admin-ajax.php?action=get_form_fields",
+        {
+          form_id: formId,
+        }
+      );
 
       if (data.success) {
         this.renderFormFields(data.data.fields);
@@ -167,11 +182,11 @@ class EquipmentFormHandler {
 
   renderFormFields(fields) {
     this.formContainer.innerHTML = "";
-    
-    fields.forEach(field => {
+
+    fields.forEach((field) => {
       const fieldDiv = document.createElement("div");
       fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
-      
+
       const inputContainer = this.createInputElement(field);
       fieldDiv.appendChild(inputContainer);
       this.formContainer.appendChild(fieldDiv);
@@ -191,26 +206,27 @@ class EquipmentFormHandler {
     const isRequired = item.required == 1 || item.required == true;
     const label = this.createLabel(item, isRequired);
     const inputElement = this.createInputByType(item, isRequired);
-    
+
     const container = document.createElement("div");
     container.appendChild(label);
     container.appendChild(inputElement);
-    
+
     return container;
   }
 
   createLabel(item, isRequired) {
     const label = document.createElement("label");
-    label.textContent = item.field_name === "equipment_id" ? "سریال تجهیز" : item.field_name;
+    label.textContent =
+      item.field_name === "equipment_id" ? "سریال تجهیز" : item.field_name;
     label.classList.add("form-label");
-    
+
     if (isRequired) {
       const requiredSpan = document.createElement("span");
       requiredSpan.className = "text-danger";
       requiredSpan.textContent = " *";
       label.appendChild(requiredSpan);
     }
-    
+
     return label;
   }
 
@@ -234,16 +250,31 @@ class EquipmentFormHandler {
     return createFunction();
   }
 
-  createTextInput(item, isRequired) {
+ createTextInput(item, isRequired) {
     const input = document.createElement("input");
+    
+    // Configure basic input properties
     input.type = item.field_type;
-    input.classList.add("form-control");
-    input.value = item.value ?? "";
     input.name = `field_${item.id}`;
-    input.disabled = item.field_name === "equipment_id";
-    if (isRequired) input.required = true;
+    input.classList.add("form-control");
+    
+    // Handle special case for equipment_id
+    const isEquipmentField = item.field_name === "equipment_id";
+    
+    if (isEquipmentField) {
+        const serialInput = document.getElementById("serial-input");
+        input.value = serialInput?.value || "";
+        input.disabled = true;
+    } else {
+        input.value = item.value ?? "";
+        input.disabled = false;
+    }
+    
+    // Set required attribute if needed
+    input.required = isRequired;
+    
     return input;
-  }
+}
 
   createTextareaInput(item, isRequired) {
     const textarea = document.createElement("textarea");
@@ -260,9 +291,9 @@ class EquipmentFormHandler {
     select.classList.add("form-control");
     select.name = `field_${item.id}`;
     if (isRequired) select.required = true;
-    
+
     const options = JSON.parse(item.options || "[]");
-    
+
     const emptyOption = document.createElement("option");
     emptyOption.value = "";
     emptyOption.textContent = "-- انتخاب کنید --";
@@ -271,15 +302,15 @@ class EquipmentFormHandler {
       emptyOption.selected = !item.value;
     }
     select.appendChild(emptyOption);
-    
-    options.forEach(option => {
+
+    options.forEach((option) => {
       const optionElement = document.createElement("option");
       optionElement.value = option;
       optionElement.textContent = option;
       if (option === item.value) optionElement.selected = true;
       select.appendChild(optionElement);
     });
-    
+
     return select;
   }
 
@@ -287,30 +318,30 @@ class EquipmentFormHandler {
     const container = document.createElement("div");
     container.classList.add("checkbox-group");
     if (isRequired) container.dataset.required = "true";
-    
+
     const values = item.value ? item.value.split(",") : [];
     const options = JSON.parse(item.options || "[]");
-    
-    options.forEach(option => {
+
+    options.forEach((option) => {
       const optionDiv = document.createElement("div");
       optionDiv.classList.add("form-check");
-      
+
       const input = document.createElement("input");
       input.type = "checkbox";
       input.name = `field_${item.id}[]`;
       input.value = option;
       input.classList.add("form-check-input");
       if (values.includes(option)) input.checked = true;
-      
+
       const label = document.createElement("label");
       label.textContent = option;
       label.classList.add("form-check-label");
-      
+
       optionDiv.appendChild(input);
       optionDiv.appendChild(label);
       container.appendChild(optionDiv);
     });
-    
+
     return container;
   }
 
@@ -318,11 +349,11 @@ class EquipmentFormHandler {
     const container = document.createElement("div");
     container.classList.add("radio-group");
     const options = JSON.parse(item.options || "[]");
-    
-    options.forEach(option => {
+
+    options.forEach((option) => {
       const optionDiv = document.createElement("div");
       optionDiv.classList.add("form-check");
-      
+
       const input = document.createElement("input");
       input.type = "radio";
       input.name = `field_${item.id}`;
@@ -330,22 +361,22 @@ class EquipmentFormHandler {
       input.classList.add("form-check-input");
       if (isRequired && !item.value) input.required = true;
       if (option === item.value) input.checked = true;
-      
+
       const label = document.createElement("label");
       label.textContent = option;
       label.classList.add("form-check-label");
-      
+
       optionDiv.appendChild(input);
       optionDiv.appendChild(label);
       container.appendChild(optionDiv);
     });
-    
+
     return container;
   }
 
   createFileInput(item, isRequired) {
     const container = document.createElement("div");
-    
+
     if (item.value) {
       const existingFileDiv = document.createElement("div");
       existingFileDiv.classList.add("mb-2");
@@ -357,14 +388,14 @@ class EquipmentFormHandler {
       existingFileDiv.appendChild(fileLink);
       container.appendChild(existingFileDiv);
     }
-    
+
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.classList.add("form-control");
     if (item.field_type === "image") fileInput.accept = "image/*";
     fileInput.name = `field_${item.id}`;
     if (isRequired && !item.value) fileInput.required = true;
-    
+
     container.appendChild(fileInput);
     return container;
   }
@@ -372,10 +403,10 @@ class EquipmentFormHandler {
   createQrCodeInput(item, isRequired) {
     const container = document.createElement("div");
     container.classList.add("qr-code-field");
-    
+
     const inputGroup = document.createElement("div");
     inputGroup.classList.add("input-group", "mb-2");
-    
+
     const input = document.createElement("input");
     input.type = "text";
     input.classList.add("form-control", "qr-input");
@@ -383,17 +414,19 @@ class EquipmentFormHandler {
     input.name = `field_${item.id}`;
     input.placeholder = "QR کد اسکن شود";
     if (isRequired) input.required = true;
-    
+
     const scanButton = document.createElement("button");
     scanButton.type = "button";
     scanButton.classList.add("btn", "btn-outline-primary", "scan-qr-btn");
     scanButton.innerHTML = '<i class="bi bi-qr-code-scan"></i> اسکن QR';
-    scanButton.addEventListener("click", () => this.handleScanQrForField(input));
-    
+    scanButton.addEventListener("click", () =>
+      this.handleScanQrForField(input)
+    );
+
     inputGroup.appendChild(input);
     inputGroup.appendChild(scanButton);
     container.appendChild(inputGroup);
-    
+
     return container;
   }
 
@@ -408,11 +441,11 @@ class EquipmentFormHandler {
 
   displayEquipmentData(data) {
     this.formContainer.innerHTML = "";
-    
-    data.data.forEach(item => {
+
+    data.data.forEach((item) => {
       const fieldDiv = document.createElement("div");
       fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
-      
+
       if (this.isFileOrImageField(item)) {
         this.renderFileOrImageField(fieldDiv, item);
       } else if (item.field_type === "geo_location") {
@@ -421,10 +454,10 @@ class EquipmentFormHandler {
         const inputContainer = this.createInputElement(item);
         fieldDiv.appendChild(inputContainer);
       }
-      
+
       this.formContainer.appendChild(fieldDiv);
     });
-    
+
     this.addActionButtons();
   }
 
@@ -445,7 +478,7 @@ class EquipmentFormHandler {
       thumbnail.classList.add("img-thumbnail", "img-responsive");
       thumbnail.style.maxWidth = "100%";
       thumbnail.style.height = "auto";
-      
+
       const imageLink = document.createElement("a");
       imageLink.href = item.value;
       imageLink.target = "_blank";
@@ -476,8 +509,12 @@ class EquipmentFormHandler {
     buttonGroup.setAttribute("role", "group");
     buttonGroup.setAttribute("aria-label", "عملیات تجهیز");
 
-    const editButton = this.createActionButton("ویرایش", "btn-primary", () => this.enableEditMode());
-    const removeButton = this.createActionButton("حذف", "btn-danger", () => this.handleRemoveEquipment());
+    const editButton = this.createActionButton("ویرایش", "btn-primary", () =>
+      this.enableEditMode()
+    );
+    const removeButton = this.createActionButton("حذف", "btn-danger", () =>
+      this.handleRemoveEquipment()
+    );
 
     const isManager = document.getElementById("isManager")?.value ?? "isUser";
     if (isManager !== "isManager") editButton.disabled = true;
@@ -499,12 +536,16 @@ class EquipmentFormHandler {
     if (!this.validateRequiredFields()) return;
 
     const formData = this.prepareFormData();
-    
+
     try {
-      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=save_equipment_data", formData);
-      
+      const data = await this.fetchData(
+        "/wp-admin/admin-ajax.php?action=save_equipment_data",
+        formData
+      );
+
       if (data.success) {
         this.showSuccess(data.data.message);
+        
       } else {
         this.showError("خطا در ذخیره‌سازی داده‌ها.");
       }
@@ -519,28 +560,30 @@ class EquipmentFormHandler {
     formData.append("form_id", this.formSelector.value);
 
     const formFields = {};
-    
-    this.formContainer.querySelectorAll("input, select, textarea").forEach(input => {
-      const fieldId = input.name.replace("field_", "");
-      
-      if (input.type === "file") {
-        if (input.files.length > 0) {
-          formData.append(`field_${fieldId}`, input.files[0]);
+
+    this.formContainer
+      .querySelectorAll("input, select, textarea")
+      .forEach((input) => {
+        const fieldId = input.name.replace("field_", "");
+
+        if (input.type === "file") {
+          if (input.files.length > 0) {
+            formData.append(`field_${fieldId}`, input.files[0]);
+          }
+        } else if (input.type === "checkbox") {
+          if (input.checked) {
+            if (!formFields[fieldId]) formFields[fieldId] = [];
+            formFields[fieldId].push(input.value);
+          }
+        } else if (input.type === "radio") {
+          if (input.checked) formFields[fieldId] = input.value;
+        } else {
+          formFields[fieldId] = input.value;
         }
-      } else if (input.type === "checkbox") {
-        if (input.checked) {
-          if (!formFields[fieldId]) formFields[fieldId] = [];
-          formFields[fieldId].push(input.value);
-        }
-      } else if (input.type === "radio") {
-        if (input.checked) formFields[fieldId] = input.value;
-      } else {
-        formFields[fieldId] = input.value;
-      }
-    });
+      });
 
     // Process array fields
-    Object.keys(formFields).forEach(key => {
+    Object.keys(formFields).forEach((key) => {
       if (Array.isArray(formFields[key])) {
         formFields[key] = formFields[key].join(",");
       }
@@ -555,7 +598,7 @@ class EquipmentFormHandler {
     let isValid = true;
     const missingFields = [];
 
-    requiredFields.forEach(field => {
+    requiredFields.forEach((field) => {
       if (!this.isFieldValid(field)) {
         isValid = false;
         field.classList.add("is-invalid");
@@ -567,17 +610,19 @@ class EquipmentFormHandler {
     });
 
     // Validate checkbox groups
-    const requiredCheckboxGroups = this.formContainer.querySelectorAll('.checkbox-group[data-required="true"]');
-    requiredCheckboxGroups.forEach(group => {
+    const requiredCheckboxGroups = this.formContainer.querySelectorAll(
+      '.checkbox-group[data-required="true"]'
+    );
+    requiredCheckboxGroups.forEach((group) => {
       const checkboxes = group.querySelectorAll('input[type="checkbox"]');
-      const isChecked = Array.from(checkboxes).some(cb => cb.checked);
-      
+      const isChecked = Array.from(checkboxes).some((cb) => cb.checked);
+
       if (!isChecked) {
         isValid = false;
-        checkboxes.forEach(cb => cb.classList.add("is-invalid"));
+        checkboxes.forEach((cb) => cb.classList.add("is-invalid"));
         missingFields.push(this.getFieldName(group));
       } else {
-        checkboxes.forEach(cb => {
+        checkboxes.forEach((cb) => {
           cb.classList.remove("is-invalid");
           cb.classList.add("is-valid");
         });
@@ -593,11 +638,15 @@ class EquipmentFormHandler {
 
   isFieldValid(field) {
     if (field.type === "checkbox") {
-      const checkboxes = this.formContainer.querySelectorAll(`input[name="${field.name}"]`);
-      return Array.from(checkboxes).some(cb => cb.checked);
+      const checkboxes = this.formContainer.querySelectorAll(
+        `input[name="${field.name}"]`
+      );
+      return Array.from(checkboxes).some((cb) => cb.checked);
     } else if (field.type === "radio") {
-      const radios = this.formContainer.querySelectorAll(`input[name="${field.name}"]`);
-      return Array.from(radios).some(radio => radio.checked);
+      const radios = this.formContainer.querySelectorAll(
+        `input[name="${field.name}"]`
+      );
+      return Array.from(radios).some((radio) => radio.checked);
     } else if (field.type === "file") {
       return field.files.length > 0;
     } else if (field.tagName === "SELECT") {
@@ -616,9 +665,11 @@ class EquipmentFormHandler {
   showValidationError(missingFields) {
     Swal.fire({
       title: "فیلدهای اجباری",
-      html: `لطفا فیلدهای زیر را پر کنید:<br><strong>${missingFields.join("، ")}</strong>`,
+      html: `لطفا فیلدهای زیر را پر کنید:<br><strong>${missingFields.join(
+        "، "
+      )}</strong>`,
       icon: "warning",
-      confirmButtonText: "متوجه شدم"
+      confirmButtonText: "متوجه شدم",
     });
 
     const firstInvalid = this.formContainer.querySelector(".is-invalid");
@@ -629,9 +680,11 @@ class EquipmentFormHandler {
   }
 
   enableEditMode() {
-    this.formContainer.querySelectorAll("input, select, textarea").forEach(input => {
-      input.disabled = false;
-    });
+    this.formContainer
+      .querySelectorAll("input, select, textarea")
+      .forEach((input) => {
+        input.disabled = false;
+      });
 
     const editButton = this.formContainer.querySelector("button");
     editButton.textContent = "ذخیره";
@@ -667,33 +720,37 @@ class EquipmentFormHandler {
     const html5QrCode = new Html5Qrcode("qr-reader");
     this.qrReader.style.display = "block";
 
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      (qrCodeMessage) => {
-        inputField.value = qrCodeMessage;
-        html5QrCode.stop();
+    html5QrCode
+      .start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (qrCodeMessage) => {
+          inputField.value = qrCodeMessage;
+          html5QrCode.stop();
+          this.qrReader.style.display = "none";
+          this.showSuccess("QR کد با موفقیت اسکن شد");
+        }
+      )
+      .catch((err) => {
+        console.error("Error starting QR scanner:", err);
         this.qrReader.style.display = "none";
-        this.showSuccess("QR کد با موفقیت اسکن شد");
-      }
-    ).catch((err) => {
-      console.error("Error starting QR scanner:", err);
-      this.qrReader.style.display = "none";
-    });
+      });
   }
 
   handleScanQr() {
     const html5QrCode = new Html5Qrcode("qr-reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      (qrCodeMessage) => {
-        this.serialInput.value = qrCodeMessage;
-        html5QrCode.stop();
-      }
-    ).catch((err) => {
-      console.error("Error:", err);
-    });
+    html5QrCode
+      .start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (qrCodeMessage) => {
+          this.serialInput.value = qrCodeMessage;
+          html5QrCode.stop();
+        }
+      )
+      .catch((err) => {
+        console.error("Error:", err);
+      });
   }
 
   handleGeoLocation() {
@@ -705,13 +762,13 @@ class EquipmentFormHandler {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        
+
         const geoInput = document.createElement("input");
         geoInput.type = "hidden";
         geoInput.name = "geo_location";
         geoInput.value = `${latitude},${longitude}`;
         this.formContainer.appendChild(geoInput);
-        
+
         this.showSuccess("موقعیت جغرافیایی با موفقیت ثبت شد.");
       },
       (error) => {
@@ -723,7 +780,7 @@ class EquipmentFormHandler {
 
   async handleRemoveEquipment() {
     const equipmentId = this.serialInput.value.trim();
-    
+
     if (!this.validateEquipmentId(equipmentId)) return;
 
     const result = await Swal.fire({
@@ -740,9 +797,12 @@ class EquipmentFormHandler {
     if (!result.isConfirmed) return;
 
     try {
-      const data = await this.fetchData("/wp-admin/admin-ajax.php?action=remove_equipment_data", {
-        equipment_id: equipmentId,
-      });
+      const data = await this.fetchData(
+        "/wp-admin/admin-ajax.php?action=remove_equipment_data",
+        {
+          equipment_id: equipmentId,
+        }
+      );
 
       if (data.success) {
         this.showSuccess("تجهیز با موفقیت حذف شد.", true);
@@ -759,7 +819,8 @@ class EquipmentFormHandler {
       if (show) {
         this.loadingIndicator.style.display = "inline-block";
         this.searchBtn.disabled = true;
-        this.searchBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>در حال جستجو...';
+        this.searchBtn.innerHTML =
+          '<i class="bi bi-hourglass-split me-1"></i>در حال جستجو...';
       } else {
         this.loadingIndicator.style.display = "none";
         this.searchBtn.disabled = false;
@@ -775,7 +836,8 @@ class EquipmentFormHandler {
       icon: "success",
     }).then(() => {
       if (redirect) {
-        window.location.href = window.location.origin + "/panel/equipmenttracker";
+        window.location.href =
+          window.location.origin + "/panel/equipmenttracker";
       }
     });
   }
@@ -791,20 +853,24 @@ class EquipmentFormHandler {
   attachGeoLocationListener() {
     this.captureGeoBtn = document.getElementById("capture-geo-btn");
     if (this.captureGeoBtn) {
-      this.captureGeoBtn.addEventListener("click", () => this.handleGeoLocation());
+      this.captureGeoBtn.addEventListener("click", () =>
+        this.handleGeoLocation()
+      );
     }
   }
 
   fetchData(url, body = {}) {
     if (body instanceof FormData) {
-      return fetch(url, { method: "POST", body }).then(response => response.json());
+      return fetch(url, { method: "POST", body }).then((response) =>
+        response.json()
+      );
     } else {
       const params = new URLSearchParams(body);
       return fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params,
-      }).then(response => response.json());
+      }).then((response) => response.json());
     }
   }
 }
