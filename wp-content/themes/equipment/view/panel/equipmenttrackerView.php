@@ -224,6 +224,19 @@ if($isManager){
 .is-invalid ~ .invalid-feedback {
     display: block;
 }
+.field-actions {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.field-card:hover .field-actions {
+    opacity: 1;
+}
+
+.field-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
 </style>
 
 <script>
