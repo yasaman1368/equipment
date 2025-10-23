@@ -35,6 +35,7 @@ include_once '_inc/student-registeration/register-student.php';
 include_once '_inc/student-registeration/get-class-stats.php';
 include_once '_inc/form-equipment/edite-saved-form/remove-form-field.php';
 include_once '_inc/form-equipment/edite-saved-form/update-form-data.php';
+include_once '_inc/form-equipment/edite-saved-form/update-form-field.php';
 
 //****** to do this below function  i think will use but till i dont use
 include_once '_inc/utility/get_users_relative_by_supervisor.php';

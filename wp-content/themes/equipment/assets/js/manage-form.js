@@ -1,10 +1,11 @@
-
 class FormManager {
   constructor() {
     this.currentEditingFormId = null;
+    this.currentEditingField = null; // اضافه شد
     this.fieldCounter = 0;
     this.modals = {};
     this.elements = {};
+    this.originalSaveBtnState = null; // اضافه شد
     this.init();
   }
 
@@ -42,76 +43,126 @@ class FormManager {
     this.elements = {};
     Object.keys(elementIds).forEach((key) => {
       this.elements[key] = document.getElementById(elementIds[key]);
+      if (!this.elements[key]) {
+        console.warn(`Element with id '${elementIds[key]}' not found`);
+      }
     });
   }
 
   initModals() {
-    this.modals.addForm = new bootstrap.Modal("#modal-add-form");
-    this.modals.addFormName = new bootstrap.Modal("#modal-add-form-name");
+    try {
+      this.modals.addForm = new bootstrap.Modal("#modal-add-form");
+      this.modals.addFormName = new bootstrap.Modal("#modal-add-form-name");
+    } catch (error) {
+      console.error("Error initializing modals:", error);
+    }
   }
-
- bindEvents() {
+  bindEvents() {
     const {
-        addNewFormBtn,
-        showFormsBtn,
-        saveFormBtn,
-        saveFormNameBtn,
-        saveNewFieldBtn,
-        inputType,
-        addNewOptionBtn,
-        formSelector,
+      addNewFormBtn,
+      showFormsBtn,
+      saveFormBtn,
+      saveFormNameBtn,
+      saveNewFieldBtn,
+      inputType,
+      addNewOptionBtn,
+      formSelector,
     } = this.elements;
 
-    addNewFormBtn.addEventListener("click", () => this.showFormBuilder());
-    showFormsBtn.addEventListener("click", () => this.showSavedForms());
-    saveFormBtn.addEventListener("click", () => this.saveForm());
-    saveFormNameBtn.addEventListener("click", () => this.createNewForm());
-    saveNewFieldBtn.addEventListener("click", (e) => this.addNewField(e));
-    inputType.addEventListener("change", () => this.handleFieldTypeChange());
-    addNewOptionBtn.addEventListener("click", () => this.addOptionField());
-    formSelector.addEventListener("change", (e) =>
-        this.loadForm(e.target.value)
+    // اضافه کردن بررسی وجود المان‌ها
+    this.safeAddEventListener(addNewFormBtn, "click", () =>
+      this.showFormBuilder()
+    );
+    this.safeAddEventListener(showFormsBtn, "click", () =>
+      this.showSavedForms()
+    );
+    this.safeAddEventListener(saveFormBtn, "click", () => this.saveForm());
+    this.safeAddEventListener(saveFormNameBtn, "click", () =>
+      this.createNewForm()
+    );
+    this.safeAddEventListener(saveNewFieldBtn, "click", (e) =>
+      this.addNewField(e)
+    );
+    this.safeAddEventListener(inputType, "change", () =>
+      this.handleFieldTypeChange()
+    );
+    this.safeAddEventListener(addNewOptionBtn, "click", () =>
+      this.addOptionField()
+    );
+    this.safeAddEventListener(formSelector, "change", (e) =>
+      this.loadForm(e.target.value)
     );
 
-    // اضافه کردن event listener برای مودال
     this.setupModalEvents();
-}
+  }
 
-setupModalEvents() {
-    const modalElement = document.getElementById('modal-new-field-form');
-    if (modalElement) {
-        modalElement.addEventListener('hidden.bs.modal', () => {
-            this.resetEditingState();
-        });
-        
-        modalElement.addEventListener('show.bs.modal', () => {
-            // اطمینان از اینکه حالت ویرایش ریست شده است
-            if (!this.currentEditingField) {
-                this.restoreSaveButton();
-            }
-        });
+  safeAddEventListener(element, event, handler) {
+    if (element) {
+      element.addEventListener(event, handler);
+    } else {
+      console.warn(`Cannot add ${event} listener: element is null`);
     }
-}
+  }
+
+  setupModalEvents() {
+    const modalElement = document.getElementById("modal-new-field-form");
+    if (modalElement) {
+      modalElement.addEventListener("hidden.bs.modal", () => {
+        this.resetEditingState();
+      });
+
+      modalElement.addEventListener("show.bs.modal", () => {
+        // اطمینان از اینکه حالت ویرایش ریست شده است
+        if (!this.currentEditingField) {
+          this.restoreSaveButton();
+        }
+      });
+    }
+
+    const formNameModal = document.getElementById("modal-form-name");
+    if (formNameModal) {
+      formNameModal.addEventListener("hidden.bs.modal", () => {
+        this.resetModal("#modal-form-name");
+      });
+    }
+  }
 
   async loadInitialData() {
     try {
       await this.loadSavedForms();
     } catch (error) {
       this.showNotification("خطا در بارگذاری داده‌ها", "error");
+      console.error("Load initial data error:", error);
     }
   }
 
   // Core functionality methods
   showFormBuilder() {
-    this.elements.savedFormsContainer.classList.add("d-none");
-    this.elements.mainContainer.classList.remove("d-none");
+    this.toggleElement(this.elements.savedFormsContainer, true);
+    this.toggleElement(this.elements.mainContainer, false);
     this.resetFormBuilder();
   }
 
   showSavedForms() {
-    this.elements.mainContainer.classList.add("d-none");
-    this.elements.savedFormsContainer.classList.remove("d-none");
+    this.toggleElement(this.elements.mainContainer, true);
+    this.toggleElement(this.elements.savedFormsContainer, false);
     this.loadSavedForms();
+  }
+
+  showFormBuilder() {
+    this.toggleElement(this.elements.savedFormsContainer, true);
+    this.toggleElement(this.elements.mainContainer, false);
+    this.resetFormBuilder();
+  }
+
+  toggleElement(element, hide) {
+    if (element) {
+      if (hide) {
+        element.classList.add("d-none");
+      } else {
+        element.classList.remove("d-none");
+      }
+    }
   }
 
   async createNewForm() {
@@ -124,24 +175,35 @@ setupModalEvents() {
     this.resetModal("#modal-form-name");
   }
 
- async addNewField(event) {
-    event.preventDefault();
-    
+  async addNewField(event) {
+    event?.preventDefault();
+
     // اگر در حال ویرایش هستیم، از ایجاد فیلد جدید جلوگیری می‌کنیم
     if (this.currentEditingField) {
-        return;
+      this.showNotification(
+        "لطفاً ابتدا ویرایش فیلد فعلی را تکمیل کنید",
+        "warning"
+      );
+      return;
     }
-    
-    const fieldData = this.getFieldData();
 
+    const fieldData = this.getFieldData();
     if (!this.validateFieldData(fieldData)) return;
 
-    const fieldElement = this.createFieldElement(fieldData);
-    this.elements.formBuilder.appendChild(fieldElement);
+    try {
+      const fieldElement = this.createFieldElement(fieldData);
+      if (this.elements.formBuilder) {
+        this.elements.formBuilder.appendChild(fieldElement);
+      }
 
-    this.modals.addForm.hide();
-    this.resetModal("#modal-new-field-form");
-}
+      this.modals.addForm?.hide();
+      this.resetModal("#modal-new-field-form");
+      this.showNotification("فیلد با موفقیت اضافه شد", "success");
+    } catch (error) {
+      console.error("Error adding new field:", error);
+      this.showNotification("خطا در اضافه کردن فیلد", "error");
+    }
+  }
 
   // Field creation methods
   createFieldElement(fieldData) {
@@ -175,9 +237,10 @@ setupModalEvents() {
       qr_code: () => this.createQrCodeTemplate(fieldData, fieldId),
     };
 
-    return templates[fieldData.field_type]
-      ? templates[fieldData.field_type]()
-      : this.createInputTemplate(fieldData, fieldId, "text");
+    return (
+      templates[fieldData.field_type]?.() ||
+      this.createInputTemplate(fieldData, fieldId, "text")
+    );
   }
 
   createInputTemplate(fieldData, fieldId, type) {
@@ -341,57 +404,62 @@ setupModalEvents() {
       : "";
   }
 
-  createFieldActions() {
-    return `
-        <div class="field-actions mt-2 d-flex gap-1">
-            <button type="button" class="btn btn-sm btn-outline-warning edit-field">
-                <i class="bi bi-pencil"></i>
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-danger remove-field">
-                <i class="bi bi-trash"></i>
-            </button>
-        </div>
-    `;
+createFieldActions() {
+  return `
+    <div class="field-actions mt-2 d-flex gap-1">
+      <button type="button" class="btn btn-sm btn-outline-warning edit-field">
+        <i class="bi bi-pencil"></i>
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-danger remove-field">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  `;
+}
+
+addFieldActions(fieldWrapper, fieldId) {
+  if (!fieldWrapper) return;
+
+  // فقط برای فیلدهایی که دکمه‌های action دارند
+  const removeBtn = fieldWrapper.querySelector(".remove-field");
+  const editBtn = fieldWrapper.querySelector(".edit-field");
+
+  this.safeAddEventListener(removeBtn, "click", () =>
+    this.removeField(fieldWrapper)
+  );
+  this.safeAddEventListener(editBtn, "click", () =>
+    this.editField(fieldWrapper)
+  );
+
+  // افزودن قابلیت موقعیت جغرافیایی - فقط برای فیلدهای موقعیت
+  const geoBtn = fieldWrapper.querySelector(".geo-btn");
+  if (geoBtn) {
+    this.safeAddEventListener(geoBtn, "click", () =>
+      this.getGeolocation(fieldWrapper)
+    );
   }
 
-  addFieldActions(fieldWrapper, fieldId) {
-    const removeBtn = fieldWrapper.querySelector(".remove-field");
-    const editBtn = fieldWrapper.querySelector(".edit-field");
-
-    if (removeBtn) {
-      removeBtn.addEventListener("click", () => this.removeField(fieldWrapper));
-    }
-
-    if (editBtn) {
-      editBtn.addEventListener("click", () => this.editField(fieldWrapper));
-    }
-
-    // Add geo location functionality
-    const geoBtn = fieldWrapper.querySelector(".geo-btn");
-    if (geoBtn) {
-      geoBtn.addEventListener("click", () => this.getGeolocation(fieldWrapper));
-    }
-
-    // Add QR code scanning functionality
-    const scanQrBtn = fieldWrapper.querySelector(".scan-qr-btn");
-    if (scanQrBtn) {
-      scanQrBtn.addEventListener("click", () =>
-        this.handleQrCodeScan(fieldWrapper, fieldId)
-      );
-    }
-
-    const cancelScanBtn = fieldWrapper.querySelector(".cancel-scan-btn");
-    if (cancelScanBtn) {
-      cancelScanBtn.addEventListener("click", () =>
-        this.cancelQrCodeScan(fieldWrapper)
-      );
-    }
+  // افزودن قابلیت اسکن QR - فقط برای فیلدهای QR
+  const scanQrBtn = fieldWrapper.querySelector(".scan-qr-btn");
+  if (scanQrBtn) {
+    this.safeAddEventListener(scanQrBtn, "click", () => {
+      const fieldCard = fieldWrapper.querySelector(".field-card");
+      const actualFieldId = fieldCard ? fieldCard.dataset.fieldId : fieldId;
+      this.handleQrCodeScan(fieldWrapper, actualFieldId);
+    });
   }
 
-  // Field data management
+  const cancelScanBtn = fieldWrapper.querySelector(".cancel-scan-btn");
+  if (cancelScanBtn) {
+    this.safeAddEventListener(cancelScanBtn, "click", () =>
+      this.cancelQrCodeScan(fieldWrapper)
+    );
+  }
+}
+
   getFieldData() {
-    const fieldName = this.elements.newFeatureName.value.trim();
-    const fieldType = this.elements.inputType.value;
+    const fieldName = this.elements.newFeatureName?.value.trim() || "";
+    const fieldType = this.elements.inputType?.value || "text";
     const isRequired =
       document.getElementById("field-required")?.checked || false;
     const isUnique = document.getElementById("field-unique")?.checked || false;
@@ -399,7 +467,8 @@ setupModalEvents() {
     let options = [];
     if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
       const optionInputs =
-        this.elements.inputOptionContainer.querySelectorAll(".input-option");
+        this.elements.inputOptionContainer?.querySelectorAll(".input-option") ||
+        [];
       options = Array.from(optionInputs)
         .map((input) => input.value.trim())
         .filter((value) => value !== "");
@@ -412,6 +481,7 @@ setupModalEvents() {
       unique: isUnique,
       options: options,
       placeholder: this.getPlaceholderByType(fieldType),
+      helpText: document.getElementById("field-help-text")?.value || "",
     };
   }
 
@@ -444,9 +514,13 @@ setupModalEvents() {
         this.showNotification("فرم با موفقیت ذخیره شد", "success");
         this.showSavedForms();
       } else {
-        this.showNotification("خطا در ذخیره‌سازی فرم", "error");
+        this.showNotification(
+          response.data?.message || "خطا در ذخیره‌سازی فرم",
+          "error"
+        );
       }
     } catch (error) {
+      console.error("Save form error:", error);
       this.showNotification("خطا در ذخیره‌سازی فرم", "error");
     }
   }
@@ -460,18 +534,22 @@ setupModalEvents() {
       form_name: formName,
       locations: locations,
       fields: fields,
+      show_form_name:
+        document.getElementById("show-form-name")?.checked || false,
     };
   }
 
   getFormName() {
-    return this.elements.placeholderFormName.querySelector(".placeholder-text")
-      .textContent;
+    const placeholderText =
+      this.elements.placeholderFormName?.querySelector(".placeholder-text");
+    return placeholderText?.textContent || "نام فرم انتخاب نشده";
   }
 
   getSelectedLocations() {
-    return Array.from(
-      document.querySelectorAll('input[name="locations[]"]:checked')
-    ).map((checkbox) => checkbox.value);
+    const locationCheckboxes = document.querySelectorAll(
+      'input[name="locations[]"]:checked'
+    );
+    return Array.from(locationCheckboxes).map((checkbox) => checkbox.value);
   }
 
   collectFormFields() {
@@ -849,27 +927,43 @@ setupModalEvents() {
       this.showNotification("نام فرم باید حداقل ۳ کاراکتر باشد", "error");
       return false;
     }
+    if (formName.length > 100) {
+      this.showNotification(
+        "نام فرم نمی‌تواند بیشتر از ۱۰۰ کاراکتر باشد",
+        "error"
+      );
+      return false;
+    }
     return true;
   }
 
   validateFieldData(fieldData) {
-    if (!fieldData.field_name || !fieldData.field_type) {
-      this.showNotification("لطفاً نام و نوع فیلد را وارد کنید", "error");
+    if (!fieldData.field_name || fieldData.field_name.trim() === "") {
+      this.showNotification("لطفاً نام فیلد را وارد کنید", "error");
+      return false;
+    }
+
+    if (!fieldData.field_type) {
+      this.showNotification("لطفاً نوع فیلد را انتخاب کنید", "error");
+      return false;
+    }
+
+    if (fieldData.field_name.length < 2) {
+      this.showNotification("نام فیلد باید حداقل ۲ کاراکتر باشد", "error");
       return false;
     }
 
     if (
       ["select", "checkbox", "radio", "multiselect"].includes(
         fieldData.field_type
-      )
+      ) &&
+      fieldData.options.length === 0
     ) {
-      if (fieldData.options.length === 0) {
-        this.showNotification(
-          "لطفاً حداقل یک گزینه برای این نوع فیلد وارد کنید",
-          "error"
-        );
-        return false;
-      }
+      this.showNotification(
+        "لطفاً حداقل یک گزینه برای این نوع فیلد وارد کنید",
+        "error"
+      );
+      return false;
     }
 
     return true;
@@ -899,29 +993,41 @@ setupModalEvents() {
 
   // Field type handling
   handleFieldTypeChange() {
-    const fieldType = this.elements.inputType.value;
+    const fieldType = this.elements.inputType?.value;
     const optionsContainer = this.elements.optionsContainer;
+
+    if (!optionsContainer) return;
 
     if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
       optionsContainer.classList.remove("d-none");
-      this.elements.selectedInput.textContent =
-        this.getFieldTypeLabel(fieldType);
+      if (this.elements.selectedInput) {
+        this.elements.selectedInput.textContent =
+          this.getFieldTypeLabel(fieldType);
+      }
       this.initializeOptionsContainer();
     } else {
       optionsContainer.classList.add("d-none");
     }
 
-    if (fieldType === "geo") {
-      this.elements.newFeatureName.value = "موقعیت جغرافیایی";
-      this.elements.newFeatureName.disabled = true;
-    } else if (fieldType === "qr_code") {
-      this.elements.newFeatureName.value = "QR کد";
-      this.elements.newFeatureName.disabled = true;
-    } else {
-      this.elements.newFeatureName.disabled = false;
+    if (this.elements.newFeatureName) {
+      if (fieldType === "geo") {
+        this.elements.newFeatureName.value = "موقعیت جغرافیایی";
+        this.elements.newFeatureName.disabled = true;
+      } else if (fieldType === "qr_code") {
+        this.elements.newFeatureName.value = "QR کد";
+        this.elements.newFeatureName.disabled = true;
+      } else {
+        this.elements.newFeatureName.disabled = false;
+        // اگر فیلد خالی است یا مقدار پیش‌فرض دارد، آن را خالی کن
+        if (
+          this.elements.newFeatureName.value === "موقعیت جغرافیایی" ||
+          this.elements.newFeatureName.value === "QR کد"
+        ) {
+          this.elements.newFeatureName.value = "";
+        }
+      }
     }
   }
-
   initializeOptionsContainer() {
     this.elements.inputOptionContainer.innerHTML = "";
     this.addOptionField();
@@ -1175,26 +1281,34 @@ setupModalEvents() {
     this.elements.saveFormBtn.classList.remove("d-none");
   }
 
-resetEditingState() {
+  resetEditingState() {
     this.currentEditingField = null;
     this.restoreSaveButton();
-}
+  }
 
-// اصلاح متد resetModal
-resetModal(modalSelector) {
+  // اصلاح متد resetModal
+  resetModal(modalSelector) {
     const form = document.querySelector(`${modalSelector} form`);
     if (form) {
-        form.reset();
-        form.classList.remove("was-validated");
+      form.reset();
+      form.classList.remove("was-validated");
     }
 
-    this.elements.optionsContainer.classList.add("d-none");
-    this.elements.inputOptionContainer.innerHTML = "";
-    this.elements.newFeatureName.disabled = false;
-    
+    if (this.elements.optionsContainer) {
+      this.elements.optionsContainer.classList.add("d-none");
+    }
+
+    if (this.elements.inputOptionContainer) {
+      this.elements.inputOptionContainer.innerHTML = "";
+    }
+
+    if (this.elements.newFeatureName) {
+      this.elements.newFeatureName.disabled = false;
+    }
+
     // ریست کردن حالت ویرایش
     this.resetEditingState();
-}
+  }
 
   // QR Code functionality
   handleQrCodeScan(fieldWrapper, fieldId) {
@@ -1312,19 +1426,28 @@ resetModal(modalSelector) {
 
   // API communication
   async apiCall(action, data = {}) {
-    const formData = new FormData();
-    formData.append("action", action);
+    try {
+      const formData = new FormData();
+      formData.append("action", action);
 
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
 
-    const response = await fetch("/wp-admin/admin-ajax.php", {
-      method: "POST",
-      body: formData,
-    });
+      const response = await fetch("/wp-admin/admin-ajax.php", {
+        method: "POST",
+        body: formData,
+      });
 
-    return await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("API call error:", error);
+      throw error;
+    }
   }
 
   // UI helpers
@@ -1355,46 +1478,68 @@ resetModal(modalSelector) {
     }, 5000);
   }
 
-editField(fieldWrapper) {
-    const fieldCard = fieldWrapper.querySelector('.field-card');
+  editField(fieldWrapper) {
+    if (!fieldWrapper) return;
+
+    const fieldCard = fieldWrapper.querySelector(".field-card");
+    if (!fieldCard) return;
+
     const fieldId = fieldCard.dataset.fieldId;
     const originalFieldId = fieldCard.dataset.originalFieldId;
-    
+
     // جمع‌آوری اطلاعات فیلد فعلی
-    const label = fieldWrapper.querySelector('.form-label');
-    const fieldName = label.textContent.replace('*', '').trim();
-    
-    const badge = fieldWrapper.querySelector('.badge');
-    const fieldType = this.getFieldTypeFromBadge(badge.textContent);
-    
+    const label = fieldWrapper.querySelector(".form-label");
+    if (!label) return;
+
+    const fieldName = label.textContent.replace(/\*/g, "").trim();
+    const badge = fieldWrapper.querySelector(".badge");
+    const fieldType = this.getFieldTypeFromBadge(badge?.textContent || "");
     const isRequired = label.innerHTML.includes('text-danger">*</span>');
-    
+    const helpTextElement = fieldWrapper.querySelector(".form-text");
+    const helpText = helpTextElement?.textContent || "";
+
     // پر کردن فرم ویرایش
-    this.elements.newFeatureName.value = fieldName;
-    this.elements.inputType.value = fieldType;
-    document.getElementById('field-required').checked = isRequired;
-    
+    if (this.elements.newFeatureName) {
+      this.elements.newFeatureName.value = fieldName;
+    }
+
+    if (this.elements.inputType) {
+      this.elements.inputType.value = fieldType;
+    }
+
+    const requiredCheckbox = document.getElementById("field-required");
+    if (requiredCheckbox) {
+      requiredCheckbox.checked = isRequired;
+    }
+
+    const helpTextInput = document.getElementById("field-help-text");
+    if (helpTextInput) {
+      helpTextInput.value = helpText;
+    }
+
     // مدیریت گزینه‌ها برای فیلدهای انتخابی
     this.handleFieldTypeChange();
-    
-    if (['select', 'checkbox', 'radio', 'multiselect'].includes(fieldType)) {
-        const options = this.collectCurrentFieldOptions(fieldWrapper, fieldType);
-        this.populateOptionsInModal(options);
+
+    if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
+      const options = this.collectCurrentFieldOptions(fieldWrapper, fieldType);
+      this.populateOptionsInModal(options);
     }
-    
+
     // ذخیره اطلاعات فیلد برای به‌روزرسانی
     this.currentEditingField = {
-        wrapper: fieldWrapper,
-        fieldId: fieldId,
-        originalFieldId: originalFieldId
+      wrapper: fieldWrapper,
+      fieldId: fieldId,
+      originalFieldId: originalFieldId,
     };
-    
+
     // تغییر دکمه به حالت ویرایش
     this.setupUpdateButton();
-    
+
     // نمایش مودال
-    this.modals.addForm.show();
-}
+    if (this.modals.addForm) {
+      this.modals.addForm.show();
+    }
+  }
 
   getFieldTypeFromBadge(badgeText) {
     const typeMap = {
@@ -1472,70 +1617,62 @@ editField(fieldWrapper) {
     });
   }
 
-setupUpdateButton() {
+  setupUpdateButton() {
     const saveBtn = this.elements.saveNewFieldBtn;
-    
+    if (!saveBtn) return;
+
     // ذخیره وضعیت اصلی
     this.originalSaveBtnState = {
-        innerHTML: saveBtn.innerHTML,
-        onclick: saveBtn.onclick
+      innerHTML: saveBtn.innerHTML,
+      onclick: saveBtn.onclick,
     };
-    
-    // تغییر به حالت ویرایش
-    saveBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> بروزرسانی فیلد';
-    saveBtn.onclick = (e) => this.updateField(e);
-    
-    // اضافه کردن event listener برای بازگشت به حالت عادی هنگام بسته شدن مودال
-    const modalElement = this.modals.addForm._element;
-    const handleModalClose = () => {
-        this.restoreSaveButton();
-        modalElement.removeEventListener('hidden.bs.modal', handleModalClose);
-    };
-    
-    modalElement.addEventListener('hidden.bs.modal', handleModalClose);
-}
 
-restoreSaveButton() {
+    // تغییر به حالت ویرایش
+    saveBtn.innerHTML =
+      '<i class="bi bi-check-circle me-1"></i> بروزرسانی فیلد';
+    saveBtn.onclick = (e) => this.updateField(e);
+  }
+
+  restoreSaveButton() {
     const saveBtn = this.elements.saveNewFieldBtn;
-    if (this.originalSaveBtnState) {
-        saveBtn.innerHTML = this.originalSaveBtnState.innerHTML;
-        saveBtn.onclick = this.originalSaveBtnState.onclick;
-    }
-    this.currentEditingField = null;
-}
+    if (!saveBtn || !this.originalSaveBtnState) return;
+
+    saveBtn.innerHTML = this.originalSaveBtnState.innerHTML;
+    saveBtn.onclick = this.originalSaveBtnState.onclick;
+    this.originalSaveBtnState = null;
+  }
 
   async updateField(event) {
-    event.preventDefault();
-    const fieldData = this.getFieldData();
+    event?.preventDefault();
 
+    if (!this.currentEditingField) {
+      this.showNotification("هیچ فیلدی برای ویرایش انتخاب نشده است", "error");
+      return;
+    }
+
+    const fieldData = this.getFieldData();
     if (!this.validateFieldData(fieldData)) return;
 
     try {
       // اگر در حال ویرایش فیلد موجود هستیم
-      if (this.currentEditingField && this.currentEditingField.wrapper) {
-        if (this.currentEditingField.originalFieldId) {
-          // به‌روزرسانی در دیتابیس
-          const success = await this.updateFieldInServer(
-            this.currentEditingField.originalFieldId,
-            fieldData
-          );
+      if (this.currentEditingField.originalFieldId) {
+        const success = await this.updateFieldInServer(
+          this.currentEditingField.originalFieldId,
+          fieldData
+        );
 
-          if (!success) {
-            this.showNotification("خطا در به‌روزرسانی فیلد در سرور", "error");
-            return;
-          }
+        if (!success) {
+          this.showNotification("خطا در به‌روزرسانی فیلد در سرور", "error");
+          return;
         }
-
-        // به‌روزرسانی در رابط کاربری
-        this.updateFieldInUI(this.currentEditingField.wrapper, fieldData);
-
-        this.modals.addForm.hide();
-        this.resetModal("#modal-new-field-form");
-        this.showNotification("فیلد با موفقیت به‌روزرسانی شد", "success");
-
-        // ریست کردن وضعیت ویرایش
-        this.currentEditingField = null;
       }
+
+      // به‌روزرسانی در رابط کاربری
+      this.updateFieldInUI(this.currentEditingField.wrapper, fieldData);
+
+      this.modals.addForm?.hide();
+      this.resetModal("#modal-new-field-form");
+      this.showNotification("فیلد با موفقیت به‌روزرسانی شد", "success");
     } catch (error) {
       console.error("Error updating field:", error);
       this.showNotification("خطا در به‌روزرسانی فیلد", "error");
@@ -1556,23 +1693,43 @@ restoreSaveButton() {
     }
   }
 
-  updateFieldInUI(fieldWrapper, fieldData) {
-    const fieldCard = fieldWrapper.querySelector(".field-card");
+updateFieldInUI(fieldWrapper, fieldData) {
+  if (!fieldWrapper) return;
 
-    // به‌روزرسانی هدر فیلد
-    const label = fieldWrapper.querySelector(".form-label");
+  const fieldCard = fieldWrapper.querySelector(".field-card");
+  if (!fieldCard) return;
+
+  // به‌روزرسانی هدر فیلد
+  const label = fieldWrapper.querySelector(".form-label");
+  if (label) {
     label.innerHTML = `
         ${fieldData.field_name}
         ${fieldData.required ? '<span class="text-danger">*</span>' : ""}
     `;
-
-    // به‌روزرسانی نوع فیلد
-    const badge = fieldWrapper.querySelector(".badge");
-    badge.textContent = this.getFieldTypeLabel(fieldData.field_type);
-
-    // به‌روزرسانی محتوای فیلد
-    this.updateFieldContent(fieldWrapper, fieldData);
   }
+
+  // به‌روزرسانی نوع فیلد
+  const badge = fieldWrapper.querySelector(".badge");
+  if (badge) {
+    badge.textContent = this.getFieldTypeLabel(fieldData.field_type);
+  }
+
+  // به‌روزرسانی متن راهنما
+  const helpTextElement = fieldWrapper.querySelector(".form-text");
+  if (helpTextElement && fieldData.helpText) {
+    helpTextElement.textContent = fieldData.helpText;
+  } else if (fieldData.helpText && !helpTextElement) {
+    // اگر متن راهنما وجود دارد اما المان ندارد، ایجاد کن
+    const helpTextHtml = `<div class="form-text">${fieldData.helpText}</div>`;
+    const fieldActions = fieldWrapper.querySelector(".field-actions");
+    if (fieldActions) {
+      fieldActions.insertAdjacentHTML("beforebegin", helpTextHtml);
+    }
+  }
+
+  // به‌روزرسانی محتوای فیلد
+  this.updateFieldContent(fieldWrapper, fieldData);
+}
 
   updateFieldContent(fieldWrapper, fieldData) {
     const fieldBody = fieldWrapper.querySelector(".card-body");
@@ -1595,57 +1752,149 @@ restoreSaveButton() {
       fieldActions.insertAdjacentHTML("beforebegin", newContent);
     }
 
-    // اضافه کردن اکشن‌های مربوطه
+ const fieldCard = fieldWrapper.querySelector(".field-card");
+  if (fieldCard) {
     this.addFieldActions(fieldWrapper, fieldCard.dataset.fieldId);
   }
-
-  createFieldContent(fieldData) {
-    const templates = {
-      text: () => `<input type="text" class="form-control" 
-                          ${fieldData.required ? "required" : ""}
-                          placeholder="${fieldData.placeholder || ""}">`,
-
-      number: () => `<input type="number" class="form-control" 
-                             ${fieldData.required ? "required" : ""}
-                             placeholder="${fieldData.placeholder || ""}">`,
-
-      select: () => {
-        const options = fieldData.options
-          .map((option) => `<option value="${option}">${option}</option>`)
-          .join("");
-        return `<select class="form-select" ${
-          fieldData.required ? "required" : ""
-        }>
-                        <option value="">-- انتخاب کنید --</option>
-                        ${options}
-                    </select>`;
-      },
-
-      checkbox: () => {
-        const options = fieldData.options
-          .map(
-            (option, index) => `
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" 
-                               value="${option}">
-                        <label class="form-check-label">${option}</label>
-                    </div>
-                `
-          )
-          .join("");
-        return `<div class="checkbox-container">${options}</div>`;
-      },
-
-      // سایر انواع فیلدها...
-    };
-
-    return templates[fieldData.field_type]
-      ? templates[fieldData.field_type]()
-      : "";
   }
+
+ createFieldContent(fieldData) {
+  const templates = {
+    text: () => `<input type="text" class="form-control" 
+                        ${fieldData.required ? "required" : ""}
+                        placeholder="${fieldData.placeholder || ""}">`,
+
+    number: () => `<input type="number" class="form-control" 
+                           ${fieldData.required ? "required" : ""}
+                           placeholder="${fieldData.placeholder || ""}">`,
+
+    email: () => `<input type="email" class="form-control" 
+                         ${fieldData.required ? "required" : ""}
+                         placeholder="${fieldData.placeholder || ""}">`,
+
+    tel: () => `<input type="tel" class="form-control" 
+                       ${fieldData.required ? "required" : ""}
+                       placeholder="${fieldData.placeholder || ""}">`,
+
+    date: () => `<input type="date" class="form-control" 
+                        ${fieldData.required ? "required" : ""}
+                        placeholder="${fieldData.placeholder || ""}">`,
+
+    time: () => `<input type="time" class="form-control" 
+                        ${fieldData.required ? "required" : ""}
+                        placeholder="${fieldData.placeholder || ""}">`,
+
+    file: () => `<input type="file" class="form-control" 
+                        ${fieldData.required ? "required" : ""}
+                        placeholder="${fieldData.placeholder || ""}">`,
+
+    image: () => `<input type="file" class="form-control" 
+                         accept="image/*" 
+                         ${fieldData.required ? "required" : ""}
+                         placeholder="${fieldData.placeholder || ""}">`,
+
+    textarea: () => `<textarea class="form-control" rows="3" 
+                              ${fieldData.required ? "required" : ""}
+                              placeholder="${fieldData.placeholder || ""}"></textarea>`,
+
+    select: () => {
+      const options = fieldData.options
+        .map((option) => `<option value="${option}">${option}</option>`)
+        .join("");
+      return `<select class="form-select" ${fieldData.required ? "required" : ""}>
+                      <option value="">-- انتخاب کنید --</option>
+                      ${options}
+                  </select>`;
+    },
+
+    multiselect: () => {
+      const options = fieldData.options
+        .map((option) => `<option value="${option}">${option}</option>`)
+        .join("");
+      return `<select class="form-select" multiple ${fieldData.required ? "required" : ""}>
+                      ${options}
+                  </select>`;
+    },
+
+    checkbox: () => {
+      const options = fieldData.options
+        .map(
+          (option, index) => `
+                  <div class="form-check">
+                      <input class="form-check-input" type="checkbox" 
+                             name="checkbox-${Date.now()}" 
+                             value="${option}" id="checkbox-${Date.now()}-${index}">
+                      <label class="form-check-label" for="checkbox-${Date.now()}-${index}">${option}</label>
+                  </div>
+              `
+        )
+        .join("");
+      return `<div class="checkbox-container">${options}</div>`;
+    },
+
+    radio: () => {
+      const options = fieldData.options
+        .map(
+          (option, index) => `
+                  <div class="form-check">
+                      <input class="form-check-input" type="radio" 
+                             name="radio-${Date.now()}" 
+                             value="${option}" id="radio-${Date.now()}-${index}">
+                      <label class="form-check-label" for="radio-${Date.now()}-${index}">${option}</label>
+                  </div>
+              `
+        )
+        .join("");
+      return `<div class="radio-container">${options}</div>`;
+    },
+
+    geo: () => `
+      <button type="button" class="btn btn-outline-warning w-100 geo-btn">
+        <i class="bi bi-geo-alt"></i> دریافت موقعیت جغرافیایی
+      </button>
+      <div class="geo-coordinates mt-2 d-none">
+        <small class="text-muted">عرض جغرافیایی: <span class="latitude">-</span></small><br>
+        <small class="text-muted">طول جغرافیایی: <span class="longitude">-</span></small>
+      </div>
+    `,
+
+    qr_code: () => `
+      <div class="qr-code-field">
+        <div class="input-group mb-2">
+          <input type="text" class="form-control qr-input" 
+                 placeholder="${fieldData.placeholder || "QR کد اسکن شود"}"
+                 ${fieldData.required ? "required" : ""} readonly>
+          <button type="button" class="btn btn-outline-primary scan-qr-btn">
+            <i class="bi bi-qr-code-scan"></i> اسکن QR
+          </button>
+        </div>
+        <div class="qr-reader-container d-none mt-2">
+          <div id="qr-reader-${Date.now()}" class="qr-reader"></div>
+          <button type="button" class="btn btn-sm btn-outline-secondary mt-2 cancel-scan-btn">
+            لغو اسکن
+          </button>
+        </div>
+      </div>
+    `
+  };
+
+  return templates[fieldData.field_type] 
+    ? templates[fieldData.field_type]() 
+    : templates.text();
+}
 }
 
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  new FormManager();
+  // بررسی وجود کتابخانه Bootstrap
+  if (typeof bootstrap === "undefined") {
+    console.error("Bootstrap library is not loaded");
+    return;
+  }
+
+  try {
+    new FormManager();
+  } catch (error) {
+    console.error("Error initializing FormManager:", error);
+  }
 });
