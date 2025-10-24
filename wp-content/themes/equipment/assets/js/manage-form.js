@@ -173,8 +173,7 @@ class FormManager {
     this.showFormBuilder();
     this.modals.addFormName.hide();
     this.resetModal("#modal-form-name");
-      this.showNotification("فرم جدید با موفقیت ایجاد شد", "success");
-
+    this.showNotification("فرم جدید با موفقیت ایجاد شد", "success");
   }
 
   async addNewField(event) {
@@ -406,8 +405,8 @@ class FormManager {
       : "";
   }
 
-createFieldActions() {
-  return `
+  createFieldActions() {
+    return `
     <div class="field-actions mt-2 d-flex gap-1">
       <button type="button" class="btn btn-sm btn-outline-warning edit-field">
         <i class="bi bi-pencil"></i>
@@ -417,47 +416,47 @@ createFieldActions() {
       </button>
     </div>
   `;
-}
+  }
 
-addFieldActions(fieldWrapper, fieldId) {
-  if (!fieldWrapper) return;
+  addFieldActions(fieldWrapper, fieldId) {
+    if (!fieldWrapper) return;
 
-  // فقط برای فیلدهایی که دکمه‌های action دارند
-  const removeBtn = fieldWrapper.querySelector(".remove-field");
-  const editBtn = fieldWrapper.querySelector(".edit-field");
+    // فقط برای فیلدهایی که دکمه‌های action دارند
+    const removeBtn = fieldWrapper.querySelector(".remove-field");
+    const editBtn = fieldWrapper.querySelector(".edit-field");
 
-  this.safeAddEventListener(removeBtn, "click", () =>
-    this.removeField(fieldWrapper)
-  );
-  this.safeAddEventListener(editBtn, "click", () =>
-    this.editField(fieldWrapper)
-  );
-
-  // افزودن قابلیت موقعیت جغرافیایی - فقط برای فیلدهای موقعیت
-  const geoBtn = fieldWrapper.querySelector(".geo-btn");
-  if (geoBtn) {
-    this.safeAddEventListener(geoBtn, "click", () =>
-      this.getGeolocation(fieldWrapper)
+    this.safeAddEventListener(removeBtn, "click", () =>
+      this.removeField(fieldWrapper)
     );
-  }
-
-  // افزودن قابلیت اسکن QR - فقط برای فیلدهای QR
-  const scanQrBtn = fieldWrapper.querySelector(".scan-qr-btn");
-  if (scanQrBtn) {
-    this.safeAddEventListener(scanQrBtn, "click", () => {
-      const fieldCard = fieldWrapper.querySelector(".field-card");
-      const actualFieldId = fieldCard ? fieldCard.dataset.fieldId : fieldId;
-      this.handleQrCodeScan(fieldWrapper, actualFieldId);
-    });
-  }
-
-  const cancelScanBtn = fieldWrapper.querySelector(".cancel-scan-btn");
-  if (cancelScanBtn) {
-    this.safeAddEventListener(cancelScanBtn, "click", () =>
-      this.cancelQrCodeScan(fieldWrapper)
+    this.safeAddEventListener(editBtn, "click", () =>
+      this.editField(fieldWrapper)
     );
+
+    // افزودن قابلیت موقعیت جغرافیایی - فقط برای فیلدهای موقعیت
+    const geoBtn = fieldWrapper.querySelector(".geo-btn");
+    if (geoBtn) {
+      this.safeAddEventListener(geoBtn, "click", () =>
+        this.getGeolocation(fieldWrapper)
+      );
+    }
+
+    // افزودن قابلیت اسکن QR - فقط برای فیلدهای QR
+    const scanQrBtn = fieldWrapper.querySelector(".scan-qr-btn");
+    if (scanQrBtn) {
+      this.safeAddEventListener(scanQrBtn, "click", () => {
+        const fieldCard = fieldWrapper.querySelector(".field-card");
+        const actualFieldId = fieldCard ? fieldCard.dataset.fieldId : fieldId;
+        this.handleQrCodeScan(fieldWrapper, actualFieldId);
+      });
+    }
+
+    const cancelScanBtn = fieldWrapper.querySelector(".cancel-scan-btn");
+    if (cancelScanBtn) {
+      this.safeAddEventListener(cancelScanBtn, "click", () =>
+        this.cancelQrCodeScan(fieldWrapper)
+      );
+    }
   }
-}
 
   getFieldData() {
     const fieldName = this.elements.newFeatureName?.value.trim() || "";
@@ -993,7 +992,6 @@ addFieldActions(fieldWrapper, fieldId) {
     return true;
   }
 
-  // Field type handling
   handleFieldTypeChange() {
     const fieldType = this.elements.inputType?.value;
     const optionsContainer = this.elements.optionsContainer;
@@ -1011,25 +1009,30 @@ addFieldActions(fieldWrapper, fieldId) {
       optionsContainer.classList.add("d-none");
     }
 
+    // حذف بخشی که نام فیلد را به صورت ثابت تنظیم می‌کند
     if (this.elements.newFeatureName) {
-      if (fieldType === "geo") {
-        this.elements.newFeatureName.value = "موقعیت جغرافیایی";
-        this.elements.newFeatureName.disabled = true;
-      } else if (fieldType === "qr_code") {
-        this.elements.newFeatureName.value = "QR کد";
-        this.elements.newFeatureName.disabled = true;
-      } else {
-        this.elements.newFeatureName.disabled = false;
-        // اگر فیلد خالی است یا مقدار پیش‌فرض دارد، آن را خالی کن
-        if (
-          this.elements.newFeatureName.value === "موقعیت جغرافیایی" ||
-          this.elements.newFeatureName.value === "QR کد"
-        ) {
+      // فقط اگر فیلد خالی است یا مقدار پیش‌فرض دارد، پیشنهاد بده
+      const currentValue = this.elements.newFeatureName.value;
+      const isDefaultValue =
+        currentValue === "" ||
+        currentValue === "موقعیت جغرافیایی" ||
+        currentValue === "QR کد";
+
+      if (isDefaultValue) {
+        if (fieldType === "geo") {
+          this.elements.newFeatureName.value = "موقعیت جغرافیایی";
+        } else if (fieldType === "qr_code") {
+          this.elements.newFeatureName.value = "QR کد";
+        } else {
           this.elements.newFeatureName.value = "";
         }
       }
+
+      // هیچ وقت فیلد را غیرفعال نکن تا کاربر بتواند تغییر دهد
+      this.elements.newFeatureName.disabled = false;
     }
   }
+
   initializeOptionsContainer() {
     this.elements.inputOptionContainer.innerHTML = "";
     this.addOptionField();
@@ -1154,13 +1157,12 @@ addFieldActions(fieldWrapper, fieldId) {
 
   // Field operations
   async removeField(fieldWrapper) {
-   
-     const result = await this.showConfirm(
-    "حذف فیلد",
-    "آیا از حذف این فیلد مطمئن هستید؟"
-  );
-  
-  if (!result.isConfirmed) return;
+    const result = await this.showConfirm(
+      "حذف فیلد",
+      "آیا از حذف این فیلد مطمئن هستید؟"
+    );
+
+    if (!result.isConfirmed) return;
 
     const removeBtn = fieldWrapper.querySelector(".remove-field");
     const originalHtml = removeBtn.innerHTML;
@@ -1215,14 +1217,14 @@ addFieldActions(fieldWrapper, fieldId) {
     const formId = this.elements.formSelector.value;
     if (!formId) return;
 
-   const result = await this.showConfirm(
-    "حذف فرم",
-    "آیا از حذف این فرم مطمئن هستید؟ این عمل قابل بازگشت نیست.",
-    "بله، حذف شود",
-    "لغو"
-  );
+    const result = await this.showConfirm(
+      "حذف فرم",
+      "آیا از حذف این فرم مطمئن هستید؟ این عمل قابل بازگشت نیست.",
+      "بله، حذف شود",
+      "لغو"
+    );
 
-  if (!result.isConfirmed) return;
+    if (!result.isConfirmed) return;
 
     try {
       const response = await this.apiCall("remove_form", { form_id: formId });
@@ -1464,92 +1466,93 @@ addFieldActions(fieldWrapper, fieldId) {
   }
 
   // UI helpers
-   showNotification(message, type = "info") {
+  showNotification(message, type = "info") {
     // Map our notification types to SweetAlert2 icons
     const iconMap = {
-      success: 'success',
-      error: 'error', 
-      warning: 'warning',
-      info: 'info'
+      success: "success",
+      error: "error",
+      warning: "warning",
+      info: "info",
     };
 
-    const icon = iconMap[type] || 'info';
-    
+    const icon = iconMap[type] || "info";
+
     Notification.show(icon, message);
   }
 
-   showConfirm(title, text = "", confirmText = "بله", cancelText = "لغو") {
+  showConfirm(title, text = "", confirmText = "بله", cancelText = "لغو") {
     return Notification.confirm({
       title: title,
       text: text,
       confirmText: confirmText,
       cancelText: cancelText,
-      icon: "warning"
+      icon: "warning",
     });
   }
 
-  editField(fieldWrapper) {
-    if (!fieldWrapper) return;
+ editField(fieldWrapper) {
+  if (!fieldWrapper) return;
 
-    const fieldCard = fieldWrapper.querySelector(".field-card");
-    if (!fieldCard) return;
+  const fieldCard = fieldWrapper.querySelector(".field-card");
+  if (!fieldCard) return;
 
-    const fieldId = fieldCard.dataset.fieldId;
-    const originalFieldId = fieldCard.dataset.originalFieldId;
+  const fieldId = fieldCard.dataset.fieldId;
+  const originalFieldId = fieldCard.dataset.originalFieldId;
 
-    // جمع‌آوری اطلاعات فیلد فعلی
-    const label = fieldWrapper.querySelector(".form-label");
-    if (!label) return;
+  // جمع‌آوری اطلاعات فیلد فعلی
+  const label = fieldWrapper.querySelector(".form-label");
+  if (!label) return;
 
-    const fieldName = label.textContent.replace(/\*/g, "").trim();
-    const badge = fieldWrapper.querySelector(".badge");
-    const fieldType = this.getFieldTypeFromBadge(badge?.textContent || "");
-    const isRequired = label.innerHTML.includes('text-danger">*</span>');
-    const helpTextElement = fieldWrapper.querySelector(".form-text");
-    const helpText = helpTextElement?.textContent || "";
+  const fieldName = label.textContent.replace(/\*/g, "").trim();
+  const badge = fieldWrapper.querySelector(".badge");
+  const fieldType = this.getFieldTypeFromBadge(badge?.textContent || "");
+  const isRequired = label.innerHTML.includes('text-danger">*</span>');
+  const helpTextElement = fieldWrapper.querySelector(".form-text");
+  const helpText = helpTextElement?.textContent || "";
 
-    // پر کردن فرم ویرایش
-    if (this.elements.newFeatureName) {
-      this.elements.newFeatureName.value = fieldName;
-    }
-
-    if (this.elements.inputType) {
-      this.elements.inputType.value = fieldType;
-    }
-
-    const requiredCheckbox = document.getElementById("field-required");
-    if (requiredCheckbox) {
-      requiredCheckbox.checked = isRequired;
-    }
-
-    const helpTextInput = document.getElementById("field-help-text");
-    if (helpTextInput) {
-      helpTextInput.value = helpText;
-    }
-
-    // مدیریت گزینه‌ها برای فیلدهای انتخابی
-    this.handleFieldTypeChange();
-
-    if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
-      const options = this.collectCurrentFieldOptions(fieldWrapper, fieldType);
-      this.populateOptionsInModal(options);
-    }
-
-    // ذخیره اطلاعات فیلد برای به‌روزرسانی
-    this.currentEditingField = {
-      wrapper: fieldWrapper,
-      fieldId: fieldId,
-      originalFieldId: originalFieldId,
-    };
-
-    // تغییر دکمه به حالت ویرایش
-    this.setupUpdateButton();
-
-    // نمایش مودال
-    if (this.modals.addForm) {
-      this.modals.addForm.show();
-    }
+  // پر کردن فرم ویرایش - همیشه اجازه تغییر نام فیلد را بده
+  if (this.elements.newFeatureName) {
+    this.elements.newFeatureName.value = fieldName;
+    this.elements.newFeatureName.disabled = false; // همیشه فعال باشد
   }
+
+  if (this.elements.inputType) {
+    this.elements.inputType.value = fieldType;
+  }
+
+  const requiredCheckbox = document.getElementById("field-required");
+  if (requiredCheckbox) {
+    requiredCheckbox.checked = isRequired;
+  }
+
+  const helpTextInput = document.getElementById("field-help-text");
+  if (helpTextInput) {
+    helpTextInput.value = helpText;
+  }
+
+  // مدیریت گزینه‌ها برای فیلدهای انتخابی
+  this.handleFieldTypeChange();
+
+  if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
+    const options = this.collectCurrentFieldOptions(fieldWrapper, fieldType);
+    this.populateOptionsInModal(options);
+  }
+
+  // ذخیره اطلاعات فیلد برای به‌روزرسانی
+  this.currentEditingField = {
+    wrapper: fieldWrapper,
+    fieldId: fieldId,
+    originalFieldId: originalFieldId,
+  };
+
+  // تغییر دکمه به حالت ویرایش
+  this.setupUpdateButton();
+
+  // نمایش مودال
+  if (this.modals.addForm) {
+    this.modals.addForm.show();
+  }
+}
 
   getFieldTypeFromBadge(badgeText) {
     const typeMap = {
@@ -1703,43 +1706,43 @@ addFieldActions(fieldWrapper, fieldId) {
     }
   }
 
-updateFieldInUI(fieldWrapper, fieldData) {
-  if (!fieldWrapper) return;
+  updateFieldInUI(fieldWrapper, fieldData) {
+    if (!fieldWrapper) return;
 
-  const fieldCard = fieldWrapper.querySelector(".field-card");
-  if (!fieldCard) return;
+    const fieldCard = fieldWrapper.querySelector(".field-card");
+    if (!fieldCard) return;
 
-  // به‌روزرسانی هدر فیلد
-  const label = fieldWrapper.querySelector(".form-label");
-  if (label) {
-    label.innerHTML = `
+    // به‌روزرسانی هدر فیلد
+    const label = fieldWrapper.querySelector(".form-label");
+    if (label) {
+      label.innerHTML = `
         ${fieldData.field_name}
         ${fieldData.required ? '<span class="text-danger">*</span>' : ""}
     `;
-  }
-
-  // به‌روزرسانی نوع فیلد
-  const badge = fieldWrapper.querySelector(".badge");
-  if (badge) {
-    badge.textContent = this.getFieldTypeLabel(fieldData.field_type);
-  }
-
-  // به‌روزرسانی متن راهنما
-  const helpTextElement = fieldWrapper.querySelector(".form-text");
-  if (helpTextElement && fieldData.helpText) {
-    helpTextElement.textContent = fieldData.helpText;
-  } else if (fieldData.helpText && !helpTextElement) {
-    // اگر متن راهنما وجود دارد اما المان ندارد، ایجاد کن
-    const helpTextHtml = `<div class="form-text">${fieldData.helpText}</div>`;
-    const fieldActions = fieldWrapper.querySelector(".field-actions");
-    if (fieldActions) {
-      fieldActions.insertAdjacentHTML("beforebegin", helpTextHtml);
     }
-  }
 
-  // به‌روزرسانی محتوای فیلد
-  this.updateFieldContent(fieldWrapper, fieldData);
-}
+    // به‌روزرسانی نوع فیلد
+    const badge = fieldWrapper.querySelector(".badge");
+    if (badge) {
+      badge.textContent = this.getFieldTypeLabel(fieldData.field_type);
+    }
+
+    // به‌روزرسانی متن راهنما
+    const helpTextElement = fieldWrapper.querySelector(".form-text");
+    if (helpTextElement && fieldData.helpText) {
+      helpTextElement.textContent = fieldData.helpText;
+    } else if (fieldData.helpText && !helpTextElement) {
+      // اگر متن راهنما وجود دارد اما المان ندارد، ایجاد کن
+      const helpTextHtml = `<div class="form-text">${fieldData.helpText}</div>`;
+      const fieldActions = fieldWrapper.querySelector(".field-actions");
+      if (fieldActions) {
+        fieldActions.insertAdjacentHTML("beforebegin", helpTextHtml);
+      }
+    }
+
+    // به‌روزرسانی محتوای فیلد
+    this.updateFieldContent(fieldWrapper, fieldData);
+  }
 
   updateFieldContent(fieldWrapper, fieldData) {
     const fieldBody = fieldWrapper.querySelector(".card-body");
@@ -1762,74 +1765,80 @@ updateFieldInUI(fieldWrapper, fieldData) {
       fieldActions.insertAdjacentHTML("beforebegin", newContent);
     }
 
- const fieldCard = fieldWrapper.querySelector(".field-card");
-  if (fieldCard) {
-    this.addFieldActions(fieldWrapper, fieldCard.dataset.fieldId);
-  }
+    const fieldCard = fieldWrapper.querySelector(".field-card");
+    if (fieldCard) {
+      this.addFieldActions(fieldWrapper, fieldCard.dataset.fieldId);
+    }
   }
 
- createFieldContent(fieldData) {
-  const templates = {
-    text: () => `<input type="text" class="form-control" 
+  createFieldContent(fieldData) {
+    const templates = {
+      text: () => `<input type="text" class="form-control" 
                         ${fieldData.required ? "required" : ""}
                         placeholder="${fieldData.placeholder || ""}">`,
 
-    number: () => `<input type="number" class="form-control" 
+      number: () => `<input type="number" class="form-control" 
                            ${fieldData.required ? "required" : ""}
                            placeholder="${fieldData.placeholder || ""}">`,
 
-    email: () => `<input type="email" class="form-control" 
+      email: () => `<input type="email" class="form-control" 
                          ${fieldData.required ? "required" : ""}
                          placeholder="${fieldData.placeholder || ""}">`,
 
-    tel: () => `<input type="tel" class="form-control" 
+      tel: () => `<input type="tel" class="form-control" 
                        ${fieldData.required ? "required" : ""}
                        placeholder="${fieldData.placeholder || ""}">`,
 
-    date: () => `<input type="date" class="form-control" 
+      date: () => `<input type="date" class="form-control" 
                         ${fieldData.required ? "required" : ""}
                         placeholder="${fieldData.placeholder || ""}">`,
 
-    time: () => `<input type="time" class="form-control" 
+      time: () => `<input type="time" class="form-control" 
                         ${fieldData.required ? "required" : ""}
                         placeholder="${fieldData.placeholder || ""}">`,
 
-    file: () => `<input type="file" class="form-control" 
+      file: () => `<input type="file" class="form-control" 
                         ${fieldData.required ? "required" : ""}
                         placeholder="${fieldData.placeholder || ""}">`,
 
-    image: () => `<input type="file" class="form-control" 
+      image: () => `<input type="file" class="form-control" 
                          accept="image/*" 
                          ${fieldData.required ? "required" : ""}
                          placeholder="${fieldData.placeholder || ""}">`,
 
-    textarea: () => `<textarea class="form-control" rows="3" 
+      textarea: () => `<textarea class="form-control" rows="3" 
                               ${fieldData.required ? "required" : ""}
-                              placeholder="${fieldData.placeholder || ""}"></textarea>`,
+                              placeholder="${
+                                fieldData.placeholder || ""
+                              }"></textarea>`,
 
-    select: () => {
-      const options = fieldData.options
-        .map((option) => `<option value="${option}">${option}</option>`)
-        .join("");
-      return `<select class="form-select" ${fieldData.required ? "required" : ""}>
+      select: () => {
+        const options = fieldData.options
+          .map((option) => `<option value="${option}">${option}</option>`)
+          .join("");
+        return `<select class="form-select" ${
+          fieldData.required ? "required" : ""
+        }>
                       <option value="">-- انتخاب کنید --</option>
                       ${options}
                   </select>`;
-    },
+      },
 
-    multiselect: () => {
-      const options = fieldData.options
-        .map((option) => `<option value="${option}">${option}</option>`)
-        .join("");
-      return `<select class="form-select" multiple ${fieldData.required ? "required" : ""}>
+      multiselect: () => {
+        const options = fieldData.options
+          .map((option) => `<option value="${option}">${option}</option>`)
+          .join("");
+        return `<select class="form-select" multiple ${
+          fieldData.required ? "required" : ""
+        }>
                       ${options}
                   </select>`;
-    },
+      },
 
-    checkbox: () => {
-      const options = fieldData.options
-        .map(
-          (option, index) => `
+      checkbox: () => {
+        const options = fieldData.options
+          .map(
+            (option, index) => `
                   <div class="form-check">
                       <input class="form-check-input" type="checkbox" 
                              name="checkbox-${Date.now()}" 
@@ -1837,15 +1846,15 @@ updateFieldInUI(fieldWrapper, fieldData) {
                       <label class="form-check-label" for="checkbox-${Date.now()}-${index}">${option}</label>
                   </div>
               `
-        )
-        .join("");
-      return `<div class="checkbox-container">${options}</div>`;
-    },
+          )
+          .join("");
+        return `<div class="checkbox-container">${options}</div>`;
+      },
 
-    radio: () => {
-      const options = fieldData.options
-        .map(
-          (option, index) => `
+      radio: () => {
+        const options = fieldData.options
+          .map(
+            (option, index) => `
                   <div class="form-check">
                       <input class="form-check-input" type="radio" 
                              name="radio-${Date.now()}" 
@@ -1853,12 +1862,12 @@ updateFieldInUI(fieldWrapper, fieldData) {
                       <label class="form-check-label" for="radio-${Date.now()}-${index}">${option}</label>
                   </div>
               `
-        )
-        .join("");
-      return `<div class="radio-container">${options}</div>`;
-    },
+          )
+          .join("");
+        return `<div class="radio-container">${options}</div>`;
+      },
 
-    geo: () => `
+      geo: () => `
       <button type="button" class="btn btn-outline-warning w-100 geo-btn">
         <i class="bi bi-geo-alt"></i> دریافت موقعیت جغرافیایی
       </button>
@@ -1868,7 +1877,7 @@ updateFieldInUI(fieldWrapper, fieldData) {
       </div>
     `,
 
-    qr_code: () => `
+      qr_code: () => `
       <div class="qr-code-field">
         <div class="input-group mb-2">
           <input type="text" class="form-control qr-input" 
@@ -1885,13 +1894,13 @@ updateFieldInUI(fieldWrapper, fieldData) {
           </button>
         </div>
       </div>
-    `
-  };
+    `,
+    };
 
-  return templates[fieldData.field_type] 
-    ? templates[fieldData.field_type]() 
-    : templates.text();
-}
+    return templates[fieldData.field_type]
+      ? templates[fieldData.field_type]()
+      : templates.text();
+  }
 }
 
 // Initialize when DOM is ready
