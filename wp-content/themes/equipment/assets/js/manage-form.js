@@ -173,6 +173,8 @@ class FormManager {
     this.showFormBuilder();
     this.modals.addFormName.hide();
     this.resetModal("#modal-form-name");
+      this.showNotification("فرم جدید با موفقیت ایجاد شد", "success");
+
   }
 
   async addNewField(event) {
@@ -180,10 +182,10 @@ class FormManager {
 
     // اگر در حال ویرایش هستیم، از ایجاد فیلد جدید جلوگیری می‌کنیم
     if (this.currentEditingField) {
-      this.showNotification(
-        "لطفاً ابتدا ویرایش فیلد فعلی را تکمیل کنید",
-        "warning"
-      );
+      // this.showNotification(
+      //   "لطفاً ابتدا ویرایش فیلد فعلی را تکمیل کنید",
+      //   "warning"
+      // );
       return;
     }
 
@@ -1152,7 +1154,13 @@ addFieldActions(fieldWrapper, fieldId) {
 
   // Field operations
   async removeField(fieldWrapper) {
-    if (!confirm("آیا از حذف این فیلد مطمئن هستید؟")) return;
+   
+     const result = await this.showConfirm(
+    "حذف فیلد",
+    "آیا از حذف این فیلد مطمئن هستید؟"
+  );
+  
+  if (!result.isConfirmed) return;
 
     const removeBtn = fieldWrapper.querySelector(".remove-field");
     const originalHtml = removeBtn.innerHTML;
@@ -1207,9 +1215,14 @@ addFieldActions(fieldWrapper, fieldId) {
     const formId = this.elements.formSelector.value;
     if (!formId) return;
 
-    if (!confirm("آیا از حذف این فرم مطمئن هستید؟ این عمل قابل بازگشت نیست.")) {
-      return;
-    }
+   const result = await this.showConfirm(
+    "حذف فرم",
+    "آیا از حذف این فرم مطمئن هستید؟ این عمل قابل بازگشت نیست.",
+    "بله، حذف شود",
+    "لغو"
+  );
+
+  if (!result.isConfirmed) return;
 
     try {
       const response = await this.apiCall("remove_form", { form_id: formId });
@@ -1451,31 +1464,28 @@ addFieldActions(fieldWrapper, fieldId) {
   }
 
   // UI helpers
-  showNotification(message, type = "info") {
-    const alertClass =
-      {
-        success: "alert-success",
-        error: "alert-danger",
-        warning: "alert-warning",
-        info: "alert-info",
-      }[type] || "alert-info";
+   showNotification(message, type = "info") {
+    // Map our notification types to SweetAlert2 icons
+    const iconMap = {
+      success: 'success',
+      error: 'error', 
+      warning: 'warning',
+      info: 'info'
+    };
 
-    const alertId = "alert-" + Date.now();
-    const alertHtml = `
-      <div id="${alertId}" class="alert ${alertClass} alert-dismissible fade show" role="alert">
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    `;
+    const icon = iconMap[type] || 'info';
+    
+    Notification.show(icon, message);
+  }
 
-    const container =
-      document.querySelector(".container-fluid") || document.body;
-    container.insertAdjacentHTML("afterbegin", alertHtml);
-
-    setTimeout(() => {
-      const alert = document.getElementById(alertId);
-      if (alert) alert.remove();
-    }, 5000);
+   showConfirm(title, text = "", confirmText = "بله", cancelText = "لغو") {
+    return Notification.confirm({
+      title: title,
+      text: text,
+      confirmText: confirmText,
+      cancelText: cancelText,
+      icon: "warning"
+    });
   }
 
   editField(fieldWrapper) {
