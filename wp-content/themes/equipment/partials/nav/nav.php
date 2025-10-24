@@ -9,7 +9,10 @@
     <i class=" bi bi-power icon-nav "></i> <!-- Bootstrap icon for logout -->
   </a>
   <a class=" btn  btn-outline-success navbar-brand  rounded-5  mt-2 border-0 ml-2 " href="<?php echo home_url() ?>"><i class="bi bi-house icon-nav"></i></a>
-  <a class=" navbar-brand fs-6" href="javascript:void(0)">
+  <a class=" navbar-brand fs-6" href="javascript:void(0)"
+     style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+
+  >
     <?php
     $current_user = wp_get_current_user();
     $user_id = $current_user->ID;
