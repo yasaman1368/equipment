@@ -595,3 +595,25 @@ body {
     border-radius: 0.375rem !important;
   }
 }
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.geo-btn.disabled, 
+.scan-qr-btn.disabled {
+  pointer-events: none;
+}
+
+.geo-coordinates {
+  background-color: #f8f9fa;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.field-card .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

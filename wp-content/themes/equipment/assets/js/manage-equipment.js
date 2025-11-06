@@ -246,6 +246,8 @@ class EquipmentFormHandler {
       image: () => this.createFileInput(item, isRequired),
       qr_code: () => this.createQrCodeInput(item, isRequired),
       button: () => this.createButtonInput(item),
+      geo: () => this.createGeoLocationInput(item, isRequired),
+
     };
 
     return (fieldConfig[item.field_type] || fieldConfig.text)();
@@ -413,6 +415,62 @@ class EquipmentFormHandler {
     return container;
   }
 
+createGeoLocationInput(item, isRequired) {
+  const container = document.createElement("div");
+  container.classList.add("geo-field");
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.classList.add("btn", "btn-outline-warning", "w-100", "geo-btn");
+  button.innerHTML = '<i class="bi bi-geo-alt"></i> دریافت موقعیت جغرافیایی';
+
+  const coordsDiv = document.createElement("div");
+  coordsDiv.classList.add("geo-coordinates", "mt-2");
+  coordsDiv.innerHTML = `
+    <small class="text-muted">عرض جغرافیایی: <span class="latitude">${item.value?.split(',')[0] || '-'}</span></small><br>
+    <small class="text-muted">طول جغرافیایی: <span class="longitude">${item.value?.split(',')[1] || '-'}</span></small>
+  `;
+
+  const hiddenInput = document.createElement("input");
+  hiddenInput.type = "hidden";
+  hiddenInput.name = `field_${item.id}`;
+  hiddenInput.value = item.value || "";
+
+  // رویداد کلیک روی دکمه
+  button.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("مرورگر شما از موقعیت جغرافیایی پشتیبانی نمی‌کند.");
+      return;
+    }
+
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i> در حال دریافت موقعیت...';
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude.toFixed(6);
+        const lng = position.coords.longitude.toFixed(6);
+        coordsDiv.querySelector(".latitude").textContent = lat;
+        coordsDiv.querySelector(".longitude").textContent = lng;
+        hiddenInput.value = `${lat},${lng}`;
+        button.innerHTML = '<i class="bi bi-geo-alt"></i> موقعیت ثبت شد ✔️';
+        button.classList.replace("btn-outline-warning", "btn-success");
+      },
+      (error) => {
+        alert("خطا در دریافت موقعیت: " + error.message);
+        button.disabled = false;
+        button.innerHTML = '<i class="bi bi-geo-alt"></i> دریافت موقعیت جغرافیایی';
+      }
+    );
+  });
+
+  container.appendChild(button);
+  container.appendChild(coordsDiv);
+  container.appendChild(hiddenInput);
+  return container;
+}
+
+
   createButtonInput(item) {
     const button = document.createElement("button");
     button.id = "capture-geo-btn";
@@ -422,26 +480,109 @@ class EquipmentFormHandler {
     return button;
   }
 
-  displayEquipmentData(data) {
-    this.formContainer.innerHTML = "";
+displayEquipmentData(data) {
+  this.formContainer.innerHTML = "";
 
-    data.data.forEach((item) => {
-      const fieldDiv = document.createElement("div");
-      fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
+  data.data.forEach((item) => {
+    const fieldDiv = document.createElement("div");
+    fieldDiv.classList.add("col-sm-6", "border-bottom", "p-2");
 
-      if (this.isFileOrImageField(item)) {
-        this.renderFileOrImageField(fieldDiv, item);
-      } else if (item.field_type === "geo_location") {
-        this.renderGeoLocationField(fieldDiv, item);
-      } else {
-        fieldDiv.appendChild(this.createInputElement(item));
-      }
+    if (this.isFileOrImageField(item)) {
+      this.renderFileOrImageField(fieldDiv, item);
+    } else if (item.field_type === "geo") {
+      // اصلاح شده: غیرفعال کردن دکمه موقعیت جغرافیایی در حالت نمایش
+      this.renderGeoLocationField(fieldDiv, item, false); // false = غیرفعال
+    } else {
+      fieldDiv.appendChild(this.createInputElement(item, false)); // false = غیرفعال برای نمایش
+    }
 
-      this.formContainer.appendChild(fieldDiv);
-    });
+    this.formContainer.appendChild(fieldDiv);
+  });
 
-    this.addActionButtons();
+  this.addActionButtons();
+}
+
+// متد جدید برای ایجاد المان‌های ورودی با قابلیت غیرفعال کردن
+createInputElement(item, enabled = true) {
+  const isRequired = item.required == 1 || item.required == true;
+  const container = document.createElement("div");
+
+  container.appendChild(this.createLabel(item, isRequired));
+  
+  const inputElement = this.createInputByType(item, isRequired);
+  
+  // غیرفعال کردن المان در حالت نمایش
+  if (!enabled) {
+    this.disableInputElement(inputElement);
   }
+  
+  container.appendChild(inputElement);
+
+  return container;
+}
+
+// متد جدید برای غیرفعال کردن المان‌های ورودی
+disableInputElement(element) {
+  if (element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') {
+    element.disabled = true;
+  } else if (element.classList.contains('geo-btn')) {
+    element.disabled = true;
+    element.classList.add('disabled');
+  } else if (element.classList.contains('scan-qr-btn')) {
+    element.disabled = true;
+    element.classList.add('disabled');
+  }
+  
+  // غیرفعال کردن دکمه‌های داخلی
+  element.querySelectorAll?.('button, input, select, textarea').forEach(el => {
+    el.disabled = true;
+  });
+}
+
+// متد اصلاح شده برای فیلد موقعیت جغرافیایی
+renderGeoLocationField(container, item, enabled = true) {
+  container.appendChild(this.createLabel(item, false));
+
+  const geoContainer = document.createElement("div");
+  geoContainer.classList.add("geo-field-container");
+  
+  if (item.value) {
+    // نمایش مختصات ذخیره شده
+    const [lat, lng] = item.value.split(',');
+    const geoDisplay = document.createElement("div");
+    geoDisplay.innerHTML = `
+      <div class="geo-coordinates">
+        <small class="text-muted">عرض جغرافیایی: <span class="latitude">${lat || '-'}</span></small><br>
+        <small class="text-muted">طول جغرافیایی: <span class="longitude">${lng || '-'}</span></small>
+      </div>
+    `;
+    geoContainer.appendChild(geoDisplay);
+  } else {
+    // دکمه موقعیت جغرافیایی - غیرفعال در حالت نمایش
+    const geoButton = document.createElement("button");
+    geoButton.type = "button";
+    geoButton.classList.add("btn", "btn-outline-warning", "w-100", "geo-btn");
+    geoButton.innerHTML = '<i class="bi bi-geo-alt"></i> دریافت موقعیت جغرافیایی';
+    geoButton.disabled = !enabled; // غیرفعال در حالت نمایش
+    
+    if (!enabled) {
+      geoButton.classList.add('disabled');
+    }
+    
+    const coordinatesDiv = document.createElement("div");
+    coordinatesDiv.classList.add("geo-coordinates", "mt-2", "d-none");
+    coordinatesDiv.innerHTML = `
+      <small class="text-muted">عرض جغرافیایی: <span class="latitude">-</span></small><br>
+      <small class="text-muted">طول جغرافیایی: <span class="longitude">-</span></small>
+    `;
+    
+    geoContainer.appendChild(geoButton);
+    geoContainer.appendChild(coordinatesDiv);
+  }
+  
+  container.appendChild(geoContainer);
+}
+
 
   isFileOrImageField(item) {
     return item.field_type === "file" || item.field_type === "image";
@@ -663,32 +804,37 @@ class EquipmentFormHandler {
     }
   }
 
-  enableEditMode() {
-    // فعال کردن تمام ورودی‌ها برای ویرایش
-    this.formContainer
-      .querySelectorAll("input, select, textarea")
-      .forEach((input) => {
-        if (input.type !== "file" && !input.classList.contains("qr-input")) {
-          input.disabled = false;
-        }
-      });
-
-    // فقط دکمه‌ی "ویرایش" اصلی را به "ذخیره" تغییر بده
-    const editButton = this.formContainer.querySelector(
-      ".btn-group .btn-primary"
-    );
-    if (editButton) {
-      editButton.textContent = "ذخیره";
-      editButton.classList.replace("btn-primary", "btn-success");
-      editButton.onclick = () => this.handleSaveData();
+enableEditMode() {
+  // فعال کردن تمام ورودی‌ها برای ویرایش
+  this.formContainer.querySelectorAll("input, select, textarea, button").forEach((input) => {
+    if (!input.classList.contains('qr-input')) {
+      input.disabled = false;
+      input.classList.remove('disabled');
     }
+  });
 
-    // ✅ دکمه‌های اسکن QR را به حال خود بگذار، فقط اطمینان بده که عملکرد اسکن‌شان برقرار است
-    this.formContainer.querySelectorAll(".scan-qr-btn").forEach((btn) => {
-      const input = btn.closest(".input-group").querySelector(".qr-input");
-      btn.onclick = () => this.handleScanQrForField(input);
-    });
+  // فعال کردن دکمه‌های موقعیت جغرافیایی
+  this.formContainer.querySelectorAll(".geo-btn").forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove('disabled');
+  });
+
+  // فعال کردن دکمه‌های اسکن QR
+  this.formContainer.querySelectorAll(".scan-qr-btn").forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove('disabled');
+    const input = btn.closest(".input-group").querySelector(".qr-input");
+    btn.onclick = () => this.handleScanQrForField(input);
+  });
+
+  // تغییر دکمه ویرایش به ذخیره
+  const editButton = this.formContainer.querySelector(".btn-group .btn-primary");
+  if (editButton) {
+    editButton.textContent = "ذخیره";
+    editButton.classList.replace("btn-primary", "btn-success");
+    editButton.onclick = () => this.handleSaveData();
   }
+}
 
   initRealTimeValidation() {
     ["input", "change"].forEach((event) => {

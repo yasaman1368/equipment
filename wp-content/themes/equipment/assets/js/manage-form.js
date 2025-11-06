@@ -992,46 +992,52 @@ class FormManager {
     return true;
   }
 
-  handleFieldTypeChange() {
-    const fieldType = this.elements.inputType?.value;
-    const optionsContainer = this.elements.optionsContainer;
+ handleFieldTypeChange() {
+  const fieldType = this.elements.inputType?.value;
+  const optionsContainer = this.elements.optionsContainer;
 
-    if (!optionsContainer) return;
+  if (!optionsContainer) return;
 
-    if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
-      optionsContainer.classList.remove("d-none");
-      if (this.elements.selectedInput) {
-        this.elements.selectedInput.textContent =
-          this.getFieldTypeLabel(fieldType);
-      }
-      this.initializeOptionsContainer();
-    } else {
-      optionsContainer.classList.add("d-none");
+  if (["select", "checkbox", "radio", "multiselect"].includes(fieldType)) {
+    optionsContainer.classList.remove("d-none");
+    if (this.elements.selectedInput) {
+      this.elements.selectedInput.textContent = this.getFieldTypeLabel(fieldType);
     }
-
-    // حذف بخشی که نام فیلد را به صورت ثابت تنظیم می‌کند
-    if (this.elements.newFeatureName) {
-      // فقط اگر فیلد خالی است یا مقدار پیش‌فرض دارد، پیشنهاد بده
-      const currentValue = this.elements.newFeatureName.value;
-      const isDefaultValue =
-        currentValue === "" ||
-        currentValue === "موقعیت جغرافیایی" ||
-        currentValue === "QR کد";
-
-      if (isDefaultValue) {
-        if (fieldType === "geo") {
-          this.elements.newFeatureName.value = "موقعیت جغرافیایی";
-        } else if (fieldType === "qr_code") {
-          this.elements.newFeatureName.value = "QR کد";
-        } else {
-          this.elements.newFeatureName.value = "";
-        }
-      }
-
-      // هیچ وقت فیلد را غیرفعال نکن تا کاربر بتواند تغییر دهد
-      this.elements.newFeatureName.disabled = false;
-    }
+    this.initializeOptionsContainer();
+  } else {
+    optionsContainer.classList.add("d-none");
   }
+
+  // اصلاح شده: تنظیم نام پیشفرض فقط برای فیلدهای خاص
+  if (this.elements.newFeatureName) {
+    const currentValue = this.elements.newFeatureName.value;
+    
+    // فقط اگر فیلد خالی است یا مقدار پیش‌فرض دارد، پیشنهاد بده
+    const isEmptyOrDefault = 
+      currentValue === "" || 
+      currentValue === "موقعیت جغرافیایی" || 
+      currentValue === "QR کد" ||
+      currentValue === this.getPlaceholderByType(this.elements.inputType?.previousValue);
+
+    if (isEmptyOrDefault) {
+      if (fieldType === "geo") {
+        this.elements.newFeatureName.value = "موقعیت جغرافیایی";
+      } else if (fieldType === "qr_code") {
+        this.elements.newFeatureName.value = "QR کد";
+      } else {
+        // برای سایر انواع، از placeholder استفاده کن
+        this.elements.newFeatureName.value = "";
+        this.elements.newFeatureName.placeholder = this.getPlaceholderByType(fieldType);
+      }
+    }
+
+    // ذخیره نوع فعلی برای مقایسه بعدی
+    this.elements.inputType.previousValue = fieldType;
+    
+    // همیشه فیلد را فعال نگه دار
+    this.elements.newFeatureName.disabled = false;
+  }
+}
 
   initializeOptionsContainer() {
     this.elements.inputOptionContainer.innerHTML = "";
@@ -1105,15 +1111,16 @@ class FormManager {
   }
 
   detectFieldType(fieldElement) {
-    const input = fieldElement.querySelector("input, select, textarea");
+    const input = fieldElement.querySelector("input, select, textarea, button");
     if (!input) return "text";
-
+    
     if (input.tagName.toLowerCase() === "select") {
       return input.multiple ? "multiselect" : "select";
     }
 
     if (input.type === "checkbox") return "checkbox";
     if (input.type === "radio") return "radio";
+    if (input.type === "button") return "geo";
     if (fieldElement.querySelector(".qr-code-field")) return "qr_code";
 
     return input.type || "text";
